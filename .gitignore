@@ -1,0 +1,12 @@
+* # ignore all
+
+!**/ # except dirs
+
+# exept these files
+!.gitignore
+!**/*Readme
+
+#exept these filetypes
+!**/*.h
+!**/*.cpp
+!**/*.txt
