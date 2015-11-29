@@ -1,64 +1,69 @@
-#include <signal.h>
-#include <iostream>
-#include <cstdlib>
-#include <stdexcept>
-#include <zmq.hpp>
-
 #include "dcc.h"
+#include <execinfo.h>
+#include <csignal>
+#include <iostream>
+
+#define MAX_BACKTRACE_ENTRIES 50
 
 using namespace std;
 
-void
-on_sig_term_ok (int piSignum)
-{
-  cout << "Signal " << piSignum << " received. Requesting exit." << std::endl;
-  exit (EXIT_SUCCESS);
+void printBacktrace() {
+  void* array[MAX_BACKTRACE_ENTRIES];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, MAX_BACKTRACE_ENTRIES);
+
+  // print out all the frames to stderr
+  std::cerr << "Backtrace:" << std::endl;
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  std::cerr << std::endl;
+  fflush(NULL);
 }
 
-void
-on_sig_msg (int piSignum)
-{
-  cout << "Signal " << piSignum << " received." << std::endl;
+void onSigTermOk(int piSignum) {
+	cout << "Signal " << piSignum << " received. Requesting exit." << std::endl;
+	printBacktrace();
+	exit(EXIT_SUCCESS);
 }
 
-void
-on_sig_term_crash (int piSignum)
-{
-  cout << "Signal " << piSignum << " received. Crashed!" << std::endl;
-  exit (-1);
+void onSigMsg(int piSignum) {
+	cout << "Signal " << piSignum << " received." << std::endl;
 }
 
-void
-installSignals ()
-{
-  signal (SIGHUP, &on_sig_msg);
-  signal (SIGINT, &on_sig_term_ok);
-  signal (SIGQUIT, &on_sig_term_ok);
-  signal (SIGILL, &on_sig_msg);
-  signal (SIGABRT, &on_sig_term_ok);
-  signal (SIGFPE, &on_sig_msg);
-  signal (SIGKILL, &on_sig_term_ok);
-  signal (SIGSEGV, &on_sig_term_crash);
-  signal (SIGPIPE, &on_sig_msg);
-  signal (SIGALRM, &on_sig_msg);
-  signal (SIGTERM, &on_sig_term_ok);
-  signal (SIGUSR1, &on_sig_msg);
-  signal (SIGUSR2, &on_sig_msg);
-  signal (SIGCHLD, &on_sig_msg);
-  signal (SIGCONT, &on_sig_msg);
-  signal (SIGSTOP, &on_sig_msg);
-  signal (SIGTSTP, &on_sig_msg);
-  signal (SIGTTIN, &on_sig_msg);
-  signal (SIGTTOU, &on_sig_msg);
+void onSigTermCrash(int piSignum) {
+	cout << "Signal " << piSignum << " received. Crashed!" << std::endl;
+	exit(EXIT_FAILURE);
 }
 
-int
-main ()
-{
-  installSignals();
+void installSignals() {
+	signal(SIGHUP, &onSigMsg);
+	signal(SIGINT, &onSigTermOk);
+	signal(SIGQUIT, &onSigTermOk);
+	signal(SIGILL, &onSigMsg);
+	signal(SIGABRT, &onSigTermOk);
+	signal(SIGFPE, &onSigMsg);
+	signal(SIGKILL, &onSigTermOk);
+	signal(SIGSEGV, &onSigTermCrash);
+	signal(SIGPIPE, &onSigMsg);
+	signal(SIGALRM, &onSigMsg);
+	signal(SIGTERM, &onSigTermOk);
+	signal(SIGUSR1, &onSigMsg);
+	signal(SIGUSR2, &onSigMsg);
+	signal(SIGCHLD, &onSigMsg);
+	signal(SIGCONT, &onSigMsg);
+	signal(SIGSTOP, &onSigMsg);
+	signal(SIGTSTP, &onSigMsg);
+	signal(SIGTTIN, &onSigMsg);
+	signal(SIGTTOU, &onSigMsg);
+}
 
-  DCC dcc;
-  dcc.loop();
+int main() {
+	installSignals();
 
-  return EXIT_SUCCESS;
+	boost::shared_ptr<DCC> dccPtr = DCC::createDCC();
+	dccPtr->init();
+	dccPtr->start();
+
+	return EXIT_SUCCESS;
 }

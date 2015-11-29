@@ -1,10 +1,6 @@
 #include "cam.h"
-#include <zmq.hpp>
-#include <iostream>
-#include <cstdlib>
-#include <stdexcept>
 #include <csignal>
-#include <memory>
+#include <iostream>
 
 using namespace std;
 

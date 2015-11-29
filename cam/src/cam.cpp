@@ -15,7 +15,7 @@ CAM::CAM() {
 	mSendSocket->connect("tcp://localhost:5563"); //("ipc:///dcc/sub/"); // TODO: This should be IPC and not TCP when DCC is also changed
 
 	mReceiveSocket = new zmq::socket_t(*ctx, ZMQ_SUB);
-	mReceiveSocket->connect("tcp://localhost:5563"); //("ipc:///dcc/pub/"); // TODO: This should be IPC and not TCP
+	mReceiveSocket->connect("ipc:///tmp/dcc.ipc"); // TODO: This should be IPC and not TCP
 	mReceiveSocket->setsockopt(ZMQ_SUBSCRIBE, "B", 1);
 	cout << "CAM constructor!" << endl;
 }
@@ -33,9 +33,7 @@ boost::shared_ptr<CAM> CAM::createCAM() {
 
 void CAM::init() {
 	mSenderThread = new boost::thread(&CAM::sendLoop, this);
-
 	mReceiverThread = new boost::thread(&CAM::receiveLoop, this);
-
 	cout << "CAM::init done" << endl;
 }
 

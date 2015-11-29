@@ -6,4 +6,4 @@ project (skeleton-dcc)
 #FIND_LIBRARY(ZMQ_LIB ZeroMQ)
 
 add_executable (skeleton-dcc dcc.cpp main.cpp)
-TARGET_LINK_LIBRARIES(skeleton-dcc zmq)
+TARGET_LINK_LIBRARIES(skeleton-dcc zmq boost_thread boost_system)
