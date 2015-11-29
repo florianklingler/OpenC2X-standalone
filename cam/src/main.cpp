@@ -1,64 +1,56 @@
-#include <signal.h>
+#include "cam.h"
+#include <zmq.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
-#include <zmq.hpp>
-
-#include "cam.h"
+#include <csignal>
+#include <memory>
 
 using namespace std;
 
-void
-on_sig_term_ok (int piSignum)
-{
-  cout << "Signal " << piSignum << " received. Requesting exit." << std::endl;
-  exit (EXIT_SUCCESS);
+void onSigTermOk(int signum) {
+	cout << "Signal " << signum << " received. Requesting exit." << std::endl;
+	exit(EXIT_SUCCESS);
 }
 
-void
-on_sig_msg (int piSignum)
-{
-  cout << "Signal " << piSignum << " received." << std::endl;
+void onSigMsg(int signum) {
+	cout << "Signal " << signum << " received." << std::endl;
 }
 
-void
-on_sig_term_crash (int piSignum)
-{
-  cout << "Signal " << piSignum << " received. Crashed!" << std::endl;
-  exit (-1);
+void onSigTermCrash(int signum) {
+	cout << "Signal " << signum << " received. Crashed!" << std::endl;
+	exit(EXIT_FAILURE);
 }
 
-void
-installSignals ()
-{
-  signal (SIGHUP, &on_sig_msg);
-  signal (SIGINT, &on_sig_term_ok);
-  signal (SIGQUIT, &on_sig_term_ok);
-  signal (SIGILL, &on_sig_msg);
-  signal (SIGABRT, &on_sig_term_ok);
-  signal (SIGFPE, &on_sig_msg);
-  signal (SIGKILL, &on_sig_term_ok);
-  signal (SIGSEGV, &on_sig_term_crash);
-  signal (SIGPIPE, &on_sig_msg);
-  signal (SIGALRM, &on_sig_msg);
-  signal (SIGTERM, &on_sig_term_ok);
-  signal (SIGUSR1, &on_sig_msg);
-  signal (SIGUSR2, &on_sig_msg);
-  signal (SIGCHLD, &on_sig_msg);
-  signal (SIGCONT, &on_sig_msg);
-  signal (SIGSTOP, &on_sig_msg);
-  signal (SIGTSTP, &on_sig_msg);
-  signal (SIGTTIN, &on_sig_msg);
-  signal (SIGTTOU, &on_sig_msg);
+void installSignals() {
+	signal(SIGHUP, &onSigMsg);
+	signal(SIGINT, &onSigTermOk);
+	signal(SIGQUIT, &onSigTermOk);
+	signal(SIGILL, &onSigMsg);
+	signal(SIGABRT, &onSigTermOk);
+	signal(SIGFPE, &onSigMsg);
+	signal(SIGKILL, &onSigTermOk);
+	signal(SIGSEGV, &onSigTermCrash);
+	signal(SIGPIPE, &onSigMsg);
+	signal(SIGALRM, &onSigMsg);
+	signal(SIGTERM, &onSigTermOk);
+	signal(SIGUSR1, &onSigMsg);
+	signal(SIGUSR2, &onSigMsg);
+	signal(SIGCHLD, &onSigMsg);
+	signal(SIGCONT, &onSigMsg);
+	signal(SIGSTOP, &onSigMsg);
+	signal(SIGTSTP, &onSigMsg);
+	signal(SIGTTIN, &onSigMsg);
+	signal(SIGTTOU, &onSigMsg);
+	cout << "Signals installed" << endl;
 }
 
-int
-main ()
-{
-  installSignals();
+int main(int argc, char* argv[]) {
+	installSignals();
 
-  CAM cam;
-  cam.loop();
+	boost::shared_ptr<CAM> camPtr = CAM::createCAM();
+	camPtr->init();
+	camPtr->start();
 
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
