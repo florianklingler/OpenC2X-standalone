@@ -1,37 +1,24 @@
 #include "dcc.h"
 
-#include <iostream>
-#include <unistd.h>
-#include <zmq.hpp>
+using namespace std;
 
-DCC::DCC ()
-{
-//  context = new context_t(1);
-//  publisher = new socket_t(*context, ZMQ_PUB);
-//  publisher->bind("tcp://*.5563");
+DCC::DCC () {
 }
 
-DCC::~DCC ()
-{
-//  publisher->unbind(*context);
-//  delete *context;
+DCC::~DCC () {
 }
 
-void
-DCC::loop ()
-{
-  zmq::context_t context(1);
-  zmq::socket_t publisher(context, ZMQ_PUB);
-  publisher.bind("tcp://*:5563");
-  while (1)
-    {
-      cout << "sending signal A!\n";
-      s_sendmore (publisher, "A");
-      s_send (publisher, "We don't want to see this");
-      cout << "sending signal B!\n";
-      s_sendmore (publisher, "B");
-      s_send (publisher, "We would like to see this");
-      cout << endl;
-      sleep (1);
+int main() {
+    zmq::context_t context(1);						//1 io_thread
+    zmq::socket_t subscriber(context, ZMQ_SUB);
+    subscriber.connect("tcp://localhost:5563");
+    subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);	//accept all messages
+
+    while (1) {
+		string message = s_recv(subscriber);		//read message contents
+        
+        cout << message << endl;					//print message        
     }
+    
+    return 0;
 }
