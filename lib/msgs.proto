@@ -1,0 +1,7 @@
+package msgs;
+
+message CAM {
+	required int32 id = 1;
+	optional string type = 2;
+	optional string position = 3;
+}
