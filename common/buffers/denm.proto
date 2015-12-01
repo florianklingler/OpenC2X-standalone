@@ -1,0 +1,6 @@
+package buffers;
+
+message DENM {
+	required int32 id = 1;
+	required string content = 2;
+}

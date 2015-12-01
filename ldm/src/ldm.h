@@ -1,4 +1,4 @@
-class CAM
+class LDM
 {
 public:
   void loop();

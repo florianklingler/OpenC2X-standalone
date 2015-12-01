@@ -1,86 +1,111 @@
 #include "dcc.h"
-
-#include <iostream>
+#include "../../common/zhelpers.hpp"
+#include "../../common/buffers/cam.pb.h" //just for output
+#include "../../common/buffers/denm.pb.h"
 #include <unistd.h>
 #include <zmq.hpp>
+#include <string>
+#include <iostream>
+#include <google/protobuf/text_format.h>
 
 using namespace std;
+using namespace zmq;
 
-DCC::DCC() {
-	ctx = new zmq::context_t(1);
-
-	mSendSocket = new zmq::socket_t(*ctx, ZMQ_PUB);
-	mSendSocket->bind("ipc:///tmp/dcc.ipc"); // TODO: This should be IPC and not TCP when DCC is also changed
-
-	mReceiveSocket = new zmq::socket_t(*ctx, ZMQ_SUB);
-	mReceiveSocket->connect("tcp://localhost:5563"); //("ipc:///dcc/pub/"); // TODO: This should be IPC and not TCP
-	mReceiveSocket->setsockopt(ZMQ_SUBSCRIBE, "B", 1);
-	cout << "DCC constructor!" << endl;
+DCC::DCC () {
+//  context = new context_t(1);
+//  publisher = new socket_t(*context, ZMQ_PUB);
+//  publisher->bind("tcp://*.5563");
 }
 
-DCC::~DCC() {
-	cleanUp();
-	cout << "DCC destructor" << endl;
+DCC::~DCC () {
+//  publisher->unbind(*context);
+//  delete *context;
 }
 
-boost::shared_ptr<DCC> DCC::createDCC() {
-	boost::shared_ptr<DCC> ptr = boost::shared_ptr<DCC>(new DCC());
-	cout << "return from createDCC" << endl;
-	return ptr;
-}
+void DCC::loop () {
+	//publisher for sending CAM/DENMs up
+	context_t context(1);
+	socket_t publisher_up(context, ZMQ_PUB);
+	publisher_up.bind("tcp://*:5555");
 
-void DCC::init() {
-	mSenderThread = new boost::thread(&DCC::sendLoop, this);
-	mReceiverThread = new boost::thread(&DCC::receiveLoop, this);
-	cout << "DCC::init done" << endl;
-}
+	//publisher for sending CAM/DENMs down
+	socket_t publisher_down(context, ZMQ_PUB);
+	publisher_down.bind("tcp://*:4444");
 
-void DCC::start() {
-	// loop();
-	cout << "empty start" << endl;
-}
+	//subscriber for receiving CAM/DENMs from top
+	socket_t subscriber_up (context, ZMQ_SUB);
+	subscriber_up.connect ("tcp://localhost:6666"); //CAM
+	subscriber_up.setsockopt ( ZMQ_SUBSCRIBE, "CAM", 1);
+	subscriber_up.connect ("tcp://localhost:7777"); //DENM
+	subscriber_up.setsockopt ( ZMQ_SUBSCRIBE, "DENM", 1);
 
-void DCC::loop() {
-	zmq::context_t context(1);
-	zmq::socket_t publisher(context, ZMQ_PUB);
-	publisher.bind("tcp://*:5563");
+	//subscriber for receiving CAM/DENMs from below
+	socket_t subscriber_down (context, ZMQ_SUB);
+	subscriber_down.connect ("tcp://localhost:4444");	//callback
+	subscriber_down.setsockopt ( ZMQ_SUBSCRIBE, "", 0);
+
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
+  	//variables
+	string topic;	
+	string msg_str;
+	string text_str;
+
+	buffers::CAM msg_cam_recv;
+	buffers::DENM msg_denm_recv;
+
 	while (1) {
-		cout << "sending signal A!\n";
-		s_sendmore(publisher, "A");
-		s_send(publisher, "We don't want to see this");
-		cout << "sending signal B!\n";
-		s_sendmore(publisher, "B");
-		s_send(publisher, "We would like to see this");
-		cout << endl;
+
+		//Receive CAM/DENM from CAM/DENM service
+		topic = s_recv(subscriber_up);
+		msg_str = s_recv(subscriber_up);
+		if(topic == "CAM") {
+			cout << "Received CAM from CAM service" << endl;
+			msg_cam_recv.ParseFromString(msg_str);
+			google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
+			cout << text_str << endl;
+		}
+		if(topic == "DENM") {
+			cout << "Received DENM from DENM service" << endl;
+			msg_denm_recv.ParseFromString(msg_str);
+			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
+			cout << text_str << endl;
+		}
 		sleep(1);
-	}
-}
 
-void DCC::sendLoop() {
-	cout << "sendLoop" << endl;
-	while (1) {
-		cout << "sending signal A!\n";
-		s_sendmore(*mSendSocket, "A");
-		s_send(*mSendSocket, "We don't want to see this");
-		cout << "sending signal B!\n";
-		s_sendmore(*mSendSocket, "B");
-		s_send(*mSendSocket, "We would like to see this");
-		cout << endl;
+		//Send message down
+		s_sendmore(publisher_down, topic);
+		s_send(publisher_down, msg_str);
+
 		sleep(1);
-	}
+
+		//Receive CAM/DENM from below
+		topic = s_recv(subscriber_down);
+		msg_str = s_recv(subscriber_down);
+		if(topic == "CAM") {
+			cout << "Received CAM from below" << endl;
+			msg_cam_recv.ParseFromString(msg_str);
+			google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
+			cout << text_str << endl;
+		}
+		if(topic == "DENM") {
+			cout << "Received DENM from below" << endl;
+			msg_denm_recv.ParseFromString(msg_str);
+			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
+			cout << text_str << endl;
+		}
+		sleep(1);
+
+		//Send message up
+		s_sendmore(publisher_up, topic);
+		s_send(publisher_up, msg_str);
+
+		sleep(1);
+    }
 }
 
-void DCC::receiveLoop() {
-	cout << "receiveLoop" << endl;
-	while (1) {
-		cout << "TODO: DCC receiveLoop" << endl;
-		sleep(4);
-	}
-}
+int main () {
+  DCC dcc;
+  dcc.loop();
 
-void DCC::cleanUp() {
-	// TODO: clean up zmq! Also call clean up from installed signal handlers
-	mSenderThread->join();
-	mReceiverThread->join();
-	cout << "DCC::cleanUp" << endl;
+  return EXIT_SUCCESS;
 }

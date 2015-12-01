@@ -1,28 +1,16 @@
-#include "zmq.hpp"
-#include "zhelpers.hpp"
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
-using namespace std;
-
-class DCC {
+#include <zmq.hpp>
+class DCC
+{
 public:
-	static boost::shared_ptr<DCC> createDCC();
-	virtual ~DCC();
-	void init();
-	void start();
-	void cleanUp();
-protected:
-	DCC();
+  DCC ();
+
+  ~DCC ();
+
+  void
+  loop ();
 
 private:
-	zmq::context_t* ctx;
-	zmq::socket_t* mSendSocket; // Forward CAM received from other cars to CAM service
-	zmq::socket_t* mReceiveSocket; // Receive CAM from CAM service
-	boost::thread* mSenderThread;
-	boost::thread* mReceiverThread;
+  zmq::context_t* context;
+  zmq::socket_t* publisher;
 
-	void loop();
-	void sendLoop();
-	void receiveLoop();
 };

@@ -1,85 +1,77 @@
 #include "cam.h"
-#include "zhelpers.hpp"
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
+#include "../../common/zhelpers.hpp"
+#include "../../common/buffers/cam.pb.h"
+#include <zmq.hpp>
 #include <unistd.h>
+#include <string>
 #include <iostream>
-#include <memory>
+#include <google/protobuf/text_format.h>
 
 using namespace std;
+using namespace zmq;
 
-CAM::CAM() {
-	ctx = new zmq::context_t(1);
+void CAM::loop () {
+	context_t context (1);
+	//subscriber for receiving CAMs from DCC
+	socket_t subscriber_dcc (context, ZMQ_SUB);
+	subscriber_dcc.connect ("tcp://localhost:5555");
+	subscriber_dcc.setsockopt ( ZMQ_SUBSCRIBE, "CAM", 1);
+  
+  	//publisher for sending CAMs to DCC
+	socket_t publisher_dcc(context, ZMQ_PUB);
+	publisher_dcc.bind("tcp://*:6666");
 
-	mSendSocket = new zmq::socket_t(*ctx, ZMQ_PUB);
-	mSendSocket->connect("tcp://localhost:5563"); //("ipc:///dcc/sub/"); // TODO: This should be IPC and not TCP when DCC is also changed
+  	//publisher for sending CAMs to LDM
+	socket_t publisher_ldm(context, ZMQ_PUB);
+	publisher_ldm.bind("tcp://*:8888");
 
-	mReceiveSocket = new zmq::socket_t(*ctx, ZMQ_SUB);
-	mReceiveSocket->connect("ipc:///tmp/dcc.ipc"); // TODO: This should be IPC and not TCP
-	mReceiveSocket->setsockopt(ZMQ_SUBSCRIBE, "B", 1);
-	cout << "CAM constructor!" << endl;
-}
+	//variables
+	string topic;	
+	string msg_str;
+	string text_str;
 
-CAM::~CAM() {
-	cleanUp();
-	cout << "CAM destructor" << endl;
-}
-
-boost::shared_ptr<CAM> CAM::createCAM() {
-	boost::shared_ptr<CAM> ptr = boost::shared_ptr<CAM>(new CAM());
-	cout << "return from createCAM" << endl;
-	return ptr;
-}
-
-void CAM::init() {
-	mSenderThread = new boost::thread(&CAM::sendLoop, this);
-	mReceiverThread = new boost::thread(&CAM::receiveLoop, this);
-	cout << "CAM::init done" << endl;
-}
-
-void CAM::start() {
-	//loop();
-	cout << "empty start" << endl;
-}
-
-void CAM::loop() {
-	//  Prepare our context and subscriber
-	zmq::context_t context(1);
-	zmq::socket_t subscriber(context, ZMQ_SUB);
-	subscriber.connect("tcp://localhost:5563");
-	subscriber.setsockopt( ZMQ_SUBSCRIBE, "B", 1);
+  	//create CAM
+  	GOOGLE_PROTOBUF_VERIFY_VERSION;
+  	buffers::CAM msg_cam_send; 
+  	buffers::CAM msg_cam_recv;
+	msg_cam_send.set_id(2345);
+	msg_cam_send.set_content("CAM from CAM service");
 
 	while (1) {
-		//  Read envelope with address
-		std::string address = s_recv(subscriber);
-		//  Read message contents
-		std::string contents = s_recv(subscriber);
-		std::cout << "[" << address << "] " << contents << std::endl;
+		sleep(3);
+
+		//Send CAM to DCC
+		msg_cam_send.SerializeToString(&msg_str);
+		message_t request (msg_str.size());
+		memcpy ((void *) request.data (), msg_str.c_str(), msg_str.size());
+		cout << "Sending CAM to DCC and LDM" << endl;
+		s_sendmore(publisher_dcc, "CAM");
+		s_send(publisher_dcc, msg_str);
+		//Send CAM to LDM
+		s_sendmore(publisher_ldm, "CAM");
+		s_send(publisher_ldm, msg_str);
+		sleep(3);
+
+		
+		//Receive CAM from DCC
+		topic = s_recv(subscriber_dcc);
+		msg_str = s_recv(subscriber_dcc);
+		cout << "Received CAM from DCC" << endl;
+		msg_cam_recv.ParseFromString(msg_str);
+		google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
+		cout << text_str << endl;
+		//Forward DENM to LDM
+		cout << "Forwarding CAM to LDM" << endl;
+		s_sendmore(publisher_ldm, topic);
+		s_send(publisher_ldm, msg_str);
+
+		sleep(3);
 	}
 }
 
-void CAM::sendLoop() {
-	cout << "sendLoop" << endl;
-	while (1) {
-		cout << "TODO: CAM sendLoop"<<endl;
-		sleep(4);
-	}
-}
+int main () {
+	CAM cam;
+	cam.loop();
 
-void CAM::receiveLoop() {
-	cout << "receiveLoop" << endl;
-	while (1) {
-		//  Read envelope with address
-		string address = s_recv(*mReceiveSocket);
-		//  Read message contents
-		string contents = s_recv(*mReceiveSocket);
-		cout << "[" << address << "] " << contents << endl;
-	}
-}
-
-void CAM::cleanUp() {
-	// TODO: clean up zmq! Also call clean up from installed signal handlers
-	mSenderThread->join();
-	mReceiverThread->join();
-	cout << "cleanUp" << endl;
+	return EXIT_SUCCESS;
 }

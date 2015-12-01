@@ -1,4 +1,4 @@
-class CAM
+class DENM
 {
 public:
   void loop();
