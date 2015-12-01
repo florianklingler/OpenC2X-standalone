@@ -3,4 +3,5 @@ package buffers;
 message CAM {
 	required int32 id = 1;
 	required string content = 2;
+	test
 }
