@@ -4,7 +4,6 @@
 
 #include <buffers/build/cam.pb.h> //just for output
 #include <buffers/build/cam.pb.cc> //ugly but works
-//#include "../../common/buffers/build/denm.pb.h"
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/denm.pb.cc> //ugly but works
 
