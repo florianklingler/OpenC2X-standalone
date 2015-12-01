@@ -1,0 +1,9 @@
+#ignore build folders
+**/build
+**/Debug
+
+#ignore workspace files
+.metadata
+
+#ignore temp files
+*~
