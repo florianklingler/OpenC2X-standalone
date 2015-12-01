@@ -2,7 +2,6 @@
 #include "../../common/zhelpers.hpp"
 #include "../../common/buffers/cam.pb.h"
 #include "../../common/buffers/denm.pb.h"
-#include <zmq.hpp>
 #include <unistd.h>
 #include <string>
 #include <iostream>
@@ -11,29 +10,41 @@
 using namespace std;
 using namespace zmq;
 
-void LDM::loop () {
-	//subscriber for receiving CAM/DENMs from CAM/DENM service
-	context_t context(1);
-	socket_t subscriber (context, ZMQ_SUB);
-	subscriber.connect ("tcp://localhost:8888"); //CAM
-	subscriber.setsockopt ( ZMQ_SUBSCRIBE, "CAM", 1);
-	subscriber.connect ("tcp://localhost:9999"); //DENM
-	subscriber.setsockopt ( ZMQ_SUBSCRIBE, "DENM", 1);
+
+LDM::LDM() {
+	GOOGLE_PROTOBUF_VERIFY_VERSION;	
 	
-	GOOGLE_PROTOBUF_VERIFY_VERSION;
+	context = new context_t(1);
+	
+	//subscriber for receiving CAM/DENMs from CAM/DENM service
+	subscriber = new socket_t(*context, ZMQ_SUB);
+	subscriber->connect("tcp://localhost:8888"); //CAM
+	subscriber->setsockopt( ZMQ_SUBSCRIBE, "CAM", 1);
+	subscriber->connect("tcp://localhost:9999"); //DENM
+	subscriber->setsockopt(ZMQ_SUBSCRIBE, "DENM", 1);
+}
+
+LDM::~LDM() {
+	receiveThread->join();
+}
+
+void LDM::init() {
+	receiveThread = new boost::thread(&LDM::receiveLoop, this);
+}
+
+void LDM::receiveLoop() {
   	//variables
-	string topic;	
-	string msg_str;
-	string text_str;
+	string topic;		//envelope
+	string msg_str;		//byte string
+	string text_str;	//text string
 
 	buffers::CAM msg_cam_recv;
 	buffers::DENM msg_denm_recv;
 
 	while (1) {
-
 		//Receive CAM/DENM from CAM/DENM service
-		topic = s_recv(subscriber);
-		msg_str = s_recv(subscriber);
+		topic = s_recv(*subscriber);
+		msg_str = s_recv(*subscriber);
 		if(topic == "CAM") {
 			cout << "Received CAM from CAM service" << endl;
 			msg_cam_recv.ParseFromString(msg_str);
@@ -46,13 +57,13 @@ void LDM::loop () {
 			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
 			cout << text_str << endl;
 		}
-		sleep(1);
+		//sleep(1);
 	}
 }
 
 int main () {
 	LDM ldm;
-	ldm.loop();
+	ldm.init();
 
 	return EXIT_SUCCESS;
 }
