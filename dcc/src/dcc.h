@@ -8,6 +8,7 @@ public:
 	~DCC ();
 	
 	void init();
+	void loop();
 	void receiveLoopFromUpper();
 	void receiveLoopFromLower();
 

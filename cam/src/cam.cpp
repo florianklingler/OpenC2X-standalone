@@ -46,15 +46,8 @@ void CAM::receiveLoopFromDCC() {
 	string text_str;
 
   	//create CAM
-<<<<<<< HEAD
-  	GOOGLE_PROTOBUF_VERIFY_VERSION;
-  	CAM_PACKAGE::CAM msg_cam_send;
   	CAM_PACKAGE::CAM msg_cam_recv;
-	msg_cam_send.set_id(2345);
-	msg_cam_send.set_content("CAM from CAM service");
-=======
-  	buffers::CAM msg_cam_recv;
->>>>>>> 0eb70e80f7c22234620f393abf2c32a67882e585
+
 
 	while (1) {
 		//Receive CAM from DCC
@@ -80,7 +73,7 @@ void CAM::sendLoop() {
 	string text_str;
 
   	//create CAM
-  	buffers::CAM msg_cam_send; 
+	CAM_PACKAGE::CAM msg_cam_send;
 	msg_cam_send.set_id(2345);
 	msg_cam_send.set_content("CAM from CAM service");
 
