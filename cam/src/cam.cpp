@@ -33,11 +33,11 @@ CAM::~CAM () {
 }
 
 void CAM::init(){
-	receiveFromDCCThread = new boost::thread(&CAM::receiveLoopFromDCC, this);
+	receiveFromDCCThread = new boost::thread(&CAM::receiveFromDCCLoop, this);
 	sendThread = new boost::thread(&CAM::sendLoop, this);
 }
 
-void CAM::receiveLoopFromDCC() {
+void CAM::receiveFromDCCLoop() {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 	//variables
 	string topic;	
