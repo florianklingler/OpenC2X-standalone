@@ -1,17 +1,16 @@
-#include <iostream>
-#include <unistd.h>
-#include "../../lib/zhelpers.hpp"
-
-class DCC {
-
+#include <zmq.hpp>
+class DCC
+{
 public:
-  	DCC();
-  	~DCC();
+  DCC ();
 
-	int main();
+  ~DCC ();
+
+  void
+  loop ();
 
 private:
-  	//zmq::context_t context;
-  	//zmq::socket_t* publisher;
+  zmq::context_t* context;
+  zmq::socket_t* publisher;
 
 };

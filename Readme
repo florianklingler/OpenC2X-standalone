@@ -1,0 +1,9 @@
+To build a project, go to the "build" directory in the terminal.
+
+Execute:
+cmake -G "Eclipse CDT4 - Unix Makefiles" ../src
+
+Launch Eclipse CDT and select File > Import.
+In the list select General > Existing Projects into Workspace and then next.
+Browse (Select root directory) to the root folder of the project and select the build folder (in this case dcc/build or cam/build).
+Click Finish.
