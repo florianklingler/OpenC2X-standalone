@@ -8,7 +8,7 @@ public:
 	~CAM ();
 	
 	void init();
-	void receiveFromDCCLoop();
+	void receiveLoopFromDCC();
 	void sendLoop();
 
 private:

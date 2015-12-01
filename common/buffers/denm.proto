@@ -1,4 +1,4 @@
-package buffers;
+package DENM_PACKAGE;
 
 message DENM {
 	required int32 id = 1;

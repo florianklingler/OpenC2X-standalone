@@ -1,6 +1,7 @@
 #include "cam.h"
-#include "../../common/zhelpers.hpp"
-#include "../../common/buffers/cam.pb.h"
+#include <utility/zhelpers.hpp>
+#include <buffers/build/cam.pb.h>
+#include <buffers/build/cam.pb.cc> //ugly but works
 #include <zmq.hpp>
 #include <unistd.h>
 #include <string>
@@ -33,11 +34,11 @@ CAM::~CAM () {
 }
 
 void CAM::init(){
-	receiveFromDCCThread = new boost::thread(&CAM::receiveFromDCCLoop, this);
+	receiveFromDCCThread = new boost::thread(&CAM::receiveLoopFromDCC, this);
 	sendThread = new boost::thread(&CAM::sendLoop, this);
 }
 
-void CAM::receiveFromDCCLoop() {
+void CAM::receiveLoopFromDCC() {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 	//variables
 	string topic;	
@@ -45,7 +46,15 @@ void CAM::receiveFromDCCLoop() {
 	string text_str;
 
   	//create CAM
+<<<<<<< HEAD
+  	GOOGLE_PROTOBUF_VERIFY_VERSION;
+  	CAM_PACKAGE::CAM msg_cam_send;
+  	CAM_PACKAGE::CAM msg_cam_recv;
+	msg_cam_send.set_id(2345);
+	msg_cam_send.set_content("CAM from CAM service");
+=======
   	buffers::CAM msg_cam_recv;
+>>>>>>> 0eb70e80f7c22234620f393abf2c32a67882e585
 
 	while (1) {
 		//Receive CAM from DCC

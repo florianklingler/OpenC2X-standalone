@@ -1,4 +1,4 @@
-package buffers;
+package CAM_PACKAGE;
 
 message CAM {
 	required int32 id = 1;

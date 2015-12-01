@@ -1,13 +1,27 @@
+
 #include "dcc.h"
-#include "../../common/zhelpers.hpp"
-#include "../../common/buffers/cam.pb.h" //just for output
-#include "../../common/buffers/denm.pb.h"
+#include "../../common/utility/zhelpers.hpp"
+
+#include <buffers/build/cam.pb.h> //just for output
+#include <buffers/build/cam.pb.cc> //ugly but works
+//#include "../../common/buffers/build/denm.pb.h"
+#include <buffers/build/denm.pb.h>
+#include <buffers/build/denm.pb.cc> //ugly but works
+
 #include <unistd.h>
 #include <zmq.hpp>
 #include <string>
 #include <iostream>
 #include <google/protobuf/text_format.h>
 #include <boost/thread.hpp>
+
+
+
+//#include "../../common/buffers/build/cam.pb.h" //just for output
+//#include "../../common/buffers/messages/messages.pb.h"
+//#include "../../common/buffers/messages/messages.pb.cc"
+
+
 
 using namespace std;
 using namespace zmq;
@@ -59,9 +73,15 @@ void DCC::receiveLoopFromUpper() {
 	string msg_str;
 	string text_str;
 
+<<<<<<< HEAD
+	CAM_PACKAGE::CAM msg_cam_recv;
+	DENM_PACKAGE::DENM msg_denm_recv;
+
+=======
 	buffers::CAM msg_cam_recv;
 	buffers::DENM msg_denm_recv;
 	
+>>>>>>> 0eb70e80f7c22234620f393abf2c32a67882e585
 	while (1) {
 		cout << "receiveUpper" << endl;
 		//Receive CAM/DENM from CAM/DENM service
