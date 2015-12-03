@@ -1,0 +1,9 @@
+Launch Eclipse and select File > Import.
+In the list select General > Existing Projects into Workspace and then next.
+Browse (Select root directory) to the root folder of the project and select the build folder (in this case dcc,cam,denm,ldm,common).
+Click Finish.
+
+open terminal in common/buffers
+then run ./generate.sh to generate protocol buffers
+
+now compiling in eclipse should work
