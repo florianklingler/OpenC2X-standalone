@@ -1,6 +1,5 @@
 #include "ldm.h"
-#include "../../common/utility/zhelpers.hpp"
-
+#include <utility/zhelpers.hpp>
 #include <buffers/build/cam.pb.h> //just for output
 #include <buffers/build/cam.pb.cc> //ugly but works
 #include <buffers/build/denm.pb.h>

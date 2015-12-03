@@ -1,7 +1,9 @@
 #include "dcc.h"
-#include "../../common/zhelpers.hpp"
-#include "../../common/buffers/cam.pb.h" //just for output
-#include "../../common/buffers/denm.pb.h"
+#include <utility/zhelpers.hpp>
+#include <buffers/build/cam.pb.h>
+#include <buffers/build/cam.pb.cc> //ugly but works
+#include <buffers/build/denm.pb.h>
+#include <buffers/build/denm.pb.cc>
 #include <unistd.h>
 #include <zmq.hpp>
 #include <string>
@@ -59,8 +61,8 @@ void DCC::receiveLoopFromUpper() {
 	string msg_str;
 	string text_str;
 
-	buffers::CAM msg_cam_recv;
-	buffers::DENM msg_denm_recv;
+	CAM_PACKAGE::CAM msg_cam_recv;
+	DENM_PACKAGE::DENM msg_denm_recv;
 	
 	while (1) {
 		cout << "receiveUpper" << endl;
@@ -97,8 +99,8 @@ void DCC::receiveLoopFromLower() {
 	string msg_str;
 	string text_str;
 
-	buffers::CAM msg_cam_recv;
-	buffers::DENM msg_denm_recv;	
+	CAM_PACKAGE::CAM msg_cam_recv;
+	DENM_PACKAGE::DENM msg_denm_recv;
 
 	while (1) {
 		cout << "receiveLower" << endl;

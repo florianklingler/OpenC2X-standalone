@@ -1,5 +1,5 @@
 #include "denm.h"
-#include "../../common/utility/zhelpers.hpp"
+#include <utility/zhelpers.hpp>
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/denm.pb.cc> //ugly but works
 #include <zmq.hpp>
