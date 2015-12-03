@@ -61,8 +61,8 @@ void DCC::receiveLoopFromUpper() {
 	string msg_str;
 	string text_str;
 
-	CAM_PACKAGE::CAM msg_cam_recv;
-	DENM_PACKAGE::DENM msg_denm_recv;
+	camPackage::CAM msg_cam_recv;
+	denmPackage::DENM msg_denm_recv;
 	
 	while (1) {
 		cout << "receiveUpper" << endl;
@@ -99,8 +99,8 @@ void DCC::receiveLoopFromLower() {
 	string msg_str;
 	string text_str;
 
-	CAM_PACKAGE::CAM msg_cam_recv;
-	DENM_PACKAGE::DENM msg_denm_recv;
+	camPackage::CAM msg_cam_recv;
+	denmPackage::DENM msg_denm_recv;
 
 	while (1) {
 		cout << "receiveLower" << endl;

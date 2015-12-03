@@ -40,8 +40,8 @@ void LDM::receiveLoop() {
 	string msg_str;		//byte string
 	string text_str;	//text string
 
-	CAM_PACKAGE::CAM msg_cam_recv;
-	DENM_PACKAGE::DENM msg_denm_recv;
+	camPackage::CAM msg_cam_recv;
+	denmPackage::DENM msg_denm_recv;
 
 	while (1) {
 		//Receive CAM/DENM from CAM/DENM service

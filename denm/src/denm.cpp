@@ -49,7 +49,7 @@ void DENM::receiveFromDccLoop() {
   	string text_str;
   	
   	GOOGLE_PROTOBUF_VERIFY_VERSION;
-  	DENM_PACKAGE::DENM msg_denm_recv;
+  	denmPackage::DENM msg_denm_recv;
   	
 	while(1) {
 		cout<<"Receiving DENM from DCC"<<endl;
@@ -76,7 +76,7 @@ void DENM::sendToDccLoop() {
 
   	//create DENM
   	GOOGLE_PROTOBUF_VERIFY_VERSION;
-  	DENM_PACKAGE::DENM msg_denm_send;
+  	denmPackage::DENM msg_denm_send;
   	msg_denm_send.set_id(2345);
   	msg_denm_send.set_content("DENM from DENM service");
 	while(1) {

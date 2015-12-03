@@ -46,7 +46,7 @@ void CAM::receiveFromDCCLoop() {
 	string text_str;
 
   	//create CAM
-  	CAM_PACKAGE::CAM msg_cam_recv;
+  	camPackage::CAM msg_cam_recv;
 
 
 	while (1) {
@@ -73,7 +73,7 @@ void CAM::sendLoop() {
 	string text_str;
 
   	//create CAM
-	CAM_PACKAGE::CAM msg_cam_send;
+	camPackage::CAM msg_cam_send;
 	msg_cam_send.set_id(2345);
 	msg_cam_send.set_content("CAM from CAM service");
 
