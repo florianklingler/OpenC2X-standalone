@@ -1,26 +1,18 @@
-#include <zmq.hpp>
-#include <string>
+#include <utility/ICommunication.h>
+#include "CommunicationSender.h"
 
 using namespace std;
 
-class Communication
-{
+class Communication : public CommunicationSender {
 public:
-	Communication(int portIn, int portOut, string envelope, string (*process)(string message));
+	Communication(string portIn, string portOut, string envelope, ICommunication* communicator);
 	~Communication();
 	void run();
-	void send(string msg);
-
-
 
 private:
-	zmq::context_t* mContext;
 	zmq::socket_t* mSubscriber;
-	zmq::socket_t* mPublisher;
 
-	string mEnvelope;
-	int mPortOut;
-	string (*mProcess) (string message);
+	ICommunication* mCommunicator;
 
 	string receive();
 };

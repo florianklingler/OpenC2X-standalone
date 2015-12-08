@@ -1,7 +1,6 @@
 #include "denm.h"
 #include <utility/zhelpers.hpp>
 #include <buffers/build/denm.pb.h>
-#include <buffers/build/denm.pb.cc> //ugly but works
 #include <zmq.hpp>
 #include <unistd.h>
 #include <string>
@@ -12,7 +11,8 @@ using namespace std;
 using namespace zmq;
 
 DENM::DENM () {
-	mCommunication = new Communication(5555,9999, (string)("DENM"), &DENM::process);
+	mCommunicationDccToLdm = new Communication("5555", "9999", "DENM", this);
+	mSenderDcc = new CommunicationSender("7777", "DENM");
 }
 
 DENM::~DENM() {
@@ -21,64 +21,26 @@ DENM::~DENM() {
 }
 
 void DENM::init() {
-	mSendToDccThread = new boost::thread(&DENM::sendToDccLoop, this);
-	mReceiveFromDccThread = new boost::thread(&DENM::receiveFromDccLoop, this);
+	mSendToDccThread = new boost::thread(&DENM::sendTestLoop, this);
+	mReceiveFromDccThread = new boost::thread(&Communication::run, mCommunicationDccToLdm);
+}
+
+string DENM::process(string message) {
+	return message;
 }
 
 
-
-
-void DENM::receiveFromDccLoop() {
-//	//variables
-//  	string topic;
-//  	string msg_str;
-//  	string text_str;
-//
-//  	GOOGLE_PROTOBUF_VERIFY_VERSION;
-//  	denmPackage::DENM msg_denm_recv;
-//
-//	while(1) {
-//		cout<<"Receiving DENM from DCC"<<endl;
-//		//Receive DENM from DCC
-//		topic = s_recv(*subscriber_dcc);
-//		msg_str = s_recv(*subscriber_dcc);
-//		cout << "Received DENM from DCC" << endl;
-//		msg_denm_recv.ParseFromString(msg_str);
-//		google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
-//		cout << text_str << endl;
-//
-//		//Forward DENM to LDM
-//		cout << "Forwarding DENM to LDM" << endl;
-//		s_sendmore(*publisher_ldm, topic);
-//		s_send(*publisher_ldm, msg_str);
-//	}
-}
-	
-void DENM::sendToDccLoop() {
-//	//variables
-//  	string topic;
-//  	string msg_str;
-//  	string text_str;
-//
-//  	//create DENM
-//  	GOOGLE_PROTOBUF_VERIFY_VERSION;
-//  	denmPackage::DENM msg_denm_send;
-//  	msg_denm_send.set_id(2345);
-//  	msg_denm_send.set_content("DENM from DENM service");
-//	while(1) {
-//		//Send DENM to DCC
-//		msg_denm_send.SerializeToString(&msg_str);
-//		message_t request (msg_str.size());
-//		memcpy ((void *) request.data (), msg_str.c_str(), msg_str.size());
-//		cout << "Sending DENM to DCC and LDM" << endl;
-//		s_sendmore(*publisher_dcc, "DENM");
-//		s_send(*publisher_dcc, msg_str);
-//
-//		//Send DENM to LDM
-//		s_sendmore(*publisher_ldm, "DENM");
-//		s_send(*publisher_ldm, msg_str);
-//		sleep(3);
-//	}
+void DENM::sendTestLoop(){
+	denmPackage::DENM msgDenmSend;
+	string msg;
+	msgDenmSend.set_id(12);
+	msgDenmSend.set_content("DENM from DENM service");
+	msgDenmSend.SerializeToString(&msg);
+	while(1) {
+		sleep(1);
+		mCommunicationDccToLdm->send(msg);
+		mSenderDcc->send(msg);
+	}
 }
 
 int main () {

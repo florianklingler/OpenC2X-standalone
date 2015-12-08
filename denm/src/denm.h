@@ -1,27 +1,22 @@
-#include <zmq.hpp>
 #include <string>
 #include <boost/thread.hpp>
 #include <utility/Communication.h>
+#include <utility/ICommunication.h>
 
 using namespace std;
 
-class DENM {
+class DENM : public ICommunication{
 public:
 	DENM();
 	~DENM();
 	void init();
-	void loop();
-	void receiveFromDccLoop();
-	void sendToDccLoop();
-	void sendToLDM();
-	
-	string process(string msg){
-		return msg;
-	};
+	void sendTestLoop();
+    virtual string process(string message);
 
 	
 private:
-	Communication* mCommunication;
+	Communication* mCommunicationDccToLdm;
+	CommunicationSender* mSenderDcc;
 	
 	boost::thread* mSendToDccThread;
 	boost::thread* mReceiveFromDccThread;
