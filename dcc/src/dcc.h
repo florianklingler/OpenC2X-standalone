@@ -1,23 +1,28 @@
-#include <zmq.hpp>
-#include <boost/shared_ptr.hpp>
+#include <string>
 #include <boost/thread.hpp>
+#include <utility/Communication.h>
+#include <utility/CommunicationSender.h>
+#include <utility/CommunicationReceiver.h>
+#include <utility/ICommunication.h>
 
-class DCC {
+class DCC : public ICommunication{
 public:
 	DCC ();
 	~DCC ();
 	
 	void init();
-	void receiveLoopFromUpper();
-	void receiveLoopFromLower();
+	void receiveLoopFromCa();
+	void receiveLoopFromDen();
+    virtual string process(string message);
 
 private:
-	zmq::context_t* context;
-	zmq::socket_t* publisher_up;
-	zmq::socket_t* publisher_down;
-	zmq::socket_t* subscriber_up;
-	zmq::socket_t* subscriber_down;
+    CommunicationReceiver* mReceiverFromDen;
+	CommunicationReceiver* mReceiverFromCa;
+	CommunicationSender* mSenderToLower;
 
-	boost::thread* receiveFromUpperThread;
+	Communication* mCommunicationLowerToUpper;	//hw to CA service/DEN service
+
+	boost::thread* receiveFromCaThread;
+	boost::thread* receiveFromDenThread;
 	boost::thread* receiveFromLowerThread;
 };

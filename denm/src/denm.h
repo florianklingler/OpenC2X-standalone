@@ -18,6 +18,6 @@ private:
 	Communication* mCommunicationDccToLdm;
 	CommunicationSender* mSenderDcc;
 	
-	boost::thread* mSendToDccThread;
-	boost::thread* mReceiveFromDccThread;
+	boost::thread* mToDccThread;
+	boost::thread* mDccToLdmThread;
 };

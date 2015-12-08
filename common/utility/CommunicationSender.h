@@ -16,17 +16,15 @@ using namespace std;
 
 class CommunicationSender {
 public:
-	CommunicationSender(string portOut, string envelope);
+	CommunicationSender(string portOut);
 	~CommunicationSender();
-	virtual void send(string msg);
+	virtual void send(string envelope, string message);
 
 
 
 protected:
 	zmq::context_t* mContext;
 	zmq::socket_t* mPublisher;
-
-	string mEnvelope;
 };
 
 #endif /* UTILITY_COMMUNICATIONSENDER_H_ */
