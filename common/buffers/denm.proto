@@ -1,4 +1,4 @@
-package DENM_PACKAGE;
+package denmPackage;
 
 message DENM {
 	required int32 id = 1;

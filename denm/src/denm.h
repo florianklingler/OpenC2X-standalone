@@ -1,8 +1,11 @@
 #include <zmq.hpp>
+#include <string>
 #include <boost/thread.hpp>
+#include <utility/Communication.h>
 
-class DENM
-{
+using namespace std;
+
+class DENM {
 public:
 	DENM();
 	~DENM();
@@ -12,13 +15,13 @@ public:
 	void sendToDccLoop();
 	void sendToLDM();
 	
+	string process(string msg){
+		return msg;
+	};
+
 	
 private:
-	zmq::context_t* context;
-	zmq::socket_t* subscriber_dcc;
-	zmq::socket_t* publisher_dcc;
-	zmq::socket_t* publisher_ldm;
-	
+	Communication* mCommunication;
 	
 	boost::thread* mSendToDccThread;
 	boost::thread* mReceiveFromDccThread;
