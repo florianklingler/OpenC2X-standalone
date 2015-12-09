@@ -1,12 +1,9 @@
-* # ignore all
+#ignore build folders
+**/build
+**/Debug
 
-!**/ # except dirs
+#ignore workspace files
+.metadata
 
-# exept these files
-!.gitignore
-!**/*Readme
-
-#exept these filetypes
-!**/*.h
-!**/*.cpp
-!**/*.txt
+#ignore temp files
+*~

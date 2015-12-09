@@ -1,7 +1,9 @@
 #include "ldm.h"
-#include "../../common/zhelpers.hpp"
-#include "../../common/buffers/cam.pb.h"
-#include "../../common/buffers/denm.pb.h"
+#include <utility/zhelpers.hpp>
+#include <buffers/build/cam.pb.h> //just for output
+#include <buffers/build/cam.pb.cc> //ugly but works
+#include <buffers/build/denm.pb.h>
+#include <buffers/build/denm.pb.cc> //ugly but works
 #include <unistd.h>
 #include <string>
 #include <iostream>
@@ -38,8 +40,8 @@ void LDM::receiveLoop() {
 	string msg_str;		//byte string
 	string text_str;	//text string
 
-	buffers::CAM msg_cam_recv;
-	buffers::DENM msg_denm_recv;
+	camPackage::CAM msg_cam_recv;
+	denmPackage::DENM msg_denm_recv;
 
 	while (1) {
 		//Receive CAM/DENM from CAM/DENM service

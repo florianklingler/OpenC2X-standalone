@@ -1,130 +1,52 @@
 #include "dcc.h"
-#include "../../common/zhelpers.hpp"
-#include "../../common/buffers/cam.pb.h" //just for output
-#include "../../common/buffers/denm.pb.h"
 #include <unistd.h>
-#include <zmq.hpp>
 #include <string>
 #include <iostream>
-#include <google/protobuf/text_format.h>
 #include <boost/thread.hpp>
 
 using namespace std;
 using namespace zmq;
 
 DCC::DCC () {
-	cout << "constuctorBeginn" << endl;
-	
-	context= new zmq::context_t(1);
-	
-	//publisher for sending CAM/DENMs up
-	publisher_up = new socket_t(*context, ZMQ_PUB);
-	publisher_up->bind("tcp://*:5555");
+	mReceiverFromCa = new CommunicationReceiver("6666", "CAM");
+	mReceiverFromDen = new CommunicationReceiver("7777", "DENM");
+	mSenderToLower = new CommunicationSender("4444");
 
-	//publisher for sending CAM/DENMs down
-	publisher_down = new socket_t(*context, ZMQ_PUB);
-	publisher_down->bind("tcp://*:4444");
-	
-	//subscriber for receiving CAM/DENMs from top
-	subscriber_up  = new socket_t(*context, ZMQ_SUB);
-	subscriber_up->connect ("tcp://localhost:6666"); //CAM
-	subscriber_up->setsockopt ( ZMQ_SUBSCRIBE, "CAM", 1);
-	subscriber_up->connect ("tcp://localhost:7777"); //DENM
-	subscriber_up->setsockopt ( ZMQ_SUBSCRIBE, "DENM", 1);
-
-	//subscriber for receiving CAM/DENMs from below
-	subscriber_down= new socket_t(*context, ZMQ_SUB);
-	subscriber_down->connect ("tcp://localhost:4444");	//callback
-	subscriber_down->setsockopt ( ZMQ_SUBSCRIBE, "", 0);
-	
-	cout << "constuctorEnd" << endl;
+	mCommunicationLowerToUpper = new Communication("4444", "5555", "", this);
 }
 
 DCC::~DCC () {
-	receiveFromUpperThread->join();
+	receiveFromCaThread->join();
+	receiveFromDenThread->join();
+	receiveFromLowerThread->join();
 }
 
 void DCC::init() {
-	receiveFromUpperThread = new boost::thread(&DCC::receiveLoopFromUpper, this);
-	receiveFromLowerThread = new boost::thread(&DCC::receiveLoopFromLower, this);
-	
-	cout << "init" << endl;
+	receiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
+	receiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
+	receiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
 }
 
+void DCC::receiveLoopFromCa() {
+	while(1) {
+		pair<string, string> result = mReceiverFromCa->receive();
+		//processing...
+		mSenderToLower->send(result.first, result.second);
+	}
+}
 
-void DCC::receiveLoopFromUpper() {
-	GOOGLE_PROTOBUF_VERIFY_VERSION;
-  	//variables
-	string topic;	
-	string msg_str;
-	string text_str;
-
-	buffers::CAM msg_cam_recv;
-	buffers::DENM msg_denm_recv;
-	
-	while (1) {
-		cout << "receiveUpper" << endl;
-		//Receive CAM/DENM from CAM/DENM service
-		topic = s_recv(*subscriber_up);
-		msg_str = s_recv(*subscriber_up);
-		if(topic == "CAM") {
-			cout << "Received CAM from CAM service" << endl;
-			msg_cam_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
-			cout << text_str << endl;
-		}
-		if(topic == "DENM") {
-			cout << "Received DENM from DENM service" << endl;
-			msg_denm_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
-			cout << text_str << endl;
-		}
-		sleep(1);
-		
-		//Send message down
-		s_sendmore(*publisher_down, topic);
-		s_send(*publisher_down, msg_str);
-
-		sleep(1);
+void DCC::receiveLoopFromDen() {
+	while(1) {
+		pair<string, string> result = mReceiverFromDen->receive();
+		//processing...
+		mSenderToLower->send(result.first, result.second);
 	}
 }
 
 
-void DCC::receiveLoopFromLower() {
-	GOOGLE_PROTOBUF_VERIFY_VERSION;
-  	//variables
-	string topic;	
-	string msg_str;
-	string text_str;
-
-	buffers::CAM msg_cam_recv;
-	buffers::DENM msg_denm_recv;	
-
-	while (1) {
-		cout << "receiveLower" << endl;
-		//Receive CAM/DENM from below
-		topic = s_recv(*subscriber_down);
-		msg_str = s_recv(*subscriber_down);
-		if(topic == "CAM") {
-			cout << "Received CAM from below" << endl;
-			msg_cam_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
-			cout << text_str << endl;
-		}
-		if(topic == "DENM") {
-			cout << "Received DENM from below" << endl;
-			msg_denm_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
-			cout << text_str << endl;
-		}
-		sleep(1);
-
-		//Send message up
-		s_sendmore(*publisher_up, topic);
-		s_send(*publisher_up, msg_str);
-
-		sleep(1);
-    }
+string DCC::process(string message) {
+	cout << message << endl;
+	return message;
 }
 
 int main () {
