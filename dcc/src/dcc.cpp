@@ -16,15 +16,15 @@ DCC::DCC () {
 }
 
 DCC::~DCC () {
-	receiveFromCaThread->join();
-	receiveFromDenThread->join();
-	receiveFromLowerThread->join();
+	mReceiveFromCaThread->join();
+	mReceiveFromDenThread->join();
+	mReceiveFromLowerThread->join();
 }
 
 void DCC::init() {
-	receiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
-	receiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
-	receiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
+	mReceiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
+	mReceiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
+	mReceiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
 }
 
 void DCC::receiveLoopFromCa() {

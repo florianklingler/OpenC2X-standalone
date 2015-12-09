@@ -1,17 +1,28 @@
-#include <zmq.hpp>
-#include <boost/thread.hpp>
+#ifndef LDM_H_
+#define LDM_H_
 
-class LDM {
+#include <string>
+#include <boost/thread.hpp>
+#include <utility/Communication.h>
+#include <utility/ICommunication.h>
+#include <utility/CommunicationReceiver.h>
+
+class LDM : public ICommunication {
 public:
 	LDM();
 	~LDM();
 	void init();
 
-  	void receiveLoop();
+  	void receiveLoopFromCa();
+  	void receiveLoopFromDen();
+  	virtual string process(string message);
   	
 private:
-	zmq::context_t* context;
-	zmq::socket_t* subscriber;
+  	CommunicationReceiver* mReceiverFromDen;
+  	CommunicationReceiver* mReceiverFromCa;
 	
-	boost::thread* receiveThread;
+	boost::thread* mReceiveFromCaThread;
+	boost::thread* mReceiveFromDenThread;
 };
+
+#endif
