@@ -22,7 +22,7 @@ private:
 
 	Communication* mCommunicationLowerToUpper;	//hw to CA service/DEN service
 
-	boost::thread* receiveFromCaThread;
-	boost::thread* receiveFromDenThread;
-	boost::thread* receiveFromLowerThread;
+	boost::thread* mReceiveFromCaThread;
+	boost::thread* mReceiveFromDenThread;
+	boost::thread* mReceiveFromLowerThread;
 };

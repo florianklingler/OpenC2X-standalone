@@ -5,11 +5,12 @@ CommunicationSender(portOut), CommunicationReceiver(portIn, envelope){
 	mCommunicator = communicator;
 }
 
-void Communication::run(){
+void Communication::run() {
 	while(true){
-		string envelope = receive().first;
-		string message = receive().second;
+		pair<string, string> received = receive();
+		string envelope = received.first;
+		string message = received.second;
 		string newMessage = mCommunicator->process(message);
-		send(envelope, newMessage);
+		send(envelope, message);
 	}
 }

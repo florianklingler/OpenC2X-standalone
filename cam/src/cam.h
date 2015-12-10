@@ -1,22 +1,23 @@
-#include <zmq.hpp>
-#include <boost/shared_ptr.hpp>
+#include <string>
 #include <boost/thread.hpp>
+#include <utility/Communication.h>
+#include <utility/ICommunication.h>
 
-class CAM {
+using namespace std;
+
+class CAM: public ICommunication {
 public:
-	CAM ();
-	~CAM ();
-	
+	CAM();
+	~CAM();
+
 	void init();
-	void receiveFromDCCLoop();
-	void sendLoop();
+	void sendTestLoop();
+	virtual string process(string message);
 
 private:
-	zmq::context_t* context;
-	zmq::socket_t* publisher_dcc;
-	zmq::socket_t* publisher_ldm;
-	zmq::socket_t* subscriber_dcc;
+	Communication* mCommunicationDccToLdm;
+	CommunicationSender* mSenderDcc;
 
-	boost::thread* receiveFromDCCThread;
-	boost::thread* sendThread;
+	boost::thread* mToDccThread;
+	boost::thread* mDccToLdmThread;
 };

@@ -16,19 +16,20 @@ DCC::DCC () {
 }
 
 DCC::~DCC () {
-	receiveFromCaThread->join();
-	receiveFromDenThread->join();
-	receiveFromLowerThread->join();
+	mReceiveFromCaThread->join();
+	mReceiveFromDenThread->join();
+	mReceiveFromLowerThread->join();
 }
 
 void DCC::init() {
-	receiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
-	receiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
-	receiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
+	mReceiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
+	mReceiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
+	mReceiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
 }
 
 void DCC::receiveLoopFromCa() {
 	while(1) {
+
 		pair<string, string> result = mReceiverFromCa->receive();
 		//processing...
 		mSenderToLower->send(result.first, result.second);
@@ -37,6 +38,7 @@ void DCC::receiveLoopFromCa() {
 
 void DCC::receiveLoopFromDen() {
 	while(1) {
+
 		pair<string, string> result = mReceiverFromDen->receive();
 		//processing...
 		mSenderToLower->send(result.first, result.second);
@@ -45,7 +47,6 @@ void DCC::receiveLoopFromDen() {
 
 
 string DCC::process(string message) {
-	cout << message << endl;
 	return message;
 }
 
