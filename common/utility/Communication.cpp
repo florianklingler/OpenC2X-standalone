@@ -11,6 +11,6 @@ void Communication::run() {
 		string envelope = received.first;
 		string message = received.second;
 		string newMessage = mCommunicator->process(message);
-		send(envelope, message);
+		send(envelope, newMessage);
 	}
 }
