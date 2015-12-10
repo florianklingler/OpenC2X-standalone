@@ -1,4 +1,7 @@
-#include <utility/ICommunication.h>
+#ifndef COMMUNICATION_H_
+#define COMMUNICATION_H_
+
+#include "ICommunication.h"
 #include "CommunicationSender.h"
 #include "CommunicationReceiver.h"
 
@@ -13,3 +16,5 @@ public:
 private:
 	ICommunication* mCommunicator;
 };
+
+#endif

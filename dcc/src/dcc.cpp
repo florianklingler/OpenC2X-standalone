@@ -29,6 +29,7 @@ void DCC::init() {
 
 void DCC::receiveLoopFromCa() {
 	while(1) {
+
 		pair<string, string> result = mReceiverFromCa->receive();
 		//processing...
 		mSenderToLower->send(result.first, result.second);
@@ -37,6 +38,7 @@ void DCC::receiveLoopFromCa() {
 
 void DCC::receiveLoopFromDen() {
 	while(1) {
+
 		pair<string, string> result = mReceiverFromDen->receive();
 		//processing...
 		mSenderToLower->send(result.first, result.second);
@@ -45,7 +47,6 @@ void DCC::receiveLoopFromDen() {
 
 
 string DCC::process(string message) {
-	cout << message << endl;
 	return message;
 }
 

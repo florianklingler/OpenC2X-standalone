@@ -1,8 +1,7 @@
-
 #ifndef UTILITY_COMMUNICATIONRECEIVER_H_
 #define UTILITY_COMMUNICATIONRECEIVER_H_
 
-#include <utility/ICommunication.h>
+#include "ICommunication.h"
 #include <zmq.hpp>
 #include <string>
 #include <utility/zhelpers.hpp>
