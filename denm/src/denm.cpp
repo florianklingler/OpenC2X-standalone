@@ -23,11 +23,13 @@ void DENM::init() {
 }
 
 string DENM::process(string message) {
+	cout << "forward incoming DENM to LDM" << endl;
 	return message;
 }
 
 
 void DENM::sendTestLoop(){
+	//cout << "started send loop" << endl;
 	denmPackage::DENM msgDenmSend;
 	string msg;
 	msgDenmSend.set_id(12);
@@ -35,7 +37,9 @@ void DENM::sendTestLoop(){
 	msgDenmSend.SerializeToString(&msg);
 	while(1) {
 		sleep(1);
+		cout << "send new DENM to LDM" << endl;
 		mCommunicationDccToLdm->send("DENM", msg);
+		cout << "send new DENM to DCC" << endl;
 		mSenderDcc->send("DENM", msg);
 	}
 }

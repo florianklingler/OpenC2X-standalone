@@ -22,7 +22,11 @@ LDM::~LDM() {
 
 void LDM::init() {
 	mReceiveFromCaThread = new boost::thread(&LDM::receiveLoopFromCa, this);
-	mReceiveFromCaThread = new boost::thread(&LDM::receiveLoopFromDen, this);
+	mReceiveFromDenThread = new boost::thread(&LDM::receiveLoopFromDen, this);
+}
+
+string LDM::process(string message) {
+	return message;
 }
 
 void LDM::receiveLoopFromCa() {
@@ -33,10 +37,10 @@ void LDM::receiveLoopFromCa() {
 	camPackage::CAM cam;
 
 	while (1) {
-		cout << "receiving CAM" << endl;
 		pair<string, string> received = mReceiverFromCa->receive();	//receive
 		envelope = received.first;
 		byteMessage = received.second;
+		cout << "receiving CAM" << endl;
 		
 		//print CAM
 		cam.ParseFromString(byteMessage);
@@ -53,10 +57,10 @@ void LDM::receiveLoopFromDen() {
 	denmPackage::DENM denm;
 
 	while (1) {
-		cout << "receiving DENM" << endl;
-		pair<string, string> received = mReceiverFromCa->receive();	//receive
+		pair<string, string> received = mReceiverFromDen->receive();	//receive
 		envelope = received.first;
 		byteMessage = received.second;
+		cout << "receiving DENM" << endl;
 
 		//print DENM
 		denm.ParseFromString(byteMessage);

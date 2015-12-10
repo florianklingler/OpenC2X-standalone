@@ -1,7 +1,6 @@
 #include "cam.h"
 #include <utility/zhelpers.hpp>
 #include <buffers/build/cam.pb.h>
-#include <buffers/build/cam.pb.cc> //ugly but works
 #include <zmq.hpp>
 #include <unistd.h>
 #include <string>
