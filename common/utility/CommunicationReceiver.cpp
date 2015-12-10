@@ -7,7 +7,7 @@ CommunicationReceiver::CommunicationReceiver(string portIn, string envelope){
 	//subscriber for receiving
   	mSubscriber = new zmq::socket_t(*mContext, ZMQ_SUB);
 
-  	mSubscriber->connect("tcp://localhost:"+portIn);
+  	mSubscriber->connect(("tcp://localhost:"+portIn).c_str());
   	if(envelope == "") {
   	  	mSubscriber->setsockopt(ZMQ_SUBSCRIBE, "", 0);	//subscribe to all messages
   	} else {
