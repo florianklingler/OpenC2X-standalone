@@ -1,65 +1,71 @@
 #include "ldm.h"
-#include <utility/zhelpers.hpp>
-#include <buffers/build/cam.pb.h> //just for output
-#include <buffers/build/cam.pb.cc> //ugly but works
-#include <buffers/build/denm.pb.h>
-#include <buffers/build/denm.pb.cc> //ugly but works
 #include <unistd.h>
 #include <string>
 #include <iostream>
+#include <buffers/build/cam.pb.h>
+#include <buffers/build/denm.pb.h>
 #include <google/protobuf/text_format.h>
 
 using namespace std;
-using namespace zmq;
+//using namespace zmq;
 
 
 LDM::LDM() {
-	GOOGLE_PROTOBUF_VERIFY_VERSION;	
-	
-	context = new context_t(1);
-	
-	//subscriber for receiving CAM/DENMs from CAM/DENM service
-	subscriber = new socket_t(*context, ZMQ_SUB);
-	subscriber->connect("tcp://localhost:8888"); //CAM
-	subscriber->setsockopt( ZMQ_SUBSCRIBE, "CAM", 1);
-	subscriber->connect("tcp://localhost:9999"); //DENM
-	subscriber->setsockopt(ZMQ_SUBSCRIBE, "DENM", 1);
+	mReceiverFromCa = new CommunicationReceiver("8888", "CAM");
+	mReceiverFromDen = new CommunicationReceiver("9999", "DENM");
 }
 
 LDM::~LDM() {
-	receiveThread->join();
+	mReceiveFromCaThread->join();
+	mReceiveFromDenThread->join();
 }
 
 void LDM::init() {
-	receiveThread = new boost::thread(&LDM::receiveLoop, this);
+	mReceiveFromCaThread = new boost::thread(&LDM::receiveLoopFromCa, this);
+	mReceiveFromDenThread = new boost::thread(&LDM::receiveLoopFromDen, this);
 }
 
-void LDM::receiveLoop() {
-  	//variables
-	string topic;		//envelope
-	string msg_str;		//byte string
-	string text_str;	//text string
+string LDM::process(string message) {
+	return message;
+}
 
-	camPackage::CAM msg_cam_recv;
-	denmPackage::DENM msg_denm_recv;
+void LDM::receiveLoopFromCa() {
+	string envelope;		//envelope
+	string byteMessage;		//byte string (serialized CAM)
+	string textMessage;		//text string (human readable)
+
+	camPackage::CAM cam;
 
 	while (1) {
-		//Receive CAM/DENM from CAM/DENM service
-		topic = s_recv(*subscriber);
-		msg_str = s_recv(*subscriber);
-		if(topic == "CAM") {
-			cout << "Received CAM from CAM service" << endl;
-			msg_cam_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_cam_recv, &text_str);
-			cout << text_str << endl;
-		}
-		if(topic == "DENM") {
-			cout << "Received DENM from DENM service" << endl;
-			msg_denm_recv.ParseFromString(msg_str);
-			google::protobuf::TextFormat::PrintToString(msg_denm_recv, &text_str);
-			cout << text_str << endl;
-		}
-		//sleep(1);
+		pair<string, string> received = mReceiverFromCa->receive();	//receive
+		envelope = received.first;
+		byteMessage = received.second;
+		cout << "receiving CAM" << endl;
+		
+		//print CAM
+		cam.ParseFromString(byteMessage);
+		google::protobuf::TextFormat::PrintToString(cam, &textMessage);
+		cout << textMessage << endl;
+	}
+}
+
+void LDM::receiveLoopFromDen() {
+	string envelope;		//envelope
+	string byteMessage;		//byte string (serialized DENM)
+	string textMessage;		//text string (human readable)
+
+	denmPackage::DENM denm;
+
+	while (1) {
+		pair<string, string> received = mReceiverFromDen->receive();	//receive
+		envelope = received.first;
+		byteMessage = received.second;
+		cout << "receiving DENM" << endl;
+
+		//print DENM
+		denm.ParseFromString(byteMessage);
+		google::protobuf::TextFormat::PrintToString(denm, &textMessage);
+		cout << textMessage << endl;
 	}
 }
 
