@@ -32,6 +32,7 @@ void DCC::receiveLoopFromCa() {
 
 		pair<string, string> result = mReceiverFromCa->receive();
 		//processing...
+		cout << "received new CAM and forward to HW" << endl;
 		mSenderToLower->send(result.first, result.second);
 	}
 }
@@ -41,12 +42,14 @@ void DCC::receiveLoopFromDen() {
 
 		pair<string, string> result = mReceiverFromDen->receive();
 		//processing...
+		cout << "received new DENM and forward to HW" << endl;
 		mSenderToLower->send(result.first, result.second);
 	}
 }
 
 
 string DCC::process(string message) {
+	cout << "forward message from HW to upper" << endl;
 	return message;
 }
 

@@ -25,6 +25,7 @@ void CAM::init() {
 }
 
 string CAM::process(string message) {
+	cout << "forward incoming CAM to LDM" << endl;
 	return message;
 }
 
@@ -36,6 +37,7 @@ void CAM::sendTestLoop() {
 	msgCamSend.SerializeToString(&msg);
 	while (1) {
 		sleep(1);
+		cout << "send new CAM to LDM and DCC" << endl;
 		mCommunicationDccToLdm->send("CAM", msg);
 		mSenderDcc->send("CAM", msg);
 	}
