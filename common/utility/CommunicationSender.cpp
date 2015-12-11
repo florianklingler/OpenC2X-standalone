@@ -1,10 +1,3 @@
-/*
- * CommunicationSender.cpp
- *
- *  Created on: 08.12.2015
- *      Author: sven
- */
-
 #include <utility/CommunicationSender.h>
 
 CommunicationSender::CommunicationSender(string portOut) {

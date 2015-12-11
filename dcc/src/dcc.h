@@ -1,28 +1,29 @@
-#include <string>
-#include <boost/thread.hpp>
-#include <utility/Communication.h>
-#include <utility/CommunicationSender.h>
-#include <utility/CommunicationReceiver.h>
-#include <utility/ICommunication.h>
+#ifndef DCC_H_
+#define DCC_H_
 
-class DCC : public ICommunication{
+#include <boost/thread.hpp>
+#include <utility/CommunicationReceiver.h>
+#include <utility/CommunicationSender.h>
+
+class DCC{
 public:
 	DCC ();
 	~DCC ();
 	
 	void init();
-	void receiveLoopFromCa();
-	void receiveLoopFromDen();
-    virtual string process(string message);
+	void receiveFromCa();
+	void receiveFromDen();
+	void receiveFromHw();
 
 private:
-    CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
-	CommunicationSender* mSenderToLower;
+    CommunicationReceiver* mReceiverFromDen;
+	CommunicationReceiver* mReceiverFromHw;
+	CommunicationSender* mSenderToHw;
+	CommunicationSender* mSenderToServices;
 
-	Communication* mCommunicationLowerToUpper;	//hw to CA service/DEN service
-
-	boost::thread* mReceiveFromCaThread;
-	boost::thread* mReceiveFromDenThread;
-	boost::thread* mReceiveFromLowerThread;
+	boost::thread* mThreadReceiveFromCa;
+	boost::thread* mThreadReceiveFromDen;
+	boost::thread* mThreadReceiveFromHw;
 };
+#endif

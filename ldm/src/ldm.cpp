@@ -7,8 +7,6 @@
 #include <google/protobuf/text_format.h>
 
 using namespace std;
-//using namespace zmq;
-
 
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("8888", "CAM");
@@ -16,20 +14,16 @@ LDM::LDM() {
 }
 
 LDM::~LDM() {
-	mReceiveFromCaThread->join();
-	mReceiveFromDenThread->join();
+	mThreadReceiveFromCa->join();
+	mThreadReceiveFromDen->join();
 }
 
 void LDM::init() {
-	mReceiveFromCaThread = new boost::thread(&LDM::receiveLoopFromCa, this);
-	mReceiveFromDenThread = new boost::thread(&LDM::receiveLoopFromDen, this);
+	mThreadReceiveFromCa = new boost::thread(&LDM::receiveFromCa, this);
+	mThreadReceiveFromDen = new boost::thread(&LDM::receiveFromDen, this);
 }
 
-string LDM::process(string message) {
-	return message;
-}
-
-void LDM::receiveLoopFromCa() {
+void LDM::receiveFromCa() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized CAM)
 	string textMessage;		//text string (human readable)
@@ -40,7 +34,7 @@ void LDM::receiveLoopFromCa() {
 		pair<string, string> received = mReceiverFromCa->receive();	//receive
 		envelope = received.first;
 		byteMessage = received.second;
-		cout << "receiving CAM" << endl;
+		cout << "received CAM" << endl;
 		
 		//print CAM
 		cam.ParseFromString(byteMessage);
@@ -49,7 +43,7 @@ void LDM::receiveLoopFromCa() {
 	}
 }
 
-void LDM::receiveLoopFromDen() {
+void LDM::receiveFromDen() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized DENM)
 	string textMessage;		//text string (human readable)
@@ -60,7 +54,7 @@ void LDM::receiveLoopFromDen() {
 		pair<string, string> received = mReceiverFromDen->receive();	//receive
 		envelope = received.first;
 		byteMessage = received.second;
-		cout << "receiving DENM" << endl;
+		cout << "received DENM" << endl;
 
 		//print DENM
 		denm.ParseFromString(byteMessage);

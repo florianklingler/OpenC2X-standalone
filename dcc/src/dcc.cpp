@@ -2,55 +2,69 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include <boost/thread.hpp>
 
 using namespace std;
-using namespace zmq;
 
 DCC::DCC () {
 	mReceiverFromCa = new CommunicationReceiver("6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("7777", "DENM");
-	mSenderToLower = new CommunicationSender("4444");
-
-	mCommunicationLowerToUpper = new Communication("4444", "5555", "", this);
+	mReceiverFromHw = new CommunicationReceiver("4444", "");
+	mSenderToHw = new CommunicationSender("4444");
+	mSenderToServices = new CommunicationSender("5555");
 }
 
 DCC::~DCC () {
-	mReceiveFromCaThread->join();
-	mReceiveFromDenThread->join();
-	mReceiveFromLowerThread->join();
+	mThreadReceiveFromCa->join();
+	mThreadReceiveFromDen->join();
+	mThreadReceiveFromHw->join();
 }
 
 void DCC::init() {
-	mReceiveFromCaThread = new boost::thread(&DCC::receiveLoopFromCa, this);
-	mReceiveFromDenThread = new boost::thread(&DCC::receiveLoopFromDen, this);
-	mReceiveFromLowerThread = new boost::thread(&Communication::run, mCommunicationLowerToUpper);
+	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
+	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
+	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 }
 
-void DCC::receiveLoopFromCa() {
+void DCC::receiveFromCa() {
+	string envelope;		//envelope
+	string byteMessage;		//byte string (serialized DENM)
 	while(1) {
+		pair<string, string> received = mReceiverFromCa->receive();
+		envelope = received.first;
+		byteMessage = received.second;
 
-		pair<string, string> result = mReceiverFromCa->receive();
 		//processing...
 		cout << "received new CAM and forward to HW" << endl;
-		mSenderToLower->send(result.first, result.second);
+		mSenderToHw->send(envelope, byteMessage);
 	}
 }
 
-void DCC::receiveLoopFromDen() {
+void DCC::receiveFromDen() {
+	string envelope;		//envelope
+	string byteMessage;		//byte string (serialized DENM)
 	while(1) {
+		pair<string, string> received = mReceiverFromDen->receive();
+		envelope = received.first;
+		byteMessage = received.second;
 
-		pair<string, string> result = mReceiverFromDen->receive();
 		//processing...
 		cout << "received new DENM and forward to HW" << endl;
-		mSenderToLower->send(result.first, result.second);
+		mSenderToHw->send(envelope, byteMessage);
 	}
 }
 
+void DCC::receiveFromHw() {
+	string envelope;		//envelope
+	string byteMessage;		//byte string (serialized message)
+	while(1) {
+		pair<string, string> received = mReceiverFromHw->receive();
+		envelope = received.first;
+		byteMessage = received.second;
 
-string DCC::process(string message) {
-	cout << "forward message from HW to upper" << endl;
-	return message;
+		//processing...
+		cout << "forward message from HW to services" << endl;
+		mSenderToServices->send(envelope, byteMessage);
+	}
 }
 
 int main () {
