@@ -10,13 +10,13 @@ public:
 	~LDM();
 	void init();
 
-  	void receiveFromCa();
-  	void receiveFromDen();
-  	
+	void receiveFromCa();
+	void receiveFromDen();
+
 private:
-  	CommunicationReceiver* mReceiverFromDen;
-  	CommunicationReceiver* mReceiverFromCa;
-	
+	CommunicationReceiver* mReceiverFromDen;
+	CommunicationReceiver* mReceiverFromCa;
+
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
 };

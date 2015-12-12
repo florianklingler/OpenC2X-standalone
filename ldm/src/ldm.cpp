@@ -35,7 +35,7 @@ void LDM::receiveFromCa() {
 		envelope = received.first;
 		byteMessage = received.second;
 		cout << "received CAM" << endl;
-		
+
 		//print CAM
 		cam.ParseFromString(byteMessage);
 		google::protobuf::TextFormat::PrintToString(cam, &textMessage);
@@ -51,7 +51,7 @@ void LDM::receiveFromDen() {
 	denmPackage::DENM denm;
 
 	while (1) {
-		pair<string, string> received = mReceiverFromDen->receive();	//receive
+		pair<string, string> received = mReceiverFromDen->receive();//receive
 		envelope = received.first;
 		byteMessage = received.second;
 		cout << "received DENM" << endl;
@@ -63,7 +63,7 @@ void LDM::receiveFromDen() {
 	}
 }
 
-int main () {
+int main() {
 	LDM ldm;
 	ldm.init();
 

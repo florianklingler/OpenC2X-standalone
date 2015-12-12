@@ -5,7 +5,7 @@
 
 using namespace std;
 
-DCC::DCC () {
+DCC::DCC() {
 	mReceiverFromCa = new CommunicationReceiver("6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("7777", "DENM");
 	mReceiverFromHw = new CommunicationReceiver("4444", "");
@@ -13,7 +13,7 @@ DCC::DCC () {
 	mSenderToServices = new CommunicationSender("5555");
 }
 
-DCC::~DCC () {
+DCC::~DCC() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
 	mThreadReceiveFromHw->join();
@@ -28,7 +28,7 @@ void DCC::init() {
 void DCC::receiveFromCa() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized DENM)
-	while(1) {
+	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
 		envelope = received.first;
 		byteMessage = received.second;
@@ -42,7 +42,7 @@ void DCC::receiveFromCa() {
 void DCC::receiveFromDen() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized DENM)
-	while(1) {
+	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();
 		envelope = received.first;
 		byteMessage = received.second;
@@ -56,7 +56,7 @@ void DCC::receiveFromDen() {
 void DCC::receiveFromHw() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized message)
-	while(1) {
+	while (1) {
 		pair<string, string> received = mReceiverFromHw->receive();
 		envelope = received.first;
 		byteMessage = received.second;
@@ -67,9 +67,9 @@ void DCC::receiveFromHw() {
 	}
 }
 
-int main () {
-  DCC dcc;
-  dcc.init();
+int main() {
+	DCC dcc;
+	dcc.init();
 
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }

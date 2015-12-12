@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class CommunicationReceiver{
+class CommunicationReceiver {
 public:
 	CommunicationReceiver(string portIn, string envelope);
 	~CommunicationReceiver();
