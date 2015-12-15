@@ -15,5 +15,5 @@ void CommunicationSender::send(string envelope, string message) {
 	s_sendmore(*mPublisher, envelope);
 	s_send(*mPublisher, message);
 
-	mLogger->logStats(envelope, "sent");
+	mLogger->logDebug(envelope + " sent");
 }

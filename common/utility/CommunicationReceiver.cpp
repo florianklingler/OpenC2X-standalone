@@ -18,7 +18,7 @@ pair<string, string> CommunicationReceiver::receive() {
 	string envelope = s_recv(*mSubscriber);
 	string message = s_recv(*mSubscriber);
 
-	mLogger->logStats(envelope, "received");
+	mLogger->logDebug(envelope + " received");
 
 	return make_pair(envelope, message);
 }

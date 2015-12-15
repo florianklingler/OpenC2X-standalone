@@ -15,6 +15,7 @@ public:
 
 	void init();
 	void receive();
+	void logDelay(string byteMessage);
 	void send();
 	string generateCam();
 
@@ -25,6 +26,8 @@ private:
 
 	boost::thread* mThreadReceive;
 	boost::thread* mThreadSend;
+
+	LoggingUtility* mLogger;
 
 	long mIdCounter;
 };

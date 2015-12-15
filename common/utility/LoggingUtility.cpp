@@ -6,15 +6,15 @@ using namespace el;
 
 
 LoggingUtility::LoggingUtility() {
-	Configurations confDefault;
-	Configurations confPerformance;
+	Configurations confDefault;			//default logger for debugging
+	Configurations confPerformance;		//performance logger for stats
 
 	confDefault.setToDefault();
 	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/debug.log");
 	confDefault.setGlobally(ConfigurationType::ToStandardOutput, "false");
 
 	confPerformance.setRemainingToDefault();
-	confPerformance.setGlobally(ConfigurationType::Format, "%datetime, %msg");
+	confPerformance.setGlobally(ConfigurationType::Format, "%msg");
 	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats.csv");
 	confPerformance.setGlobally(ConfigurationType::ToStandardOutput, "false");
 
@@ -26,11 +26,11 @@ LoggingUtility::~LoggingUtility() {
 }
 
 //TODO: Thread safe?
-void LoggingUtility::logStats(string module, string event) {
+void LoggingUtility::logStats(string module, long id, int64_t delay) {
 	Logger* performanceLogger = Loggers::getLogger("performance");
 
-	performanceLogger->info(module + ", " + event);
-	logDebug(module + ", " + event);
+	performanceLogger->info(module + ", " + to_string(id) + ", " + to_string(delay));
+	logDebug(module + ", " + to_string(id) + ", " + to_string(delay));
 }
 
 void LoggingUtility::logDebug(string message) {

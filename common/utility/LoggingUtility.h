@@ -11,7 +11,7 @@ public:
 	LoggingUtility();
 	virtual ~LoggingUtility();
 
-	void logStats(string module, string message);
+	void logStats(string module, long id, int64_t delay);
 	void logDebug(string message);
 };
 
