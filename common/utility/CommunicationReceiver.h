@@ -1,6 +1,8 @@
 #ifndef UTILITY_COMMUNICATIONRECEIVER_H_
 #define UTILITY_COMMUNICATIONRECEIVER_H_
 
+#define ELPP_NO_DEFAULT_LOG_FILE
+
 #include <string>
 #include <zmq.hpp>
 #include <utility/zhelpers.hpp>
