@@ -27,7 +27,7 @@ void CaService::init() {
 void CaService::receive() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized CAM)
-	while(1) {
+	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
 		byteMessage = received.second;

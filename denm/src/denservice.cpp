@@ -8,7 +8,7 @@
 
 using namespace std;
 
-DenService::DenService () {
+DenService::DenService() {
 	mReceiverFromDcc = new CommunicationReceiver("5555", "DENM");
 	mSenderToDcc = new CommunicationSender("7777");
 	mSenderToLdm = new CommunicationSender("9999");
@@ -27,7 +27,7 @@ void DenService::init() {
 void DenService::receive() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized DENM)
-	while(1) {
+	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
 		byteMessage = received.second;
@@ -37,13 +37,13 @@ void DenService::receive() {
 	}
 }
 
-void DenService::send(){
+void DenService::send() {
 	denmPackage::DENM message;
 	string byteMessage;
 	message.set_id(12);
 	message.set_content("DENM from DENM service");
 	message.SerializeToString(&byteMessage);
-	while(1) {
+	while (1) {
 		sleep(1);
 		cout << "send new DENM to LDM and DCC" << endl;
 		mSenderToLdm->send("DENM", byteMessage);
@@ -51,9 +51,9 @@ void DenService::send(){
 	}
 }
 
-int main () {
-  	DenService denm;
-  	denm.init();
+int main() {
+	DenService denm;
+	denm.init();
 
-  	return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }

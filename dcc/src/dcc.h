@@ -5,11 +5,11 @@
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 
-class DCC{
+class DCC {
 public:
-	DCC ();
-	~DCC ();
-	
+	DCC();
+	~DCC();
+
 	void init();
 	void receiveFromCa();
 	void receiveFromDen();
@@ -17,7 +17,7 @@ public:
 
 private:
 	CommunicationReceiver* mReceiverFromCa;
-    CommunicationReceiver* mReceiverFromDen;
+	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromHw;
 	CommunicationSender* mSenderToHw;
 	CommunicationSender* mSenderToServices;
