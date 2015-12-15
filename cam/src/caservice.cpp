@@ -4,16 +4,18 @@
 #include <google/protobuf/text_format.h>
 #include <unistd.h>
 #include <iostream>
-#include <string>
+#include <ctime>
+#include <chrono>
 
 INITIALIZE_EASYLOGGINGPP
 
-using namespace std;
 
 CaService::CaService() {
 	mReceiverFromDcc = new CommunicationReceiver("5555", "CAM");
 	mSenderToDcc = new CommunicationSender("6666");
 	mSenderToLdm = new CommunicationSender("8888");
+
+	mIdCounter = 0;
 }
 
 CaService::~CaService() {
@@ -40,17 +42,25 @@ void CaService::receive() {
 }
 
 void CaService::send() {
-	camPackage::CAM message;
 	string byteMessage;
-	message.set_id(12);
-	message.set_content("CAM from CA service");
-	message.SerializeToString(&byteMessage);
 	while (1) {
 		sleep(1);
+		byteMessage = generateCam();
 		cout << "send new CAM to LDM and DCC" << endl;
 		mSenderToLdm->send("CAM", byteMessage);
 		mSenderToDcc->send("CAM", byteMessage);
 	}
+}
+
+string CaService::generateCam() {
+	camPackage::CAM message;
+	string byteMessage;
+	message.set_id(mIdCounter++);
+	message.set_content("CAM from CA service");
+	message.set_createtime(chrono::system_clock::now().time_since_epoch() / chrono::milliseconds(1));
+	message.SerializeToString(&byteMessage);
+
+	return byteMessage;
 }
 
 int main() {

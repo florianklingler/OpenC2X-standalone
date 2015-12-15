@@ -1,9 +1,12 @@
 #ifndef CASERVICE_H_
 #define CASERVICE_H_
 
+#include <string>
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
+
+using namespace std;
 
 class CaService {
 public:
@@ -13,6 +16,7 @@ public:
 	void init();
 	void receive();
 	void send();
+	string generateCam();
 
 private:
 	CommunicationReceiver* mReceiverFromDcc;
@@ -21,5 +25,7 @@ private:
 
 	boost::thread* mThreadReceive;
 	boost::thread* mThreadSend;
+
+	long mIdCounter;
 };
 #endif
