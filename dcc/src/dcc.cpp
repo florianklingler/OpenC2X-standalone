@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
+#include <buffers/build/wrapper.pb.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -37,7 +38,7 @@ void DCC::receiveFromCa() {
 
 		//processing...
 		cout << "received new CAM and forward to HW" << endl;
-		mSenderToHw->send(envelope, byteMessage);
+		mSenderToHw->sendToHw(byteMessage);
 	}
 }
 
@@ -51,21 +52,27 @@ void DCC::receiveFromDen() {
 
 		//processing...
 		cout << "received new DENM and forward to HW" << endl;
-		mSenderToHw->send(envelope, byteMessage);
+		mSenderToHw->sendToHw(byteMessage);
 	}
 }
 
 void DCC::receiveFromHw() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized message)
+	wrapperPackage::WRAPPER wrapper;
+
 	while (1) {
-		pair<string, string> received = mReceiverFromHw->receive();
-		envelope = received.first;
-		byteMessage = received.second;
+		byteMessage = mReceiverFromHw->receiveFromHw();
+		wrapper.ParseFromString(byteMessage);	//deserialize WRAPPER
 
 		//processing...
 		cout << "forward message from HW to services" << endl;
-		mSenderToServices->send(envelope, byteMessage);
+		switch(wrapper.type()) {
+			case wrapperPackage::WRAPPER_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
+			case wrapperPackage::WRAPPER_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
+			default:	break;
+		}
+
 	}
 }
 

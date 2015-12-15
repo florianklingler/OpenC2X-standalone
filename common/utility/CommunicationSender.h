@@ -15,6 +15,7 @@ public:
 	CommunicationSender(string portOut);
 	~CommunicationSender();
 	void send(string envelope, string message);
+	void sendToHw(string message);
 
 private:
 	zmq::context_t* mContext;

@@ -17,3 +17,9 @@ void CommunicationSender::send(string envelope, string message) {
 
 	mLogger->logDebug(envelope + " sent");
 }
+
+void CommunicationSender::sendToHw(string message) {
+	s_send(*mPublisher, message);
+
+	mLogger->logDebug("sent to HW");
+}

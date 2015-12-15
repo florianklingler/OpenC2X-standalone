@@ -15,6 +15,7 @@ public:
 	CommunicationReceiver(string portIn, string envelope);
 	~CommunicationReceiver();
 	pair<string, string> receive();
+	string receiveFromHw();
 
 private:
 	zmq::context_t* mContext;

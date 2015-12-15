@@ -22,3 +22,11 @@ pair<string, string> CommunicationReceiver::receive() {
 
 	return make_pair(envelope, message);
 }
+
+string CommunicationReceiver::receiveFromHw() {
+	string message = s_recv(*mSubscriber);
+
+	mLogger->logDebug("received from HW");
+
+	return message;
+}

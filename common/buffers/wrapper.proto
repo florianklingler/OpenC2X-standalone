@@ -1,0 +1,19 @@
+package wrapperPackage;
+
+message WRAPPER {
+	 enum Type {
+		CAM = 1;
+		DENM = 2;
+	 }
+	 enum Priority {
+		BE = 0;
+		BK = 1;
+		VI = 2;
+		VO = 3;
+	 }
+	required int32 id = 1;
+	required Type type = 2;
+	required Priority priority = 3;
+	optional int64 createTime = 4;
+	required bytes content = 5;
+}
