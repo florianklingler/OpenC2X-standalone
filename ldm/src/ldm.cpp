@@ -6,6 +6,8 @@
 #include <buffers/build/denm.pb.h>
 #include <google/protobuf/text_format.h>
 
+INITIALIZE_EASYLOGGINGPP
+
 using namespace std;
 
 LDM::LDM() {

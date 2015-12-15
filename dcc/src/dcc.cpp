@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 
+INITIALIZE_EASYLOGGINGPP
+
 using namespace std;
 
 DCC::DCC() {

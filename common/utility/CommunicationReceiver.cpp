@@ -10,10 +10,15 @@ CommunicationReceiver::CommunicationReceiver(string portIn, string envelope) {
 	} else {
 		mSubscriber->setsockopt(ZMQ_SUBSCRIBE, envelope.c_str(), 1);
 	}
+
+	mLogger = new LoggingUtility();
 }
 
 pair<string, string> CommunicationReceiver::receive() {
 	string envelope = s_recv(*mSubscriber);
 	string message = s_recv(*mSubscriber);
+
+	mLogger->logStats(envelope, "received");
+
 	return make_pair(envelope, message);
 }

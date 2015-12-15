@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 
+INITIALIZE_EASYLOGGINGPP
+
 using namespace std;
 
 DenService::DenService() {
