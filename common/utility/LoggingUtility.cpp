@@ -1,5 +1,6 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
+#include <time.h>
 #include <utility/LoggingUtility.h>
 
 using namespace el;
@@ -15,7 +16,7 @@ LoggingUtility::LoggingUtility() {
 
 	confPerformance.setRemainingToDefault();
 	confPerformance.setGlobally(ConfigurationType::Format, "%msg");
-	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats.csv");
+	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + timeString() + ".csv");
 	confPerformance.setGlobally(ConfigurationType::ToStandardOutput, "false");
 
 	Loggers::reconfigureLogger("default", confDefault);
@@ -23,6 +24,19 @@ LoggingUtility::LoggingUtility() {
 }
 
 LoggingUtility::~LoggingUtility() {
+}
+
+string LoggingUtility::timeString() {
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer[15];
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(buffer, 15, "%m-%d-%y_%R", timeinfo);	//format time and save in buffer
+
+	return buffer;
 }
 
 //TODO: Thread safe?
