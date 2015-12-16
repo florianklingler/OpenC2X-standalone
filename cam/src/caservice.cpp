@@ -56,7 +56,7 @@ void CaService::logDelay(string byteMessage) {
 	camPackage::CAM cam;
 	cam.ParseFromString(byteMessage);
 	int64_t createTime = cam.createtime();
-	int64_t receiveTime = chrono::system_clock::now().time_since_epoch() / chrono::milliseconds(1);
+	int64_t receiveTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t delay = receiveTime - createTime;
 	mLogger->logStats("CAM", cam.id(), delay);
 }
@@ -67,8 +67,9 @@ void CaService::send() {
 	camPackage::CAM cam;
 	wrapperPackage::WRAPPER wrapper;
 
-	while (1) {
-		sleep(1);
+	long how_many = 1000;
+	while (how_many--) {
+		myNanosleep(10000);
 		cam = generateCam();
 		wrapper = generateWrapper(cam);
 		wrapper.SerializeToString(&byteMessage);
@@ -85,7 +86,7 @@ camPackage::CAM CaService::generateCam() {
 	//create CAM
 	cam.set_id(mIdCounter++);
 	cam.set_content("CAM from CA service");
-	cam.set_createtime(chrono::system_clock::now().time_since_epoch() / chrono::milliseconds(1));
+	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	return cam;
 }
@@ -107,6 +108,17 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapper.set_content(byteMessage);
 
 	return wrapper;
+}
+
+void CaService::myNanosleep(double us_sleep) {
+
+	time_t sleep_sec = (time_t) (((int) us_sleep) / (1000*1000));
+	long sleep_nanosec = ((long) (us_sleep * 1000)) % (1000*1000*1000);
+
+	struct timespec time[1];
+	time[0].tv_sec = sleep_sec;
+	time[0].tv_nsec = sleep_nanosec;
+	nanosleep(time, NULL);
 }
 
 int main() {

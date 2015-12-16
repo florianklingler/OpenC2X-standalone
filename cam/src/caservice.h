@@ -20,6 +20,9 @@ public:
 	wrapperPackage::WRAPPER generateWrapper(camPackage::CAM cam);
 
 private:
+
+	void myNanosleep(double us_sleep); // in us
+
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;

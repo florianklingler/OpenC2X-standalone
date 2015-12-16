@@ -29,7 +29,7 @@ LoggingUtility::~LoggingUtility() {
 void LoggingUtility::logStats(string module, long id, int64_t delay) {
 	Logger* performanceLogger = Loggers::getLogger("performance");
 
-	performanceLogger->info(module + ", " + to_string(id) + ", " + to_string(delay));
+	performanceLogger->info(module + "\t" + to_string(id) + "\t" + to_string(delay));
 	logDebug(module + ", " + to_string(id) + ", " + to_string(delay));
 }
 
