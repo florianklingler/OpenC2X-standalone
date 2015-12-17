@@ -102,7 +102,6 @@ wrapperPackage::WRAPPER DenService::generateWrapper(denmPackage::DENM denm) {
 	wrapper.set_type(wrapperPackage::WRAPPER_Type_DENM);
 	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
 
-	wrapper.set_content(denm.content());
 	wrapper.set_createtime(denm.createtime());
 	wrapper.set_content(byteMessage);
 

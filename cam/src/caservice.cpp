@@ -103,7 +103,6 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapper.set_type(wrapperPackage::WRAPPER_Type_CAM);
 	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
 
-	wrapper.set_content(cam.content());
 	wrapper.set_createtime(cam.createtime());
 	wrapper.set_content(byteMessage);
 
