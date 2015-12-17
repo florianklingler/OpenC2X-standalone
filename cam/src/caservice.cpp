@@ -16,7 +16,7 @@ CaService::CaService() {
 	mSenderToDcc = new CommunicationSender("6666");
 	mSenderToLdm = new CommunicationSender("8888");
 
-	mLogger = new LoggingUtility();
+	mLogger = new LoggingUtility("CaService");
 
 	mIdCounter = 0;
 }

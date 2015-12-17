@@ -16,7 +16,7 @@ DenService::DenService() {
 	mSenderToDcc = new CommunicationSender("7777");
 	mSenderToLdm = new CommunicationSender("9999");
 
-	mLogger = new LoggingUtility();
+	mLogger = new LoggingUtility("DenService");
 
 	mIdCounter = 0;
 }

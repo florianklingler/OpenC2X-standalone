@@ -5,7 +5,7 @@ CommunicationSender::CommunicationSender(string portOut) {
 	mPublisher = new zmq::socket_t(*mContext, ZMQ_PUB);
 	mPublisher->bind(("tcp://*:" + portOut).c_str());
 
-	mLogger = new LoggingUtility();
+	mLogger = new LoggingUtility("CommunicationSender");
 }
 
 CommunicationSender::~CommunicationSender() {

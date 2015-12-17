@@ -11,7 +11,7 @@ CommunicationReceiver::CommunicationReceiver(string portIn, string envelope) {
 		mSubscriber->setsockopt(ZMQ_SUBSCRIBE, envelope.c_str(), 1);
 	}
 
-	mLogger = new LoggingUtility();
+	mLogger = new LoggingUtility("CommunicationReceiver");
 }
 
 pair<string, string> CommunicationReceiver::receive() {

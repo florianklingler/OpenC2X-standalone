@@ -6,21 +6,23 @@
 using namespace el;
 
 
-LoggingUtility::LoggingUtility() {
+LoggingUtility::LoggingUtility(string moduleName) {
+	mModuleName = moduleName;
+
 	Configurations confDefault;			//default logger for debugging
 	Configurations confPerformance;		//performance logger for stats
 
 	confDefault.setToDefault();
-	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/debug.log");
+	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/debug_" + mModuleName + "_" + timeString() + ".log");
 	confDefault.setGlobally(ConfigurationType::ToStandardOutput, "false");
 
 	confPerformance.setRemainingToDefault();
 	confPerformance.setGlobally(ConfigurationType::Format, "%msg");
-	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + timeString() + ".csv");
+	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + mModuleName + "_" + timeString() + ".csv");
 	confPerformance.setGlobally(ConfigurationType::ToStandardOutput, "false");
 
-	Loggers::reconfigureLogger("default", confDefault);
-	Loggers::reconfigureLogger("performance", confPerformance);
+	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
+	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
 }
 
 LoggingUtility::~LoggingUtility() {
@@ -40,15 +42,15 @@ string LoggingUtility::timeString() {
 }
 
 //TODO: Thread safe?
-void LoggingUtility::logStats(string module, long id, int64_t delay) {
-	Logger* performanceLogger = Loggers::getLogger("performance");
+void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
+	Logger* performanceLogger = Loggers::getLogger("performance_" + mModuleName);
 
-	performanceLogger->info(module + "\t" + to_string(id) + "\t" + to_string(delay));
-	logDebug(module + ", " + to_string(id) + ", " + to_string(delay));
+	performanceLogger->info(messageType + "\t" + to_string(id) + "\t" + to_string(delay));
+	logDebug(messageType + ", " + to_string(id) + ", " + to_string(delay));
 }
 
 void LoggingUtility::logDebug(string message) {
-	Logger* defaultLogger = Loggers::getLogger("default");
+	Logger* defaultLogger = Loggers::getLogger("default_" + mModuleName);
 
 	defaultLogger->info(message);
 }

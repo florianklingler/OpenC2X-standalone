@@ -8,12 +8,15 @@ using namespace std;
 
 class LoggingUtility {
 public:
-	LoggingUtility();
+	LoggingUtility(string moduleName);
 	virtual ~LoggingUtility();
 
 	string timeString();
-	void logStats(string module, long id, int64_t delay);
+	void logStats(string messageType, long id, int64_t delay);
 	void logDebug(string message);
+
+private:
+	string mModuleName;
 };
 
 #endif /* UTILITY_LOGGINGUTILITY_H_ */
