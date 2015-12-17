@@ -12,9 +12,9 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 
 CaService::CaService() {
-	mReceiverFromDcc = new CommunicationReceiver("5555", "CAM");
-	mSenderToDcc = new CommunicationSender("6666");
-	mSenderToLdm = new CommunicationSender("8888");
+	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM");
+	mSenderToDcc = new CommunicationSender("CaService", "6666");
+	mSenderToLdm = new CommunicationSender("CaService", "8888");
 
 	mLogger = new LoggingUtility("CaService");
 

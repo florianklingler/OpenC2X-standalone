@@ -12,9 +12,9 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 
 DenService::DenService() {
-	mReceiverFromDcc = new CommunicationReceiver("5555", "DENM");
-	mSenderToDcc = new CommunicationSender("7777");
-	mSenderToLdm = new CommunicationSender("9999");
+	mReceiverFromDcc = new CommunicationReceiver("DenService", "5555", "DENM");
+	mSenderToDcc = new CommunicationSender("DenService", "7777");
+	mSenderToLdm = new CommunicationSender("DenService", "9999");
 
 	mLogger = new LoggingUtility("DenService");
 

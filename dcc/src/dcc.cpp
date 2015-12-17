@@ -9,11 +9,11 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 
 DCC::DCC() {
-	mReceiverFromCa = new CommunicationReceiver("6666", "CAM");
-	mReceiverFromDen = new CommunicationReceiver("7777", "DENM");
-	mReceiverFromHw = new CommunicationReceiver("4444", "");
-	mSenderToHw = new CommunicationSender("4444");
-	mSenderToServices = new CommunicationSender("5555");
+	mReceiverFromCa = new CommunicationReceiver("Dcc", "6666", "CAM");
+	mReceiverFromDen = new CommunicationReceiver("Dcc", "7777", "DENM");
+	mReceiverFromHw = new CommunicationReceiver("Dcc", "4444", "");
+	mSenderToHw = new CommunicationSender("Dcc", "4444");
+	mSenderToServices = new CommunicationSender("Dcc", "5555");
 }
 
 DCC::~DCC() {

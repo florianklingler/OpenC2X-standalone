@@ -5,6 +5,7 @@
 #include <utility/easylogging++.h>
 
 using namespace std;
+using namespace el;
 
 class LoggingUtility {
 public:
@@ -17,6 +18,9 @@ public:
 
 private:
 	string mModuleName;
+
+	Logger* mDefaultLogger;
+	Logger* mPerformanceLogger;
 };
 
 #endif /* UTILITY_LOGGINGUTILITY_H_ */

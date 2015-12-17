@@ -1,11 +1,13 @@
 #include <utility/CommunicationSender.h>
 
-CommunicationSender::CommunicationSender(string portOut) {
+CommunicationSender::CommunicationSender(string ownerModule, string portOut) {
+	mOwnerModule = ownerModule;
+
 	mContext = new zmq::context_t(1);
 	mPublisher = new zmq::socket_t(*mContext, ZMQ_PUB);
 	mPublisher->bind(("tcp://*:" + portOut).c_str());
 
-	mLogger = new LoggingUtility("CommunicationSender");
+	mLogger = new LoggingUtility(mOwnerModule);
 }
 
 CommunicationSender::~CommunicationSender() {

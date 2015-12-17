@@ -3,9 +3,6 @@
 #include <time.h>
 #include <utility/LoggingUtility.h>
 
-using namespace el;
-
-
 LoggingUtility::LoggingUtility(string moduleName) {
 	mModuleName = moduleName;
 
@@ -23,6 +20,8 @@ LoggingUtility::LoggingUtility(string moduleName) {
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
 	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
+	mDefaultLogger = Loggers::getLogger("default_" + mModuleName);
+	mPerformanceLogger = Loggers::getLogger("performance_" + mModuleName);
 }
 
 LoggingUtility::~LoggingUtility() {
@@ -43,14 +42,9 @@ string LoggingUtility::timeString() {
 
 //TODO: Thread safe?
 void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
-	Logger* performanceLogger = Loggers::getLogger("performance_" + mModuleName);
-
-	performanceLogger->info(messageType + "\t" + to_string(id) + "\t" + to_string(delay));
-	logDebug(messageType + ", " + to_string(id) + ", " + to_string(delay));
+	mPerformanceLogger->info(messageType + "\t" + to_string(id) + "\t" + to_string(delay));
 }
 
 void LoggingUtility::logDebug(string message) {
-	Logger* defaultLogger = Loggers::getLogger("default_" + mModuleName);
-
-	defaultLogger->info(message);
+	mDefaultLogger->info(message);
 }

@@ -1,6 +1,8 @@
 #include "CommunicationReceiver.h"
 
-CommunicationReceiver::CommunicationReceiver(string portIn, string envelope) {
+CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, string envelope) {
+	mOwnerModule = ownerModule;
+
 	mEnvelope = envelope;
 	mContext = new zmq::context_t(1);
 	mSubscriber = new zmq::socket_t(*mContext, ZMQ_SUB);
@@ -11,7 +13,7 @@ CommunicationReceiver::CommunicationReceiver(string portIn, string envelope) {
 		mSubscriber->setsockopt(ZMQ_SUBSCRIBE, envelope.c_str(), 1);
 	}
 
-	mLogger = new LoggingUtility("CommunicationReceiver");
+	mLogger = new LoggingUtility(mOwnerModule);
 }
 
 pair<string, string> CommunicationReceiver::receive() {

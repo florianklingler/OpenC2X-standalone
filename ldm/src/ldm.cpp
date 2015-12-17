@@ -11,8 +11,8 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 
 LDM::LDM() {
-	mReceiverFromCa = new CommunicationReceiver("8888", "CAM");
-	mReceiverFromDen = new CommunicationReceiver("9999", "DENM");
+	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
+	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
 }
 
 LDM::~LDM() {

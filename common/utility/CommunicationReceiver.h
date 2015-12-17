@@ -12,12 +12,14 @@ using namespace std;
 
 class CommunicationReceiver {
 public:
-	CommunicationReceiver(string portIn, string envelope);
+	CommunicationReceiver(string ownerModule, string portIn, string envelope);
 	~CommunicationReceiver();
 	pair<string, string> receive();
 	string receiveFromHw();
 
 private:
+	string mOwnerModule;
+
 	zmq::context_t* mContext;
 	zmq::socket_t* mSubscriber;
 
