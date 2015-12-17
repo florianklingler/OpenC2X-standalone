@@ -57,17 +57,16 @@ void DCC::receiveFromDen() {
 }
 
 void DCC::receiveFromHw() {
-	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized message)
 	wrapperPackage::WRAPPER wrapper;
 
 	while (1) {
-		byteMessage = mReceiverFromHw->receiveFromHw();
-		wrapper.ParseFromString(byteMessage);	//deserialize WRAPPER
+		byteMessage = mReceiverFromHw->receiveFromHw();		//receive serialized WRAPPER
+		wrapper.ParseFromString(byteMessage);				//deserialize WRAPPER
 
 		//processing...
 		cout << "forward message from HW to services" << endl;
-		switch(wrapper.type()) {
+		switch(wrapper.type()) {							//send serialized WRAPPER to corresponding module
 			case wrapperPackage::WRAPPER_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
 			case wrapperPackage::WRAPPER_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
 			default:	break;

@@ -1,4 +1,5 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
+//#define ELPP_THREAD_SAFE
 
 #include <time.h>
 #include <utility/LoggingUtility.h>

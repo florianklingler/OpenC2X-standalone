@@ -40,7 +40,7 @@ void CaService::receive() {
 	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
-		byteMessage = received.second;
+		byteMessage = received.second;			//serialized WRAPPER
 
 		wrapper.ParseFromString(byteMessage);	//deserialize WRAPPER
 		byteMessage = wrapper.content();		//serialized CAM
@@ -69,7 +69,7 @@ void CaService::send() {
 
 	long how_many = 1000;
 	while (how_many--) {
-		myNanosleep(10000);
+		microSleep(10000);
 		cam = generateCam();
 		wrapper = generateWrapper(cam);
 		wrapper.SerializeToString(&byteMessage);
@@ -93,27 +93,26 @@ camPackage::CAM CaService::generateCam() {
 
 wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapperPackage::WRAPPER wrapper;
-	string byteMessage;
+	string serializedCam;
 
 	//serialize CAM
-	cam.SerializeToString(&byteMessage);
+	cam.SerializeToString(&serializedCam);
 
 	//create WRAPPER
 	wrapper.set_id(cam.id());
 	wrapper.set_type(wrapperPackage::WRAPPER_Type_CAM);
 	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
 
-	wrapper.set_content(cam.content());
 	wrapper.set_createtime(cam.createtime());
-	wrapper.set_content(byteMessage);
+	wrapper.set_content(serializedCam);
 
 	return wrapper;
 }
 
-void CaService::myNanosleep(double us_sleep) {
+void CaService::microSleep(double microSeconds) {
 
-	time_t sleep_sec = (time_t) (((int) us_sleep) / (1000*1000));
-	long sleep_nanosec = ((long) (us_sleep * 1000)) % (1000*1000*1000);
+	time_t sleep_sec = (time_t) (((int) microSeconds) / (1000*1000));
+	long sleep_nanosec = ((long) (microSeconds * 1000)) % (1000*1000*1000);
 
 	struct timespec time[1];
 	time[0].tv_sec = sleep_sec;

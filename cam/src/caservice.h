@@ -21,7 +21,7 @@ public:
 
 private:
 
-	void myNanosleep(double us_sleep); // in us
+	void microSleep(double us_sleep); // in us
 
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
