@@ -56,7 +56,9 @@ void DenService::logDelay(string byteMessage) {
 	denmPackage::DENM denm;
 	denm.ParseFromString(byteMessage);
 	int64_t createTime = denm.createtime();
-	int64_t receiveTime = chrono::system_clock::now().time_since_epoch() / chrono::milliseconds(1);
+	int64_t receiveTime =
+			chrono::high_resolution_clock::now().time_since_epoch()
+					/ chrono::nanoseconds(1);
 	int64_t delay = receiveTime - createTime;
 	mLogger->logStats("DENM", denm.id(), delay);
 }
@@ -73,8 +75,8 @@ void DenService::send() {
 		wrapper = generateWrapper(denm);
 		wrapper.SerializeToString(&byteMessage);
 		cout << "send new DENM to LDM and DCC" << endl;
-		mSenderToLdm->send("DENM", wrapper.content());		//send serialized DENM to LDM
-		mSenderToDcc->send("DENM", byteMessage);			//send serialized WRAPPER to DCC
+		mSenderToLdm->send("DENM", wrapper.content());//send serialized DENM to LDM
+		mSenderToDcc->send("DENM", byteMessage);//send serialized WRAPPER to DCC
 	}
 }
 
@@ -85,7 +87,9 @@ denmPackage::DENM DenService::generateDenm() {
 	//create CAM
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
-	denm.set_createtime(chrono::system_clock::now().time_since_epoch() / chrono::milliseconds(1));
+	denm.set_createtime(
+			chrono::high_resolution_clock::now().time_since_epoch()
+					/ chrono::nanoseconds(1));
 
 	return denm;
 }
