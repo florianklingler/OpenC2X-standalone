@@ -8,9 +8,15 @@
 #include <buffers/build/cam.pb.h>
 #include <boost/asio.hpp>
 
+struct CaConfig {
+	double mCamTriggerInterval;
+
+	void loadConfigXML(const std::string &filename);
+};
+
 class CaService {
 public:
-	CaService();
+	CaService(CaConfig &config);
 	~CaService();
 
 	void init();
@@ -33,12 +39,12 @@ private:
 	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;
+	CaConfig mConfig;
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
 
 	long mIdCounter;
-
 	double mCamTriggerInterval;
 };
 

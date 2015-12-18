@@ -6,12 +6,15 @@
 #include <ctime>
 #include <chrono>
 #include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
-CaService::CaService() {
+CaService::CaService(CaConfig &config) {
+	mConfig = config;
 	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM");
 	mSenderToDcc = new CommunicationSender("CaService", "6666");
 	mSenderToLdm = new CommunicationSender("CaService", "8888");
@@ -20,7 +23,7 @@ CaService::CaService() {
 
 	mIdCounter = 0;
 
-	mCamTriggerInterval = 500;
+	mCamTriggerInterval = mConfig.mCamTriggerInterval;
 	mTimer = new boost::asio::deadline_timer(mIoService,
 			boost::posix_time::millisec(mCamTriggerInterval));
 }
@@ -141,7 +144,6 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 }
 
 void CaService::microSleep(double microSeconds) {
-
 	time_t sleep_sec = (time_t) (((int) microSeconds) / (1000 * 1000));
 	long sleep_nanosec = ((long) (microSeconds * 1000)) % (1000 * 1000 * 1000);
 
@@ -151,8 +153,23 @@ void CaService::microSleep(double microSeconds) {
 	nanosleep(time, NULL);
 }
 
+void CaConfig::loadConfigXML(const string &filename) {
+	boost::property_tree::ptree pt;
+	read_xml(filename, pt);
+	mCamTriggerInterval = pt.get("cam.TriggerInterval", 500);
+}
+
 int main() {
-	CaService cam;
+	CaConfig config;
+	try {
+		// TODO: set proper path to config.xml
+		// Right now, pwd is cam/Debug while running cam
+		config.loadConfigXML("../src/config.xml");
+	} catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		return EXIT_FAILURE;
+	}
+	CaService cam(config);
 	cam.init();
 
 	return EXIT_SUCCESS;
