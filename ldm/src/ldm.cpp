@@ -1,3 +1,6 @@
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
+
 #include "ldm.h"
 #include <unistd.h>
 #include <string>
@@ -6,9 +9,9 @@
 #include <buffers/build/denm.pb.h>
 #include <google/protobuf/text_format.h>
 
-INITIALIZE_EASYLOGGINGPP
-
 using namespace std;
+
+INITIALIZE_EASYLOGGINGPP
 
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");

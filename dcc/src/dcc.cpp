@@ -1,12 +1,15 @@
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
+
 #include "dcc.h"
 #include <unistd.h>
 #include <string>
 #include <iostream>
 #include <buffers/build/wrapper.pb.h>
 
-INITIALIZE_EASYLOGGINGPP
-
 using namespace std;
+
+INITIALIZE_EASYLOGGINGPP
 
 DCC::DCC() {
 	mReceiverFromCa = new CommunicationReceiver("Dcc", "6666", "CAM");

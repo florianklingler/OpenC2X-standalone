@@ -36,7 +36,6 @@ private:
 	CommunicationSender* mSenderToLdm;
 
 	boost::thread* mThreadReceive;
-	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;
 	CaConfig mConfig;

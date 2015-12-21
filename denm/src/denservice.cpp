@@ -1,5 +1,7 @@
-#include "denservice.h"
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
 
+#include "denservice.h"
 #include <google/protobuf/text_format.h>
 #include <unistd.h>
 #include <iostream>
@@ -7,9 +9,9 @@
 #include <chrono>
 #include <string>
 
-INITIALIZE_EASYLOGGINGPP
-
 using namespace std;
+
+INITIALIZE_EASYLOGGINGPP
 
 DenService::DenService() {
 	mReceiverFromDcc = new CommunicationReceiver("DenService", "5555", "DENM");

@@ -4,6 +4,7 @@
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
+#include <utility/LoggingUtility.h>
 #include <buffers/build/wrapper.pb.h>
 #include <buffers/build/denm.pb.h>
 

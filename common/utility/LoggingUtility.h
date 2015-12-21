@@ -18,9 +18,6 @@ public:
 
 private:
 	string mModuleName;
-
-	Logger* mDefaultLogger;
-	Logger* mPerformanceLogger;
 };
 
 #endif /* UTILITY_LOGGINGUTILITY_H_ */

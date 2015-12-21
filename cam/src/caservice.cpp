@@ -1,5 +1,7 @@
-#include "caservice.h"
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
 
+#include "caservice.h"
 #include <google/protobuf/text_format.h>
 #include <unistd.h>
 #include <iostream>
@@ -9,9 +11,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-INITIALIZE_EASYLOGGINGPP
-
 using namespace std;
+
+INITIALIZE_EASYLOGGINGPP
 
 CaService::CaService(CaConfig &config) {
 	mConfig = config;
@@ -30,12 +32,10 @@ CaService::CaService(CaConfig &config) {
 
 CaService::~CaService() {
 	mThreadReceive->join();
-	//mThreadSend->join();
 }
 
 void CaService::init() {
 	mThreadReceive = new boost::thread(&CaService::receive, this);
-	//mThreadSend = new boost::thread(&CaService::send, this);
 
 	mTimer->async_wait(
 			boost::bind(&CaService::triggerCam, this,
@@ -75,25 +75,8 @@ void CaService::logDelay(string byteMessage) {
 	mLogger->logStats("CAM", cam.id(), delay);
 }
 
-//periodically generate CAMs and send to LDM and DCC
+//generate CAM and send to LDM and DCC
 void CaService::send() {
-	string byteMessage;
-	camPackage::CAM cam;
-	wrapperPackage::WRAPPER wrapper;
-
-	long how_many = 1000;
-	while (how_many--) {
-		microSleep(10000);
-		cam = generateCam();
-		wrapper = generateWrapper(cam);
-		wrapper.SerializeToString(&byteMessage);
-		cout << "send new CAM to LDM and DCC" << endl;
-		mSenderToLdm->send("CAM", wrapper.content()); //send serialized CAM to LDM
-		mSenderToDcc->send("CAM", byteMessage);	//send serialized WRAPPER to DCC
-	}
-}
-
-void CaService::triggerCam(const boost::system::error_code &ec) {
 	string byteMessage;
 	camPackage::CAM cam;
 	wrapperPackage::WRAPPER wrapper;
@@ -102,8 +85,13 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	wrapper = generateWrapper(cam);
 	wrapper.SerializeToString(&byteMessage);
 	cout << "send new CAM to LDM and DCC" << endl;
-	mSenderToLdm->send("CAM", wrapper.content());	//send serialized CAM to LDM
+	mSenderToLdm->send("CAM", wrapper.content()); //send serialized CAM to LDM
 	mSenderToDcc->send("CAM", byteMessage);	//send serialized WRAPPER to DCC
+}
+
+//periodically trigger sending to LDM and DCC
+void CaService::triggerCam(const boost::system::error_code &ec) {
+	send();
 
 	mTimer->expires_from_now(boost::posix_time::millisec(mCamTriggerInterval));
 	mTimer->async_wait(

@@ -1,5 +1,5 @@
+#define ELPP_THREAD_SAFE
 #define ELPP_NO_DEFAULT_LOG_FILE
-//#define ELPP_THREAD_SAFE
 
 #include <time.h>
 #include <utility/LoggingUtility.h>
@@ -21,8 +21,6 @@ LoggingUtility::LoggingUtility(string moduleName) {
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
 	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
-	mDefaultLogger = Loggers::getLogger("default_" + mModuleName);
-	mPerformanceLogger = Loggers::getLogger("performance_" + mModuleName);
 }
 
 LoggingUtility::~LoggingUtility() {
@@ -41,11 +39,10 @@ string LoggingUtility::timeString() {
 	return buffer;
 }
 
-//TODO: Thread safe?
 void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
-	mPerformanceLogger->info(messageType + "\t" + to_string(id) + "\t" + to_string(delay));
+	CLOG(INFO, ("performance_" + mModuleName).c_str()) << messageType + "\t" + to_string(id) + "\t" + to_string(delay);
 }
 
 void LoggingUtility::logDebug(string message) {
-	mDefaultLogger->info(message);
+	CLOG(INFO, ("default_" + mModuleName).c_str()) << message;
 }
