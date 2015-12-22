@@ -75,6 +75,16 @@ void CaService::logDelay(string byteMessage) {
 	mLogger->logStats("CAM", cam.id(), delay);
 }
 
+//periodically trigger sending to LDM and DCC
+void CaService::triggerCam(const boost::system::error_code &ec) {
+	send();
+
+	mTimer->expires_from_now(boost::posix_time::millisec(mCamTriggerInterval));
+	mTimer->async_wait(
+			boost::bind(&CaService::triggerCam, this,
+					boost::asio::placeholders::error));
+}
+
 //generate CAM and send to LDM and DCC
 void CaService::send() {
 	string byteMessage;
@@ -87,16 +97,6 @@ void CaService::send() {
 	cout << "send new CAM to LDM and DCC" << endl;
 	mSenderToLdm->send("CAM", wrapper.content()); //send serialized CAM to LDM
 	mSenderToDcc->send("CAM", byteMessage);	//send serialized WRAPPER to DCC
-}
-
-//periodically trigger sending to LDM and DCC
-void CaService::triggerCam(const boost::system::error_code &ec) {
-	send();
-
-	mTimer->expires_from_now(boost::posix_time::millisec(mCamTriggerInterval));
-	mTimer->async_wait(
-			boost::bind(&CaService::triggerCam, this,
-					boost::asio::placeholders::error));
 }
 
 //generate new CAM with increasing ID and current timestamp
@@ -129,16 +129,6 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapper.set_content(serializedCam);
 
 	return wrapper;
-}
-
-void CaService::microSleep(double microSeconds) {
-	time_t sleep_sec = (time_t) (((int) microSeconds) / (1000 * 1000));
-	long sleep_nanosec = ((long) (microSeconds * 1000)) % (1000 * 1000 * 1000);
-
-	struct timespec time[1];
-	time[0].tv_sec = sleep_sec;
-	time[0].tv_nsec = sleep_nanosec;
-	nanosleep(time, NULL);
 }
 
 void CaConfig::loadConfigXML(const string &filename) {

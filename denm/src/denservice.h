@@ -16,11 +16,14 @@ public:
 	void init();
 	void receive();
 	void logDelay(string byteMessage);
+	void triggerDenm();
 	void send();
 	denmPackage::DENM generateDenm();
 	wrapperPackage::WRAPPER generateWrapper(denmPackage::DENM denm);
 
 private:
+	void microSleep(double us_sleep); // in us
+
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;

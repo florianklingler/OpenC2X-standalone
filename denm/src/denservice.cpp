@@ -8,6 +8,7 @@
 #include <ctime>
 #include <chrono>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -30,7 +31,7 @@ DenService::~DenService() {
 
 void DenService::init() {
 	mThreadReceive = new boost::thread(&DenService::receive, this);
-	mThreadSend = new boost::thread(&DenService::send, this);
+	mThreadSend = new boost::thread(&DenService::triggerDenm, this);
 }
 
 //receive DENM from DCC and forward to LDM
@@ -65,28 +66,44 @@ void DenService::logDelay(string byteMessage) {
 	mLogger->logStats("DENM", denm.id(), delay);
 }
 
-//periodically generate DENMs and send to LDM and DCC
+//trigger sending to LDM and DCC every 100 to 1000ms to simulate road safety application
+void DenService::triggerDenm() {
+	while (1) {
+		int randomSleep = rand() % 900 + 101;
+		microSleep(randomSleep*1000);
+		send();
+	}
+}
+
+void DenService::microSleep(double microSeconds) {
+	time_t sleep_sec = (time_t) (((int) microSeconds) / (1000 * 1000));
+	long sleep_nanosec = ((long) (microSeconds * 1000)) % (1000 * 1000 * 1000);
+
+	struct timespec time[1];
+	time[0].tv_sec = sleep_sec;
+	time[0].tv_nsec = sleep_nanosec;
+	nanosleep(time, NULL);
+}
+
+//generate DENM and send to LDM and DCC
 void DenService::send() {
 	string byteMessage;
 	denmPackage::DENM denm;
 	wrapperPackage::WRAPPER wrapper;
 
-	while (1) {
-		sleep(1);
-		denm = generateDenm();
-		wrapper = generateWrapper(denm);
-		wrapper.SerializeToString(&byteMessage);
-		cout << "send new DENM to LDM and DCC" << endl;
-		mSenderToLdm->send("DENM", wrapper.content());//send serialized DENM to LDM
-		mSenderToDcc->send("DENM", byteMessage);//send serialized WRAPPER to DCC
-	}
+	denm = generateDenm();
+	wrapper = generateWrapper(denm);
+	wrapper.SerializeToString(&byteMessage);
+	cout << "send new DENM to LDM and DCC" << endl;
+	mSenderToLdm->send("DENM", wrapper.content());//send serialized DENM to LDM
+	mSenderToDcc->send("DENM", byteMessage);//send serialized WRAPPER to DCC
 }
 
 //generate new DENM with increasing ID and current timestamp
 denmPackage::DENM DenService::generateDenm() {
 	denmPackage::DENM denm;
 
-	//create CAM
+	//create DENM
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
 	denm.set_createtime(
@@ -100,7 +117,7 @@ wrapperPackage::WRAPPER DenService::generateWrapper(denmPackage::DENM denm) {
 	wrapperPackage::WRAPPER wrapper;
 	string byteMessage;
 
-	//serialize CAM
+	//serialize DENM
 	denm.SerializeToString(&byteMessage);
 
 	//create WRAPPER
