@@ -12,10 +12,12 @@ LoggingUtility::LoggingUtility(string moduleName) {
 
 	confDefault.setToDefault();
 	confDefault.setGlobally(ConfigurationType::Format, "%level \t %datetime \t %msg");
+	confDefault.setGlobally(ConfigurationType::Filename, "../../log");
 	confDefault.setGlobally(ConfigurationType::ToStandardOutput, "true");
 
 	confPerformance.setRemainingToDefault();
 	confPerformance.setGlobally(ConfigurationType::Format, "STATS \t %msg");
+	confPerformance.setGlobally(ConfigurationType::Filename, "../../log");
 	confPerformance.setGlobally(ConfigurationType::ToStandardOutput, "true");
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
