@@ -7,18 +7,14 @@
 LoggingUtility::LoggingUtility(string moduleName) {
 	mModuleName = moduleName;
 
-	Configurations confDefault;			//default logger for debugging
-	Configurations confPerformance;		//performance logger for stats
+	Configurations confDefault("../../logs/config/config.conf");			//default logger for debugging
+	Configurations confPerformance("../../logs/config/config.conf");		//performance logger for stats
 
-	confDefault.setToDefault();
-	confDefault.setGlobally(ConfigurationType::Format, "%level \t %datetime \t %msg");
-	confDefault.setGlobally(ConfigurationType::Filename, "../../log");
-	confDefault.setGlobally(ConfigurationType::ToStandardOutput, "true");
+	confDefault.setRemainingToDefault();
+	confDefault.setGlobally(ConfigurationType::Format, "DEBUG_" + mModuleName + " \t %datetime \t %msg");
 
 	confPerformance.setRemainingToDefault();
-	confPerformance.setGlobally(ConfigurationType::Format, "STATS \t %msg");
-	confPerformance.setGlobally(ConfigurationType::Filename, "../../log");
-	confPerformance.setGlobally(ConfigurationType::ToStandardOutput, "true");
+	confPerformance.setGlobally(ConfigurationType::Format, "STATS_" + mModuleName + " \t %msg");
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
 	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
