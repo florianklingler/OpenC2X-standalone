@@ -1,2 +1,1 @@
- #mkfifo ../logs/log
- screen -c screenConfig
+screen -c screenConfig

@@ -1,3 +1,0 @@
-current_time=$(date "+%Y_%m_%d-%H:%M")
-ssh alix6 'cat skeleton/logs/log' | tee >(grep --line-buffer 'DEBUG_CaService' > ../logs/debug_CaService_$current_time.log) >(grep --line-buffered 'STATS_CaService' > ../logs/stats_CaService_$current_time.csv) >(grep --line-buffer 'DEBUG_DenService' > ../logs/debug_DenService_$current_time.log) >(grep --line-buffered 'STATS_DenService' > ../logs/stats_DenService_$current_time.csv) >(grep --line-buffer 'DEBUG_Dcc' > ../logs/debug_Dcc_$current_time.log) >(grep --line-buffered 'STATS_Dcc' > ../logs/stats_Dcc_$current_time.csv) >(grep --line-buffer 'DEBUG_Ldm' > ../logs/debug_Ldm_$current_time.log) >(grep --line-buffered 'STATS_Ldm' > ../logs/stats_Ldm_$current_time.csv)
-
