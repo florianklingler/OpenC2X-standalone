@@ -12,15 +12,30 @@ LoggingUtility::LoggingUtility(string moduleName) {
 
 	confDefault.setRemainingToDefault();
 	confDefault.setGlobally(ConfigurationType::Format, "DEBUG_" + mModuleName + " \t %datetime \t %msg");
+	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/debug_" + mModuleName + "_" + timeString() + ".log");
 
 	confPerformance.setRemainingToDefault();
 	confPerformance.setGlobally(ConfigurationType::Format, "STATS_" + mModuleName + " \t %msg");
+	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + mModuleName + "_" + timeString() + ".csv");
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
 	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
 }
 
 LoggingUtility::~LoggingUtility() {
+}
+
+string LoggingUtility::timeString() {
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer[15];
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(buffer, 15, "%m-%d-%y_%R", timeinfo);	//format time and save in buffer
+
+	return buffer;
 }
 
 void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
