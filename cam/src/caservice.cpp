@@ -22,7 +22,7 @@ CaService::CaService(CaConfig &config) {
 	mSenderToDcc = new CommunicationSender(module, "6666");
 	mSenderToLdm = new CommunicationSender(module, "8888");
 
-	mGpsReceiver = new GpsDataReceiver(module, "3333", "GPS");
+	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
 
 	mLogger = new LoggingUtility("CaService");
 
@@ -35,13 +35,13 @@ CaService::CaService(CaConfig &config) {
 
 CaService::~CaService() {
 	mThreadReceive->join();
-	mGpsDataReceiveThread->join();
+	mThreadGpsDataReceive->join();
 }
 
 void CaService::init() {
 	mThreadReceive = new boost::thread(&CaService::receive, this);
 
-	mGpsDataReceiveThread = new boost::thread(&CaService::receiveGpsData, this);
+	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
 
 	mTimer->async_wait(
 			boost::bind(&CaService::triggerCam, this,
@@ -71,7 +71,7 @@ void CaService::receive() {
 
 void CaService::receiveGpsData() {
 	while (1) {
-		string data = mGpsReceiver->receive();
+		string data = mReceiverGps->receiveGpsData();
 		cout << "GPS DATA: " << data << endl;
 	}
 }

@@ -2,7 +2,7 @@
 #define GPSSERVICE_H_
 
 #include <gps.h>
-#include <utility/GpsDataSender.h>
+#include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
 
 struct GPSDataContainer {
@@ -27,7 +27,7 @@ private:
 	static struct gps_data_t mGpsData;
 	//GPSDataContainer* mDataContainer;
 	double mLastTime;
-	GpsDataSender* mSender;
+	CommunicationSender* mSender;
 
 };
 

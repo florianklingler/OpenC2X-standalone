@@ -14,6 +14,7 @@ public:
 	~CommunicationSender();
 	void send(string envelope, string message);
 	void sendToHw(string message);
+	void sendGpsData(string envelope, string message);
 
 private:
 	string mOwnerModule;

@@ -1,5 +1,7 @@
-#include "GpsService.h"
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
 
+#include "GpsService.h"
 #include <unistd.h>
 #include <math.h>
 #include <signal.h>
@@ -15,7 +17,7 @@ struct gps_data_t GpsService::mGpsData;
 
 GpsService::GpsService() {
 	mLastTime = NAN;
-	mSender = new GpsDataSender("GpsService", "3333");
+	mSender = new CommunicationSender("GpsService", "3333");
 }
 
 GpsService::~GpsService() {
@@ -74,7 +76,7 @@ void GpsService::receiveData() {
 
 		gpsDataToString(&mGpsData, gpsDumpMsg);
 		fprintf(stdout, "%s", gpsDumpMsg);
-		mSender->send("GPS", gpsDumpMsg);
+		mSender->sendGpsData("GPS", gpsDumpMsg);
 	}
 }
 

@@ -14,6 +14,7 @@ public:
 	~CommunicationReceiver();
 	pair<string, string> receive();
 	string receiveFromHw();
+	string receiveGpsData();
 
 private:
 	string mOwnerModule;
