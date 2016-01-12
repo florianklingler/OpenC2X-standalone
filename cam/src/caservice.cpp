@@ -16,10 +16,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 CaService::CaService(CaConfig &config) {
+	string module = "CaService";
 	mConfig = config;
-	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM");
-	mSenderToDcc = new CommunicationSender("CaService", "6666");
-	mSenderToLdm = new CommunicationSender("CaService", "8888");
+	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "CAM");
+	mSenderToDcc = new CommunicationSender(module, "6666");
+	mSenderToLdm = new CommunicationSender(module, "8888");
+
+	mGpsReceiver = new GpsDataReceiver(module, "3333", "GPS");
 
 	mLogger = new LoggingUtility("CaService");
 
@@ -32,10 +35,13 @@ CaService::CaService(CaConfig &config) {
 
 CaService::~CaService() {
 	mThreadReceive->join();
+	mGpsDataReceiveThread->join();
 }
 
 void CaService::init() {
 	mThreadReceive = new boost::thread(&CaService::receive, this);
+
+	mGpsDataReceiveThread = new boost::thread(&CaService::receiveGpsData, this);
 
 	mTimer->async_wait(
 			boost::bind(&CaService::triggerCam, this,
@@ -60,6 +66,13 @@ void CaService::receive() {
 
 		cout << "forward incoming CAM to LDM" << endl;
 		mSenderToLdm->send(envelope, byteMessage);	//send serialized CAM to LDM
+	}
+}
+
+void CaService::receiveGpsData() {
+	while (1) {
+		string data = mGpsReceiver->receive();
+		cout << "GPS DATA: " << data << endl;
 	}
 }
 

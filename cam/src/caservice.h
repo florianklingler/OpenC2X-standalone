@@ -7,6 +7,7 @@
 #include <buffers/build/wrapper.pb.h>
 #include <buffers/build/cam.pb.h>
 #include <boost/asio.hpp>
+#include <utility/GpsDataReceiver.h>
 
 struct CaConfig {
 	double mCamTriggerInterval;
@@ -26,13 +27,17 @@ public:
 	void triggerCam(const boost::system::error_code &ec);
 	camPackage::CAM generateCam();
 	wrapperPackage::WRAPPER generateWrapper(camPackage::CAM cam);
+	void receiveGpsData();
 
 private:
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;
 
+	GpsDataReceiver* mGpsReceiver;
+
 	boost::thread* mThreadReceive;
+	boost::thread* mGpsDataReceiveThread;
 
 	LoggingUtility* mLogger;
 	CaConfig mConfig;
