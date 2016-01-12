@@ -1,33 +1,32 @@
 #include "GpsService.h"
 
-#include <gps.h>
 #include <unistd.h>
 #include <math.h>
 #include <signal.h>
+#include <sys/ioctl.h>
 #include <iostream>
 #include <cstdlib>
 
 using namespace std;
 
-gps_data_t* GpsService::mGpsData;
+INITIALIZE_EASYLOGGINGPP
+
+struct gps_data_t GpsService::mGpsData;
 
 GpsService::GpsService() {
 	mLastTime = NAN;
+	mSender = new GpsDataSender("GpsService", "3333");
 }
 
 GpsService::~GpsService() {
 }
 
 bool GpsService::connectToGpsd() {
-	if (gps_open("localhost", "2947", mGpsData) < 0) {
+	if (gps_open("localhost", "2947", &mGpsData) < 0) {
 		cout << "Could not connect to GPSd" << endl;
 		return false;
 	}
 	return true;
-}
-
-gps_data_t* GpsService::getGpsData() {
-	return mGpsData;
 }
 
 int GpsService::getGpsData2(gps_data_t* gpsdata) {
@@ -62,37 +61,37 @@ void GpsService::receiveData() {
 	sprintf(gpsDumpMsg, "%17s,%17s,%17s,%17s,%23s,%23s,%3s\n", "Lat", "Lon",
 			"Alt", "Accuracy", "Time", "Online", "Sat");
 	while (1) {
-		if (getGpsData2(mGpsData) != 0) {
+		if (getGpsData2(&mGpsData) != 0) {
 			continue;
 		}
-		if (mGpsData->fix.time != mGpsData->fix.time) {
+		if (mGpsData.fix.time != mGpsData.fix.time) {
 			continue;
 		}
-		if (mGpsData->fix.time == mLastTime) {
+		if (mGpsData.fix.time == mLastTime) {
 			continue;
 		}
-		mLastTime = mGpsData->fix.time;
+		mLastTime = mGpsData.fix.time;
 
-		gpsDataToString(mGpsData, gpsDumpMsg);
+		gpsDataToString(&mGpsData, gpsDumpMsg);
 		fprintf(stdout, "%s", gpsDumpMsg);
-
+		mSender->send("GPS", gpsDumpMsg);
 	}
 }
 
 void GpsService::closeGps() {
-	gps_close(mGpsData);
+	gps_close(&mGpsData);
 }
 
 void GpsService::startStreaming() {
-	gps_stream(mGpsData, WATCH_ENABLE | WATCH_JSON, NULL);
+	gps_stream(&mGpsData, WATCH_ENABLE | WATCH_JSON, NULL);
 }
 
 void GpsService::stopStreaming() {
-	gps_stream(mGpsData, WATCH_DISABLE, NULL);
+	gps_stream(&mGpsData, WATCH_DISABLE, NULL);
 }
 
 void sigHandler(int sigNum) {
-	cout<<"Caught signal: "<<sigNum<<endl;
+	cout << "Caught signal: " << sigNum << endl;
 	GpsService::stopStreaming();
 	GpsService::closeGps();
 }
@@ -106,6 +105,7 @@ int main() {
 		// Could not connect to GPSd. Keep trying every 1 sec
 		sleep(1);
 	}
+
 	gps.startStreaming();
 
 	gps.receiveData();

@@ -2,6 +2,8 @@
 #define GPSSERVICE_H_
 
 #include <gps.h>
+#include <utility/GpsDataSender.h>
+#include <utility/LoggingUtility.h>
 
 struct GPSDataContainer {
 	double mLat;
@@ -14,18 +16,19 @@ public:
 	GpsService();
 	~GpsService();
 	bool connectToGpsd();
-	gps_data_t* getGpsData();
-	int getGpsData2(gps_data_t* gpsdata);
+	int getGpsData2(struct gps_data_t* gpsdata);
 	void receiveData();
-	void gpsDataToString(gps_data_t* gpsdata, char* output_dump);
+	void gpsDataToString(struct gps_data_t* gpsdata, char* output_dump);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
 
 private:
-	static gps_data_t* mGpsData;
-	GPSDataContainer* mDataContainer;
+	static struct gps_data_t mGpsData;
+	//GPSDataContainer* mDataContainer;
 	double mLastTime;
+	GpsDataSender* mSender;
+
 };
 
 #endif
