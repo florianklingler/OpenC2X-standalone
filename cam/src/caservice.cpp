@@ -139,6 +139,7 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
 
 	wrapper.set_createtime(cam.createtime());
+	wrapper.set_validuntil(cam.createtime() + 1*1000*1000*1000);
 	wrapper.set_content(serializedCam);
 
 	return wrapper;

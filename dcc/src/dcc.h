@@ -2,10 +2,12 @@
 #define DCC_H_
 
 #include "RingBuffer.h"
+#include "LeakyBucket.h"
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
+#include <buffers/build/wrapper.pb.h>
 
 
 class DCC {
@@ -22,6 +24,8 @@ public:
 	double simulateChannelLoad();
 	void measureChannel(const boost::system::error_code &ec);
 	void updateState(const boost::system::error_code &ec);
+	void addToken(const boost::system::error_code& e);
+	void sendQueuedPackets();
 
 private:
 	CommunicationReceiver* mReceiverFromCa;
@@ -37,6 +41,7 @@ private:
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimerMeasure;
 	boost::asio::deadline_timer* mTimerStateUpdate;
+	boost::asio::deadline_timer* mTimerAddToken;
 
 
 	int mCurrentState;
@@ -47,5 +52,8 @@ private:
 
 	RingBuffer<double> mChannelLoadInTimeUp;
 	RingBuffer<double> mChannelLoadInTimeDown;
+
+
+	LeakyBucket<wrapperPackage::WRAPPER>* mBucketBE;
 };
 #endif

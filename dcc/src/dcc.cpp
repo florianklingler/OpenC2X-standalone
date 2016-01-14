@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 #include <random>
-#include <buffers/build/wrapper.pb.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace std;
 
@@ -29,6 +29,8 @@ DCC::DCC() {
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
 
+	mBucketBE = new LeakyBucket<wrapperPackage::WRAPPER>(25, 25);	//bucket size, queue size
+
 	mChannelLoadInTimeUp.reset(1);		//NDL_timeUp / DCC_measureInterval
 	mChannelLoadInTimeDown.reset(5);	//NDL_timeDown / DCC_measureInterval
 
@@ -37,12 +39,15 @@ DCC::DCC() {
 
 	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
 	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
+	mTimerAddToken = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(2000));	//TODO: adjust interval based on state and AC
 }
 
 DCC::~DCC() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
 	mThreadReceiveFromHw->join();
+
+	//delete mBucketBE;
 }
 
 void DCC::init() {
@@ -52,26 +57,41 @@ void DCC::init() {
 
 	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
+	mTimerAddToken->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error));
 	mIoService.run();
 }
 
+
+//////////////////////////////////////////
+//Send & receive
+
 void DCC::receiveFromCa() {
-	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized DENM)
+	string envelope;					//envelope
+	string byteMessage;					//byte string (serialized WRAPPER)
+	wrapperPackage::WRAPPER wrapper;	//deserialized WRAPPER
+
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
 		envelope = received.first;
 		byteMessage = received.second;
 
 		//processing...
-		cout << "received new CAM and forward to HW" << endl;
-		mSenderToHw->sendToHw(byteMessage);
+		cout << "received new CAM and enqueue to BE" << endl;
+
+		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
+		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+		mBucketBE->flushQueue(nowTime);
+		bool enqueued = mBucketBE->enqueue(&wrapper, wrapper.validuntil());
+		if (enqueued) {
+			cout << "Queue length: " << mBucketBE->getQueuedPackets() << endl;
+			sendQueuedPackets();
+		}
 	}
 }
 
 void DCC::receiveFromDen() {
 	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized DENM)
+	string byteMessage;		//byte string (serialized WRAPPER)
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();
 		envelope = received.first;
@@ -103,6 +123,8 @@ void DCC::receiveFromHw() {
 }
 
 
+//////////////////////////////////////////
+//Decentralized congestion control
 
 void DCC::setCurrentState(int state) {
 	//int oldState = mCurrentState;	//TODO: used later for states (refs)
@@ -144,7 +166,6 @@ double DCC::simulateChannelLoad() {	//just for testing/simulation
 
 void DCC::measureChannel(const boost::system::error_code &ec) {
 	double channelLoad = simulateChannelLoad();
-	cout << "Channel load: " << channelLoad << endl;
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(channelLoad);
@@ -168,6 +189,37 @@ void DCC::updateState(const boost::system::error_code &ec) {
 
 	mTimerStateUpdate->expires_from_now(boost::posix_time::millisec(1000));		//NDL_minDccSampling
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
+}
+
+void DCC::addToken(const boost::system::error_code& e) {
+	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	mBucketBE->flushQueue(nowTime);												//remove all packets that already expired
+	mBucketBE->increment();														//add token
+	cout << "Available tokens: " << mBucketBE->availableTokens << endl;
+	sendQueuedPackets();
+
+	mTimerAddToken->expires_from_now(boost::posix_time::millisec(2000));			//TODO: adjust interval based on state and AC
+	mTimerAddToken->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error));
+}
+
+void DCC::sendQueuedPackets() {
+	bool sent = false;
+	while(wrapperPackage::WRAPPER* wrapper = mBucketBE->dequeue()) {
+		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+		if(wrapper->validuntil() >= nowTime) {	//message still valid
+
+			//setMsgLimits(msgQ);
+			string byteMessage;
+			wrapper->SerializeToString(&byteMessage);
+			mSenderToHw->sendToHw(byteMessage);
+			sent = true;
+			cout << "Send CAM to HW" << endl;
+			cout << "Remaining tokens: " << mBucketBE->availableTokens << endl;
+			cout << "Queue length: " << mBucketBE->getQueuedPackets() << endl;
+		}
+//		else																		//message expired
+//			delete wrapper;
+	}
 }
 
 
