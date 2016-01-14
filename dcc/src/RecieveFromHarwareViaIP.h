@@ -24,15 +24,14 @@ public:
 	void recieve();
 
 private:
-	//TODO: rename to fit to convention
-	struct sockaddr_in myaddr;	/* our address */
-	struct sockaddr_in remaddr;	/* remote address */
-	socklen_t addrlen = sizeof(remaddr);		/* length of addresses */
-	int recvlen = 0;			/* # bytes received */
-	int fd =0;					/* our socket */
-	unsigned char buf[BUFSIZE];	/* receive buffer */
-	int service_port = 21234;
-	int repetition = 0;
+	struct sockaddr_in mMyaddr;	/* our address */
+	struct sockaddr_in mRemoteAddr;	/* remote address */
+	socklen_t mAddrlen = sizeof(mRemoteAddr);		/* length of addresses */
+	int mRecvlen = 0;			/* # bytes received */
+	int mSocket =0;					/* our socket */
+	unsigned char mRecvBuffer[BUFSIZE];	/* receive buffer */
+	int mService_port = 21234;
+	int mRepetition = 0;
 
 	CommunicationSender* mSenderToDcc;
 	boost::thread* mThreadReceive;

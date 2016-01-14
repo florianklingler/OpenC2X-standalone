@@ -21,7 +21,7 @@ RecieveFromHarwareViaIP::~RecieveFromHarwareViaIP() {
 void RecieveFromHarwareViaIP::init(){
 	/* create a UDP socket */
 
-	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	if ((mSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		mLogger->logDebug("cannot create socket\n");
 		return;
 	}
@@ -29,12 +29,12 @@ void RecieveFromHarwareViaIP::init(){
 
 	/* bind the socket to any valid IP address and a specific port */
 
-	memset((char *)&myaddr, 0, sizeof(myaddr));
-	myaddr.sin_family = AF_INET;
-	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	myaddr.sin_port = htons(service_port);
+	memset((char *)&mMyaddr, 0, sizeof(mMyaddr));
+	mMyaddr.sin_family = AF_INET;
+	mMyaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	mMyaddr.sin_port = htons(mService_port);
 
-	if (bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
+	if (bind(mSocket, (struct sockaddr *)&mMyaddr, sizeof(mMyaddr)) < 0) {
 		mLogger->logDebug("bind failed");
 		return;
 	}
@@ -54,19 +54,19 @@ void RecieveFromHarwareViaIP::recieve(){
 	/* now loop, receiving data and printing what we received */
 		while(true) {
 			//fprintf(stderr, "waiting on port %d\n", service_port);
-			recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
+			mRecvlen = recvfrom(mSocket, mRecvBuffer, BUFSIZE, 0, (struct sockaddr *)&mRemoteAddr, &mAddrlen);
 			//printf("received %d bytes\n", recvlen);
-			if (recvlen > 0) {
-				buf[recvlen] = 0;
+			if (mRecvlen > 0) {
+				mRecvBuffer[mRecvlen] = 0;
 				//printf("received message: \"%s\"\n", buf);
 
 				std::ostringstream oss;
-				oss <<  "\n seqno: " << seqno << " buf: "<< buf
-						<< " serservice_port: " << service_port
-						<< " repetition: " << repetition << std::endl;
+				oss <<  "\n seqno: " << seqno << " buf: "<< mRecvBuffer
+						<< " serservice_port: " << mService_port
+						<< " repetition: " << mRepetition << std::endl;
 				mLogger->logDebug(oss.str());
 				//send to dcc
-				std::string tmp(reinterpret_cast<char*>(buf));
+				std::string tmp(reinterpret_cast<char*>(mRecvBuffer));
 				mSenderToDcc->sendToHw(tmp);
 			}
 			seqno++;
