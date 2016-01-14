@@ -1,6 +1,9 @@
 #ifndef __ZHELPERS_HPP_INCLUDED__
 #define __ZHELPERS_HPP_INCLUDED__
 
+//ignore unused function warning
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 //  Include a bunch of headers that we will need in the examples
 
 #include <zmq.hpp> // https://github.com/zeromq/cppzmq
