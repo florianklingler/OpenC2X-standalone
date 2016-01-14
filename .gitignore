@@ -11,3 +11,7 @@
 #logs
 *.log
 *.csv
+
+#stuff
+**/.settings/language.settings.xml
+.directory
