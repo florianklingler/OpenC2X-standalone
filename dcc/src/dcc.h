@@ -1,6 +1,7 @@
 #ifndef DCC_H_
 #define DCC_H_
 
+#include "DccConfig.h"
 #include "RingBuffer.h"
 #include "LeakyBucket.h"
 #include <boost/thread.hpp>
@@ -12,7 +13,7 @@
 
 class DCC {
 public:
-	DCC();
+	DCC(DccConfig &config);
 	~DCC();
 
 	void init();
@@ -55,5 +56,7 @@ private:
 
 
 	LeakyBucket<wrapperPackage::WRAPPER>* mBucketBE;
+
+	DccConfig mConfig;
 };
 #endif

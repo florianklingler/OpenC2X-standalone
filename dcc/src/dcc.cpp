@@ -12,33 +12,28 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-const int STATE_UNDEF = -1;
-const int STATE_RELAXED = 0;
-const int STATE_ACTIVE1 = 1;
-const int STATE_RESTRICTED = 2;		//TODO: has to be adjusted when using more than one active state
-
-
-DCC::DCC() {
-	mReceiverFromCa = new CommunicationReceiver("Dcc", "6666", "CAM");
-	mReceiverFromDen = new CommunicationReceiver("Dcc", "7777", "DENM");
-	mReceiverFromHw = new CommunicationReceiver("Dcc", "4444", "");
-	mSenderToHw = new CommunicationSender("Dcc", "4444");
-	mSenderToServices = new CommunicationSender("Dcc", "5555");
+DCC::DCC(DccConfig &config) {
+	string module = "Dcc";
+	mConfig = config;
+	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
+	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
+	mReceiverFromHw = new CommunicationReceiver(module, "4444", "");
+	mSenderToHw = new CommunicationSender(module, "4444");
+	mSenderToServices = new CommunicationSender(module, "5555");
 
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
 
-	mBucketBE = new LeakyBucket<wrapperPackage::WRAPPER>(25, 25);	//bucket size, queue size
+	mBucketBE = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE);	//25, 25
 
-	mChannelLoadInTimeUp.reset(1);		//NDL_timeUp / DCC_measureInterval
-	mChannelLoadInTimeDown.reset(5);	//NDL_timeDown / DCC_measureInterval
-
+	mChannelLoadInTimeUp.reset(mConfig.NDL_timeUp / mConfig.DCC_measure_interval_Tm);		//1
+	mChannelLoadInTimeDown.reset(mConfig.NDL_timeDown / mConfig.DCC_measure_interval_Tm);	//5
 	mCurrentState = STATE_UNDEF;
 	setCurrentState(STATE_RELAXED);
 
-	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
-	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
+	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
+	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));	//1000
 	mTimerAddToken = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(2000));	//TODO: adjust interval based on state and AC
 }
 
@@ -170,7 +165,7 @@ void DCC::measureChannel(const boost::system::error_code &ec) {
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(channelLoad);
 
-	mTimerMeasure->expires_from_now(boost::posix_time::millisec(1000));	//DCC_measureInterval
+	mTimerMeasure->expires_from_now(boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
 	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
 }
 
@@ -178,16 +173,16 @@ void DCC::updateState(const boost::system::error_code &ec) {
 	double clMinInTimeUp = mChannelLoadInTimeUp.min();		//minimal channel load during TimeUp-interval
 	double clMaxInTimeDown = mChannelLoadInTimeDown.max();	//TimeDown-interval > TimeUp-interval
 
-	if ((mCurrentState == STATE_RELAXED) && (clMinInTimeUp >= 0.15))			//NDL_minChannelLoad
+	if ((mCurrentState == STATE_RELAXED) && (clMinInTimeUp >= mConfig.NDL_minChannelLoad))				//0.15
 		setCurrentState(STATE_ACTIVE1);
-	else if ((mCurrentState == STATE_RESTRICTED) && (clMaxInTimeDown < 0.4))	//NDL_maxChannelLoad
+	else if ((mCurrentState == STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_maxChannelLoad))		//0.4
 		setCurrentState(STATE_ACTIVE1);
-	else if ((mCurrentState != STATE_UNDEF && mCurrentState != STATE_RELAXED && mCurrentState != STATE_RESTRICTED) && (clMaxInTimeDown < 0.15))	//NDL_minChannelLoad
+	else if ((mCurrentState != STATE_UNDEF && mCurrentState != STATE_RELAXED && mCurrentState != STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_minChannelLoad))	//0.15
 		setCurrentState(STATE_RELAXED);
-	else if ((mCurrentState != STATE_UNDEF && mCurrentState != STATE_RELAXED && mCurrentState != STATE_RESTRICTED) && (clMinInTimeUp >= 0.4))	//NDL_maxChannelLoad
+	else if ((mCurrentState != STATE_UNDEF && mCurrentState != STATE_RELAXED && mCurrentState != STATE_RESTRICTED) && (clMinInTimeUp >= mConfig.NDL_maxChannelLoad))	//0.4
 		setCurrentState(STATE_RESTRICTED);
 
-	mTimerStateUpdate->expires_from_now(boost::posix_time::millisec(1000));		//NDL_minDccSampling
+	mTimerStateUpdate->expires_from_now(boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));		//1000
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
 }
 
@@ -223,9 +218,18 @@ void DCC::sendQueuedPackets() {
 }
 
 
-
 int main() {
-	DCC dcc;
+	DccConfig config;
+	try {
+		// TODO: set proper path to config.xml
+		// Right now, pwd is dcc/Debug while running dcc
+		config.load_base_Parameters("../src/config.xml");
+		config.load_NDL_Parameters();
+	} catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		return EXIT_FAILURE;
+	}
+	DCC dcc(config);
 	dcc.init();
 
 	return EXIT_SUCCESS;
