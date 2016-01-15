@@ -15,5 +15,8 @@ message WRAPPER {
 	required Type type = 2;
 	required Priority priority = 3;
 	optional int64 createTime = 4;
-	required bytes content = 5;
+	optional int64 validUntil = 5;
+	optional double txPower = 6;
+	optional double bitRate = 7;
+	required bytes content = 8;
 }
