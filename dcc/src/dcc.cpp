@@ -29,11 +29,10 @@ DCC::~DCC() {
 }
 
 void DCC::init() {
+	mSenderToHw->init();
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
-
-	mSenderToHw->init();
 }
 
 void DCC::receiveFromCa() {
@@ -86,9 +85,6 @@ void DCC::receiveFromHw() {
 int main() {
 	DCC dcc;
 	dcc.init();
-
-	SendToHardwareViaIP s;
-	s.init();
 
 	return EXIT_SUCCESS;
 }

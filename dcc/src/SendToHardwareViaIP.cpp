@@ -10,6 +10,7 @@ using namespace std;
 
 SendToHardwareViaIP::SendToHardwareViaIP() {
 	mLogger = new LoggingUtility("SendToHardware");
+	//TODO: change this IP, current value is for testing on my virtual machine
 	mServer = "172.16.207.255";
 }
 
