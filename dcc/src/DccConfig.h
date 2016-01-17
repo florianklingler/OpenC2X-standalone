@@ -59,8 +59,10 @@ namespace Channels {
 	};
 }
 
+const Channels::t_access_category mAccessCategories[4] = {Channels::AC_VI, Channels::AC_VO, Channels::AC_BE, Channels::AC_BK};	//all used ACs
 
-template<typename T> class DCC_NDL_val {
+//NDL value from the config.xml
+template<typename T> class DCC_NDL_value {
 	public:
 		bool isRef;
 		T val;
@@ -68,7 +70,7 @@ template<typename T> class DCC_NDL_val {
 
 template<typename T> class DCC_NDL_Param {
 	public:
-		std::map<Channels::t_access_category, DCC_NDL_val<T> > ac;
+		std::map<Channels::t_access_category, DCC_NDL_value<T> > ac;
 		DCC_NDL_Param() {};
 		DCC_NDL_Param(const DCC_NDL_Param<T>& param) {
 			ac = param.ac;
@@ -91,62 +93,42 @@ class DCC_State_Config {
 			this->asChanLoad = asChanLoad;
 
 			// asDcc
-			DCC_NDL_val<dcc_Mechanism_t> asDcc_val;
+			DCC_NDL_value<dcc_Mechanism_t> asDcc_val;
 			asDcc_val.isRef = false;
 			asDcc_val.val = asDcc_def;
 
-			asDcc.ac[Channels::AC_VI] = asDcc_val;
-			asDcc.ac[Channels::AC_VO] = asDcc_val;
-			asDcc.ac[Channels::AC_BE] = asDcc_val;
-			asDcc.ac[Channels::AC_BK] = asDcc_val;
-
-
 			// asTxPower
-			DCC_NDL_val<double> asTxPower_val;
+			DCC_NDL_value<double> asTxPower_val;
 			asTxPower_val.isRef = false;
 			asTxPower_val.val = asTxPower_def;
 
-			asTxPower.ac[Channels::AC_VI] = asTxPower_val;
-			asTxPower.ac[Channels::AC_VO] = asTxPower_val;
-			asTxPower.ac[Channels::AC_BE] = asTxPower_val;
-			asTxPower.ac[Channels::AC_BK] = asTxPower_val;
-
-
-			// asPacketInterval
-			DCC_NDL_val<double> asPacketInterval_val;
+			// asPacketInterval TODO: rename to tokenInterval?
+			DCC_NDL_value<double> asPacketInterval_val;
 			asPacketInterval_val.isRef = false;
 			asPacketInterval_val.val = asPacketInterval_def;
 
-			asPacketInterval.ac[Channels::AC_VI] = asPacketInterval_val;
-			asPacketInterval.ac[Channels::AC_VO] = asPacketInterval_val;
-			asPacketInterval.ac[Channels::AC_BE] = asPacketInterval_val;
-			asPacketInterval.ac[Channels::AC_BK] = asPacketInterval_val;
-
-
 			// asDatarate
-			DCC_NDL_val<double> asDatarate_val;
+			DCC_NDL_value<double> asDatarate_val;
 			asDatarate_val.isRef = false;
 			asDatarate_val.val = asDatarate_def;
 
-			asDatarate.ac[Channels::AC_VI] = asDatarate_val;
-			asDatarate.ac[Channels::AC_VO] = asDatarate_val;
-			asDatarate.ac[Channels::AC_BE] = asDatarate_val;
-			asDatarate.ac[Channels::AC_BK] = asDatarate_val;
-
 			// asCarrierSense
-			DCC_NDL_val<double> asCarrierSense_val;
+			DCC_NDL_value<double> asCarrierSense_val;
 			asCarrierSense_val.isRef = false;
 			asCarrierSense_val.val = asCarrierSense_def;
 
-			asCarrierSense.ac[Channels::AC_VI] = asCarrierSense_val;
-			asCarrierSense.ac[Channels::AC_VO] = asCarrierSense_val;
-			asCarrierSense.ac[Channels::AC_BE] = asCarrierSense_val;
-			asCarrierSense.ac[Channels::AC_BK] = asCarrierSense_val;
+			//set for each AC
+			for (Channels::t_access_category accessCategory : mAccessCategories) {
+				asDcc.ac[accessCategory] = asDcc_val;
+				asTxPower.ac[accessCategory] = asTxPower_val;
+				asPacketInterval.ac[accessCategory] = asPacketInterval_val;
+				asDatarate.ac[accessCategory] = asDatarate_val;
+				asCarrierSense.ac[accessCategory] = asCarrierSense_val;
+			}
 		}
 };
 
 struct DccConfig {
-
 	// General
 	std::string xml_file;
 
@@ -202,7 +184,6 @@ struct DccConfig {
 	std::map<size_t, DCC_State_Config> stateConfig;
 
 	void load_base_Parameters(const std::string &filename) {
-
 		using boost::property_tree::ptree;
 		ptree pt;
 

@@ -27,17 +27,17 @@ DCC::DCC(DccConfig &config) {
 
 	mChannelLoadInTimeUp.reset(mConfig.NDL_timeUp / mConfig.DCC_measure_interval_Tm);		//1
 	mChannelLoadInTimeDown.reset(mConfig.NDL_timeDown / mConfig.DCC_measure_interval_Tm);	//5
-	initialize_States(mConfig.NDL_numActiveState);
+	initStates(mConfig.NDL_numActiveState);
 	mCurrentStateId = STATE_UNDEF;
 	setCurrentState(STATE_RELAXED);
 
-	initialize_LeakyBuckets();
+	initLeakyBuckets();
 
 	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
 	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));	//1000
 //	mTimerAddTokenVI = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_VI)*1000.00));	//40
 //	mTimerAddTokenVO = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_VO)*1000.00));	//40
-	mTimerAddTokenBE = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_BE)*1000.00));	//40
+	mTimerAddTokenBE = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(Channels::AC_BE)*1000.00));	//40
 //	mTimerAddTokenBK = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_BK)*1000.00));	//40
 }
 
@@ -86,7 +86,7 @@ void DCC::receiveFromCa() {
 		byteMessage = received.second;
 
 		//processing...
-		cout << "received new CAM and enqueue to BE" << endl;
+		cout << "received new CAM -> enqueue to BE" << endl;
 
 		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
@@ -145,27 +145,24 @@ void DCC::receiveFromHw() {
 //////////////////////////////////////////
 //Decentralized congestion control
 
-void DCC::initialize_States(int numActiveStates) {
+//initializes states and sets default values
+void DCC::initStates(int numActiveStates) {
+	states.insert(make_pair(STATE_RELAXED, State(mConfig.stateConfig.find(STATE_RELAXED)->second)));		//relaxed state
 
-	// defaults for RELAXED state
-	states.insert(std::make_pair(STATE_RELAXED, State(mConfig.stateConfig.find(STATE_RELAXED)->second)));
+	for(int i=1;i<=numActiveStates;i++)																		//active states
+		states.insert(make_pair(i, State(mConfig.stateConfig.find(i)->second)));
 
-	// defaults for ACTIVE states
-	for(int i=1;i<=numActiveStates;i++) {
-		states.insert(std::make_pair(i, State(mConfig.stateConfig.find(i)->second)));
-	}
-
-	// defaults for RESTRICTED state
-	states.insert(std::make_pair(STATE_RESTRICTED, State(mConfig.stateConfig.find(STATE_RESTRICTED)->second)));
+	states.insert(make_pair(STATE_RESTRICTED, State(mConfig.stateConfig.find(STATE_RESTRICTED)->second)));	//restricted states
 }
 
-void DCC::initialize_LeakyBuckets() {
+void DCC::initLeakyBuckets() {
 //	mBucketVI = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI);
 //	mBucketVO = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO);
 	mBucketBE = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE);	//25, 25
 //	mBucketBK = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK);
 }
 
+//simulates realistic channel load; to be replaced with actual measuremetns
 double DCC::simulateChannelLoad() {	//just for testing/simulation
 	double pCurr = mBernoulli.p();
 	double pNew = pCurr + mUniform(mRandNumberGen);
@@ -183,30 +180,32 @@ double DCC::simulateChannelLoad() {	//just for testing/simulation
 	return sum / 100000.0;	//avg of probings to avoid rapid/drastic changes in channel load
 }
 
+//gets the measured (or simulated) channel load and stores it in 2 ring buffers (to decide state changes)
 void DCC::measureChannel(const boost::system::error_code &ec) {
 	double channelLoad = simulateChannelLoad();
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(channelLoad);
 
-	mTimerMeasure->expires_at(mTimerMeasure->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1000
+	mTimerMeasure->expires_at(mTimerMeasure->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1s
 	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
 }
 
+//updates state according to recent channel load measurements
 void DCC::updateState(const boost::system::error_code &ec) {
 	double clMinInTimeUp = mChannelLoadInTimeUp.min();		//minimal channel load during TimeUp-interval
 	double clMaxInTimeDown = mChannelLoadInTimeDown.max();	//TimeDown-interval > TimeUp-interval
 
-	if ((mCurrentStateId == STATE_RELAXED) && (clMinInTimeUp >= mConfig.NDL_minChannelLoad))				//0.15
+	if ((mCurrentStateId == STATE_RELAXED) && (clMinInTimeUp >= mConfig.NDL_minChannelLoad))				//relaxed -> active1
 		setCurrentState(STATE_ACTIVE1);
-	else if ((mCurrentStateId == STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_maxChannelLoad))		//0.4
+	else if ((mCurrentStateId == STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_maxChannelLoad))		//restricted -> active1
 		setCurrentState(STATE_ACTIVE1);
-	else if ((mCurrentStateId != STATE_UNDEF && mCurrentStateId != STATE_RELAXED && mCurrentStateId != STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_minChannelLoad))	//0.15
+	else if ((mCurrentStateId != STATE_UNDEF && mCurrentStateId != STATE_RELAXED && mCurrentStateId != STATE_RESTRICTED) && (clMaxInTimeDown < mConfig.NDL_minChannelLoad))	//active -> relaxed
 		setCurrentState(STATE_RELAXED);
-	else if ((mCurrentStateId != STATE_UNDEF && mCurrentStateId != STATE_RELAXED && mCurrentStateId != STATE_RESTRICTED) && (clMinInTimeUp >= mConfig.NDL_maxChannelLoad))	//0.4
+	else if ((mCurrentStateId != STATE_UNDEF && mCurrentStateId != STATE_RELAXED && mCurrentStateId != STATE_RESTRICTED) && (clMinInTimeUp >= mConfig.NDL_maxChannelLoad))	//active -> restricted
 		setCurrentState(STATE_RESTRICTED);
 
-	mTimerStateUpdate->expires_at(mTimerStateUpdate->expires_at() + boost::posix_time::milliseconds(mConfig.NDL_minDccSampling*1000));	//1000
+	mTimerStateUpdate->expires_at(mTimerStateUpdate->expires_at() + boost::posix_time::milliseconds(mConfig.NDL_minDccSampling*1000));	//1s
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
 }
 
@@ -216,39 +215,16 @@ void DCC::setCurrentState(int state) {
 	mCurrentStateId = state;
 	mCurrentState = &states.find(mCurrentStateId)->second;
 
+	//transition to an active state -> set "refs" based on previous/old state
 	if((oldStateId != STATE_UNDEF) && (mCurrentStateId != STATE_RELAXED) && (mCurrentStateId != STATE_RESTRICTED)) {
-			// perform state transition to an active state, set corresponding ref values
-
-			//asDcc
-			if(mCurrentState->asDcc.ac[Channels::AC_VI].isRef) mCurrentState->asDcc.ac[Channels::AC_VI].val = oldState->asDcc.ac[Channels::AC_VO].val;
-			if(mCurrentState->asDcc.ac[Channels::AC_VO].isRef) mCurrentState->asDcc.ac[Channels::AC_VO].val = oldState->asDcc.ac[Channels::AC_VO].val;
-			if(mCurrentState->asDcc.ac[Channels::AC_BE].isRef) mCurrentState->asDcc.ac[Channels::AC_BE].val = oldState->asDcc.ac[Channels::AC_BE].val;
-			if(mCurrentState->asDcc.ac[Channels::AC_BK].isRef) mCurrentState->asDcc.ac[Channels::AC_BK].val = oldState->asDcc.ac[Channels::AC_BK].val;
-
-			// asTxPower
-			if(mCurrentState->asTxPower.ac[Channels::AC_VI].isRef) mCurrentState->asTxPower.ac[Channels::AC_VI].val = oldState->asTxPower.ac[Channels::AC_VI].val;
-			if(mCurrentState->asTxPower.ac[Channels::AC_VO].isRef) mCurrentState->asTxPower.ac[Channels::AC_VO].val = oldState->asTxPower.ac[Channels::AC_VO].val;
-			if(mCurrentState->asTxPower.ac[Channels::AC_BE].isRef) mCurrentState->asTxPower.ac[Channels::AC_BE].val = oldState->asTxPower.ac[Channels::AC_BE].val;
-			if(mCurrentState->asTxPower.ac[Channels::AC_BK].isRef) mCurrentState->asTxPower.ac[Channels::AC_BK].val = oldState->asTxPower.ac[Channels::AC_BK].val;
-
-			// asPacketInterval
-			if(mCurrentState->asPacketInterval.ac[Channels::AC_VI].isRef) mCurrentState->asPacketInterval.ac[Channels::AC_VI].val = oldState->asPacketInterval.ac[Channels::AC_VI].val;
-			if(mCurrentState->asPacketInterval.ac[Channels::AC_VO].isRef) mCurrentState->asPacketInterval.ac[Channels::AC_VO].val = oldState->asPacketInterval.ac[Channels::AC_VO].val;
-			if(mCurrentState->asPacketInterval.ac[Channels::AC_BE].isRef) mCurrentState->asPacketInterval.ac[Channels::AC_BE].val = oldState->asPacketInterval.ac[Channels::AC_BE].val;
-			if(mCurrentState->asPacketInterval.ac[Channels::AC_BK].isRef) mCurrentState->asPacketInterval.ac[Channels::AC_BK].val = oldState->asPacketInterval.ac[Channels::AC_BK].val;
-
-			// asDatarate
-			if(mCurrentState->asDatarate.ac[Channels::AC_VI].isRef) mCurrentState->asDatarate.ac[Channels::AC_VI].val = oldState->asDatarate.ac[Channels::AC_VI].val;
-			if(mCurrentState->asDatarate.ac[Channels::AC_VO].isRef) mCurrentState->asDatarate.ac[Channels::AC_VO].val = oldState->asDatarate.ac[Channels::AC_VO].val;
-			if(mCurrentState->asDatarate.ac[Channels::AC_BE].isRef) mCurrentState->asDatarate.ac[Channels::AC_BE].val = oldState->asDatarate.ac[Channels::AC_BE].val;
-			if(mCurrentState->asDatarate.ac[Channels::AC_BK].isRef) mCurrentState->asDatarate.ac[Channels::AC_BK].val = oldState->asDatarate.ac[Channels::AC_BK].val;
-
-			// asCarrierSense
-			if(mCurrentState->asCarrierSense.ac[Channels::AC_VI].isRef) mCurrentState->asCarrierSense.ac[Channels::AC_VI].val = oldState->asCarrierSense.ac[Channels::AC_VI].val;
-			if(mCurrentState->asCarrierSense.ac[Channels::AC_VO].isRef) mCurrentState->asCarrierSense.ac[Channels::AC_VO].val = oldState->asCarrierSense.ac[Channels::AC_VO].val;
-			if(mCurrentState->asCarrierSense.ac[Channels::AC_BE].isRef) mCurrentState->asCarrierSense.ac[Channels::AC_BE].val = oldState->asCarrierSense.ac[Channels::AC_BE].val;
-			if(mCurrentState->asCarrierSense.ac[Channels::AC_BK].isRef) mCurrentState->asCarrierSense.ac[Channels::AC_BK].val = oldState->asCarrierSense.ac[Channels::AC_BK].val;
+		for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
+			if(mCurrentState->asDcc.ac[accessCategory].isRef) mCurrentState->asDcc.ac[accessCategory].val = oldState->asDcc.ac[accessCategory].val;
+			if(mCurrentState->asTxPower.ac[accessCategory].isRef) mCurrentState->asTxPower.ac[accessCategory].val = oldState->asTxPower.ac[accessCategory].val;
+			if(mCurrentState->asPacketInterval.ac[accessCategory].isRef) mCurrentState->asPacketInterval.ac[accessCategory].val = oldState->asPacketInterval.ac[accessCategory].val;
+			if(mCurrentState->asDatarate.ac[accessCategory].isRef) mCurrentState->asDatarate.ac[accessCategory].val = oldState->asDatarate.ac[accessCategory].val;
+			if(mCurrentState->asCarrierSense.ac[accessCategory].isRef) mCurrentState->asCarrierSense.ac[accessCategory].val = oldState->asCarrierSense.ac[accessCategory].val;
 		}
+	}
 
 	//TODO: reschedule token timer?
 
@@ -270,21 +246,23 @@ void DCC::setCurrentState(int state) {
 	}
 }
 
+//adds a token=send-permit to the specified bucket of an AC in a fixed time interval
 void DCC::addToken(const boost::system::error_code& e, Channels::t_access_category& ac,  LeakyBucket<wrapperPackage::WRAPPER>*& bucket, boost::asio::deadline_timer*& timer) {
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	bucket->flushQueue(nowTime);												//remove all packets that already expired
 	bucket->increment();														//add token
 	cout << "Available tokens: " << bucket->availableTokens << endl;
-	sendQueuedPackets(bucket);
+	sendQueuedPackets(bucket);													//send packet(s) from queue with newly added token
 
-	timer->expires_at(timer->expires_at() + boost::posix_time::milliseconds(currentPacketInterval(ac)*1000.00));
+	timer->expires_at(timer->expires_at() + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
 	timer->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac, bucket, timer));
 }
 
+//sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
 void DCC::sendQueuedPackets(LeakyBucket<wrapperPackage::WRAPPER>* bucket) {
-	while(wrapperPackage::WRAPPER* wrapper = bucket->dequeue()) {
+	while(wrapperPackage::WRAPPER* wrapper = bucket->dequeue()) {					//true if packet and token available
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-		if(wrapper->validuntil() >= nowTime) {	//message still valid
+		if(wrapper->validuntil() >= nowTime) {										//message still valid
 
 			//TODO: setMsgLimits(msgQ);
 			string byteMessage;
@@ -299,33 +277,22 @@ void DCC::sendQueuedPackets(LeakyBucket<wrapperPackage::WRAPPER>* bucket) {
 	}
 }
 
-//get parameters for current state
 
+//get parameters of current state
 dcc_Mechanism_t DCC::currentDcc(Channels::t_access_category ac) {
-	dcc_Mechanism_t currentDcc = mCurrentState->asDcc.ac[ac].val;
-
-	return currentDcc;
+	return mCurrentState->asDcc.ac[ac].val;
 }
 double DCC::currentTxPower(Channels::t_access_category ac) {
-	double currentTxPower = mCurrentState->asTxPower.ac[ac].val;
-
-	return currentTxPower;
+	return mCurrentState->asTxPower.ac[ac].val;
 }
-double DCC::currentPacketInterval(Channels::t_access_category ac) {
-	double currentPacketInterval = mCurrentState->asPacketInterval.ac[ac].val;
-
-	cout << " " << currentPacketInterval*1000.00 << endl;
-	return currentPacketInterval;
+double DCC::currentTokenInterval(Channels::t_access_category ac) {
+	return mCurrentState->asPacketInterval.ac[ac].val;
 }
 double DCC::currentDatarate(Channels::t_access_category ac) {
-	double currentDatarate = mCurrentState->asDatarate.ac[ac].val;
-
-	return currentDatarate;
+	return mCurrentState->asDatarate.ac[ac].val;
 }
 double DCC::currentCarrierSense(Channels::t_access_category ac) {
-	double currentCarrierSense = mCurrentState->asCarrierSense.ac[ac].val;
-
-	return currentCarrierSense;
+	return mCurrentState->asCarrierSense.ac[ac].val;
 }
 
 
@@ -336,7 +303,7 @@ int main() {
 		// Right now, pwd is dcc/Debug while running dcc
 		config.load_base_Parameters("../src/config.xml");
 		config.load_NDL_Parameters();
-	} catch (std::exception &e) {
+	} catch (exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}

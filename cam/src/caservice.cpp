@@ -29,8 +29,7 @@ CaService::CaService(CaConfig &config) {
 	mIdCounter = 0;
 
 	mCamTriggerInterval = mConfig.mCamTriggerInterval;
-	mTimer = new boost::asio::deadline_timer(mIoService,
-			boost::posix_time::millisec(mCamTriggerInterval));
+	mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mCamTriggerInterval));
 }
 
 CaService::~CaService() {
@@ -43,9 +42,7 @@ void CaService::init() {
 
 	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
 
-	mTimer->async_wait(
-			boost::bind(&CaService::triggerCam, this,
-					boost::asio::placeholders::error));
+	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
 	mIoService.run();
 }
 
@@ -81,9 +78,7 @@ void CaService::logDelay(string byteMessage) {
 	camPackage::CAM cam;
 	cam.ParseFromString(byteMessage);
 	int64_t createTime = cam.createtime();
-	int64_t receiveTime =
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1);
+	int64_t receiveTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t delay = receiveTime - createTime;
 	mLogger->logStats("CAM", cam.id(), delay);
 }
@@ -93,9 +88,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	send();
 
 	mTimer->expires_from_now(boost::posix_time::millisec(mCamTriggerInterval));
-	mTimer->async_wait(
-			boost::bind(&CaService::triggerCam, this,
-					boost::asio::placeholders::error));
+	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
 }
 
 //generate CAM and send to LDM and DCC
@@ -119,9 +112,7 @@ camPackage::CAM CaService::generateCam() {
 	//create CAM
 	cam.set_id(mIdCounter++);
 	cam.set_content("CAM from CA service");
-	cam.set_createtime(
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1));
+	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	return cam;
 }
@@ -157,7 +148,8 @@ int main() {
 		// TODO: set proper path to config.xml
 		// Right now, pwd is cam/Debug while running cam
 		config.loadConfigXML("../src/config.xml");
-	} catch (std::exception &e) {
+	}
+	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}

@@ -22,18 +22,18 @@ public:
 	void receiveFromDen();
 	void receiveFromHw();
 
-	void initialize_States(int numActiveStates);
+	void initStates(int numActiveStates);
 	void setCurrentState(int state);
 	double simulateChannelLoad();
 	void measureChannel(const boost::system::error_code &ec);
 	void updateState(const boost::system::error_code &ec);
-	void initialize_LeakyBuckets();
+	void initLeakyBuckets();
 	void addToken(const boost::system::error_code& e, Channels::t_access_category& ac, LeakyBucket<wrapperPackage::WRAPPER>*& bucket, boost::asio::deadline_timer*& timer);
 	void sendQueuedPackets(LeakyBucket<wrapperPackage::WRAPPER>* bucket);
 
 	dcc_Mechanism_t currentDcc(Channels::t_access_category ac);
 	double currentTxPower(Channels::t_access_category ac);
-	double currentPacketInterval(Channels::t_access_category ac);
+	double currentTokenInterval(Channels::t_access_category ac);
 	double currentDatarate(Channels::t_access_category ac);
 	double currentCarrierSense(Channels::t_access_category ac);
 
@@ -60,7 +60,7 @@ private:
 	bernoulli_distribution mBernoulli;
 	uniform_real_distribution<double> mUniform;
 
-	RingBuffer<double> mChannelLoadInTimeUp;
+	RingBuffer<double> mChannelLoadInTimeUp;	//holds the recent channel load measurements (influences state changes)
 	RingBuffer<double> mChannelLoadInTimeDown;
 
 
@@ -71,7 +71,7 @@ private:
 
 	DccConfig mConfig;
 
-	States states;
+	States states;			//map of all states
 	int mCurrentStateId;
 	State* mCurrentState;
 };

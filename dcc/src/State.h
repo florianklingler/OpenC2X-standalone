@@ -28,6 +28,6 @@ public:
 	~State() {}
 };
 
-typedef std::map<size_t, State> States;
+typedef std::map<size_t, State> States;		//map of all states
 
 #endif /* STATE_H_ */
