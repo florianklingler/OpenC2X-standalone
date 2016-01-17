@@ -16,8 +16,10 @@ DCC::DCC() {
 	mReceiverFromCa = new CommunicationReceiver("Dcc", "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("Dcc", "7777", "DENM");
 	mReceiverFromHw = new CommunicationReceiver("Dcc", "4444", "");
-	mSenderToHw = new CommunicationSender("Dcc", "4444");
+	//mSenderToHw = new CommunicationSender("Dcc", "4444");
 	mSenderToServices = new CommunicationSender("Dcc", "5555");
+
+	mSenderToHw = new SendToHardwareViaIP();
 }
 
 DCC::~DCC() {
@@ -30,6 +32,8 @@ void DCC::init() {
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
+
+	mSenderToHw->init();
 }
 
 void DCC::receiveFromCa() {
@@ -42,7 +46,7 @@ void DCC::receiveFromCa() {
 
 		//processing...
 		cout << "received new CAM and forward to HW" << endl;
-		mSenderToHw->sendToHw(byteMessage);
+		mSenderToHw->send(byteMessage);
 	}
 }
 
@@ -56,7 +60,7 @@ void DCC::receiveFromDen() {
 
 		//processing...
 		cout << "received new DENM and forward to HW" << endl;
-		mSenderToHw->sendToHw(byteMessage);
+		mSenderToHw->send(byteMessage);
 	}
 }
 
@@ -82,6 +86,9 @@ void DCC::receiveFromHw() {
 int main() {
 	DCC dcc;
 	dcc.init();
+
+	SendToHardwareViaIP s;
+	s.init();
 
 	return EXIT_SUCCESS;
 }

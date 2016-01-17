@@ -1,10 +1,10 @@
 #ifndef DCC_H_
 #define DCC_H_
 
+#include "SendToHardwareViaIP.h"
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
-
 
 
 #include <mutex>
@@ -23,11 +23,13 @@ private:
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromHw;
-	CommunicationSender* mSenderToHw;
+	//CommunicationSender* mSenderToHw;
 	CommunicationSender* mSenderToServices;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
 	boost::thread* mThreadReceiveFromHw;
+
+	SendToHardwareViaIP* mSenderToHw;
 };
 #endif
