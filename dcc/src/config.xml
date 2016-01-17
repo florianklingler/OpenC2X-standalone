@@ -9,7 +9,7 @@
 	<queueSize_AC_BE>25</queueSize_AC_BE>
 	<queueSize_AC_BK>25</queueSize_AC_BK>
 
-	<NDL_minPacketInterval>0.04</NDL_minPacketInterval>
+	<NDL_minPacketInterval>0.4</NDL_minPacketInterval>	<!-- default 0.04! -->
 	<NDL_maxPacketInterval>1.00</NDL_maxPacketInterval>
 	<NDL_defPacketInterval>0.50</NDL_defPacketInterval>
 
