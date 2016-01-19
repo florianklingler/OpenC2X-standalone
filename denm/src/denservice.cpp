@@ -106,9 +106,7 @@ denmPackage::DENM DenService::generateDenm() {
 	//create DENM
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
-	denm.set_createtime(
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1));
+	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	return denm;
 }

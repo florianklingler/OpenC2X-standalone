@@ -6,8 +6,8 @@ message WRAPPER {
 		DENM = 2;
 	 }
 	 enum Priority {
-		BE = 0;
-		BK = 1;
+		BK = 0;
+		BE = 1;
 		VI = 2;
 		VO = 3;
 	 }

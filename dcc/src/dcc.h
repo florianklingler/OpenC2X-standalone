@@ -28,8 +28,10 @@ public:
 	void measureChannel(const boost::system::error_code &ec);
 	void updateState(const boost::system::error_code &ec);
 	void initLeakyBuckets();
-	void addToken(const boost::system::error_code& e, Channels::t_access_category& ac, LeakyBucket<wrapperPackage::WRAPPER>*& bucket, boost::asio::deadline_timer*& timer);
-	void sendQueuedPackets(LeakyBucket<wrapperPackage::WRAPPER>* bucket);
+	void addToken(const boost::system::error_code& e, Channels::t_access_category ac);
+	void rescheduleAddToken(Channels::t_access_category ac);
+	void sendQueuedPackets(Channels::t_access_category ac);
+	void setMessageLimits(wrapperPackage::WRAPPER* wrapper);
 
 	dcc_Mechanism_t currentDcc(Channels::t_access_category ac);
 	double currentTxPower(Channels::t_access_category ac);
@@ -51,10 +53,8 @@ private:
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimerMeasure;
 	boost::asio::deadline_timer* mTimerStateUpdate;
-//	boost::asio::deadline_timer* mTimerAddTokenVI;
-//	boost::asio::deadline_timer* mTimerAddTokenVO;
-	boost::asio::deadline_timer* mTimerAddTokenBE;
-//	boost::asio::deadline_timer* mTimerAddTokenBK;
+
+	map<Channels::t_access_category, boost::asio::deadline_timer*> mTimerAddToken;	//timers for all four ACs
 
 	default_random_engine mRandNumberGen;
 	bernoulli_distribution mBernoulli;
@@ -63,16 +63,15 @@ private:
 	RingBuffer<double> mChannelLoadInTimeUp;	//holds the recent channel load measurements (influences state changes)
 	RingBuffer<double> mChannelLoadInTimeDown;
 
-
-//	LeakyBucket<wrapperPackage::WRAPPER>* mBucketVI;
-//	LeakyBucket<wrapperPackage::WRAPPER>* mBucketVO;
-	LeakyBucket<wrapperPackage::WRAPPER>* mBucketBE;
-//	LeakyBucket<wrapperPackage::WRAPPER>* mBucketBK;
+	map<Channels::t_access_category, LeakyBucket<wrapperPackage::WRAPPER>*> mBucket;	//LeakyBuckets for all four ACs
 
 	DccConfig mConfig;
 
 	States states;			//map of all states
 	int mCurrentStateId;
 	State* mCurrentState;
+
+	map<Channels::t_access_category, bool> addedFirstToken;					//was any token added in this state, yet?
+	map<Channels::t_access_category, boost::posix_time::ptime> lastTokenAt;	//when was the last token added in this state
 };
 #endif

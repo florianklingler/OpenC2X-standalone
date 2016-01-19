@@ -130,7 +130,7 @@ wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
 	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
 
 	wrapper.set_createtime(cam.createtime());
-	wrapper.set_validuntil(cam.createtime() + 1*1000*1000*1000);
+	wrapper.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s
 	wrapper.set_content(serializedCam);
 
 	return wrapper;
@@ -145,8 +145,6 @@ void CaConfig::loadConfigXML(const string &filename) {
 int main() {
 	CaConfig config;
 	try {
-		// TODO: set proper path to config.xml
-		// Right now, pwd is cam/Debug while running cam
 		config.loadConfigXML("../src/config.xml");
 	}
 	catch (std::exception &e) {

@@ -14,7 +14,7 @@ public:
 	size_t availableTokens;		//available number of tokens = send-permits
 	std::mutex mutex_bucket;	//mutex to control access
 	std::mutex mutex_queue;
-	typename std::list<std::pair<int64_t, T*> > queue;
+	typename std::list<std::pair<int64_t, T*> > queue;	//pair: validUntil, packet
 	size_t queueSize;
 
 	LeakyBucket(size_t bucketSize, size_t queueSize) {
@@ -127,7 +127,7 @@ public:
 			T* msg = p.second;
 
 			if(validUntil < t || eraseAll) {
-				std::cout << "message expired" << std::endl;
+				std::cout << "--flushQueue: message expired" << std::endl;
 				//delete msg;	//TODO
 				queue.erase(it++);
 			} else {

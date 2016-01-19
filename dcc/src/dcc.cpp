@@ -35,10 +35,11 @@ DCC::DCC(DccConfig &config) {
 
 	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
 	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));	//1000
-//	mTimerAddTokenVI = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_VI)*1000.00));	//40
-//	mTimerAddTokenVO = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_VO)*1000.00));	//40
-	mTimerAddTokenBE = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(Channels::AC_BE)*1000.00));	//40
-//	mTimerAddTokenBK = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentPacketInterval(Channels::AC_BK)*1000.00));	//40
+
+	for (Channels::t_access_category accessCategory : mAccessCategories) {	//create and map the timers for the four ACs
+		mTimerAddToken.insert(make_pair(accessCategory, new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(accessCategory)*1000.00))));
+		addedFirstToken[accessCategory] = false;
+	}
 }
 
 DCC::~DCC() {
@@ -48,13 +49,13 @@ DCC::~DCC() {
 
 	mTimerMeasure->cancel();
 	mTimerStateUpdate->cancel();
-//	mTimerAddTokenVI->cancel();
-//	mTimerAddTokenVO->cancel();
-	mTimerAddTokenBE->cancel();
-//	mTimerAddTokenBK->cancel();
+
+	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
+		mTimerAddToken[accessCategory]->cancel();
+	}
 
 
-	//delete mBucketBE;	TODO: fix
+//	delete mBucketBE;	//TODO: correct deletes for everything
 }
 
 void DCC::init() {
@@ -62,13 +63,32 @@ void DCC::init() {
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 
+	//start timers
 	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
-//	mTimerAddTokenVI->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, Channels::AC_VI, mBucketVI, mTimerAddTokenVI));
-//	mTimerAddTokenVO->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, Channels::AC_VO, mBucketVO, mTimerAddTokenVO));
-	mTimerAddTokenBE->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, Channels::AC_BE, mBucketBE, mTimerAddTokenBE));
-//	mTimerAddTokenBK->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, Channels::AC_BK, mBucketBK, mTimerAddTokenBK));
+
+	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
+		mTimerAddToken[accessCategory]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory));
+	}
+
 	mIoService.run();
+}
+
+//initializes states and sets default values
+void DCC::initStates(int numActiveStates) {
+	states.insert(make_pair(STATE_RELAXED, State(mConfig.stateConfig.find(STATE_RELAXED)->second)));		//relaxed state
+
+	for(int i=1;i<=numActiveStates;i++)																		//active states
+		states.insert(make_pair(i, State(mConfig.stateConfig.find(i)->second)));
+
+	states.insert(make_pair(STATE_RESTRICTED, State(mConfig.stateConfig.find(STATE_RESTRICTED)->second)));	//restricted states
+}
+
+void DCC::initLeakyBuckets() {
+	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI)));
+	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO)));
+	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE)));
+	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK)));
 }
 
 
@@ -90,11 +110,13 @@ void DCC::receiveFromCa() {
 
 		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-		mBucketBE->flushQueue(nowTime);
-		bool enqueued = mBucketBE->enqueue(&wrapper, wrapper.validuntil());
+
+		Channels::t_access_category ac = (Channels::t_access_category) wrapper.priority();
+		mBucket[ac]->flushQueue(nowTime);
+		bool enqueued = mBucket[ac]->enqueue(&wrapper, wrapper.validuntil());
 		if (enqueued) {
-			cout << "Queue length: " << mBucketBE->getQueuedPackets() << endl;
-			sendQueuedPackets(mBucketBE);
+			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
+			sendQueuedPackets(ac);
 		}
 	}
 }
@@ -114,11 +136,13 @@ void DCC::receiveFromDen() {
 
 		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-		mBucketBE->flushQueue(nowTime);
-		bool enqueued = mBucketBE->enqueue(&wrapper, wrapper.validuntil());
+
+		Channels::t_access_category ac = (Channels::t_access_category) wrapper.priority();
+		mBucket[ac]->flushQueue(nowTime);
+		bool enqueued = mBucket[ac]->enqueue(&wrapper, wrapper.validuntil());
 		if (enqueued) {
-			cout << "Queue length: " << mBucketBE->getQueuedPackets() << endl;
-			sendQueuedPackets(mBucketBE);
+			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
+			sendQueuedPackets(ac);
 		}
 	}
 }
@@ -144,23 +168,6 @@ void DCC::receiveFromHw() {
 
 //////////////////////////////////////////
 //Decentralized congestion control
-
-//initializes states and sets default values
-void DCC::initStates(int numActiveStates) {
-	states.insert(make_pair(STATE_RELAXED, State(mConfig.stateConfig.find(STATE_RELAXED)->second)));		//relaxed state
-
-	for(int i=1;i<=numActiveStates;i++)																		//active states
-		states.insert(make_pair(i, State(mConfig.stateConfig.find(i)->second)));
-
-	states.insert(make_pair(STATE_RESTRICTED, State(mConfig.stateConfig.find(STATE_RESTRICTED)->second)));	//restricted states
-}
-
-void DCC::initLeakyBuckets() {
-//	mBucketVI = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI);
-//	mBucketVO = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO);
-	mBucketBE = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE);	//25, 25
-//	mBucketBK = new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK);
-}
 
 //simulates realistic channel load; to be replaced with actual measuremetns
 double DCC::simulateChannelLoad() {	//just for testing/simulation
@@ -209,6 +216,7 @@ void DCC::updateState(const boost::system::error_code &ec) {
 	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
 }
 
+//sets the current state and updates corresponding characteristics and intervals
 void DCC::setCurrentState(int state) {
 	int oldStateId = mCurrentStateId;
 	State* oldState = mCurrentState;
@@ -226,7 +234,10 @@ void DCC::setCurrentState(int state) {
 		}
 	}
 
-	//TODO: reschedule token timer?
+	//reschedule addToken
+	for (Channels::t_access_category accessCategory : mAccessCategories) {
+		rescheduleAddToken(accessCategory);
+	}
 
 	//print current state
 	switch (mCurrentStateId) {
@@ -247,36 +258,64 @@ void DCC::setCurrentState(int state) {
 }
 
 //adds a token=send-permit to the specified bucket of an AC in a fixed time interval
-void DCC::addToken(const boost::system::error_code& e, Channels::t_access_category& ac,  LeakyBucket<wrapperPackage::WRAPPER>*& bucket, boost::asio::deadline_timer*& timer) {
+void DCC::addToken(const boost::system::error_code& e, Channels::t_access_category ac) {
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-	bucket->flushQueue(nowTime);												//remove all packets that already expired
-	bucket->increment();														//add token
-	cout << "Available tokens: " << bucket->availableTokens << endl;
-	sendQueuedPackets(bucket);													//send packet(s) from queue with newly added token
+	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
+	mBucket[ac]->increment();														//add token
+	if (ac == Channels::AC_BE)
+		cout << "Available tokens: " << mBucket[ac]->availableTokens << endl;
+	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
-	timer->expires_at(timer->expires_at() + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
-	timer->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac, bucket, timer));
+	lastTokenAt[ac] = mTimerAddToken[ac]->expires_at();
+	addedFirstToken[ac] = true;
+
+	mTimerAddToken[ac]->expires_at(mTimerAddToken[ac]->expires_at() + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
+	mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
 }
 
 //sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
-void DCC::sendQueuedPackets(LeakyBucket<wrapperPackage::WRAPPER>* bucket) {
-	while(wrapperPackage::WRAPPER* wrapper = bucket->dequeue()) {					//true if packet and token available
+void DCC::sendQueuedPackets(Channels::t_access_category ac) {
+	while(wrapperPackage::WRAPPER* wrapper = mBucket[ac]->dequeue()) {				//true if packet and token available
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		if(wrapper->validuntil() >= nowTime) {										//message still valid
+			setMessageLimits(wrapper);
 
-			//TODO: setMsgLimits(msgQ);
 			string byteMessage;
 			wrapper->SerializeToString(&byteMessage);
 			mSenderToHw->sendToHw(byteMessage);
 			cout << "Send message to HW" << endl;
-			cout << "Remaining tokens: " << bucket->availableTokens << endl;
-			cout << "Queue length: " << bucket->getQueuedPackets() << endl;
+			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
+			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
 		}
-//		else																		//message expired
-//			delete wrapper;	TODO:find a fix for that
+		else {	//TODO: does this work correctly? flushQueue deletes packets which are ignored here (it seems, packets remain in queue after being sent)		//message expired
+			cerr << "--sendQueuedPackets: message expired" << endl;
+//			delete wrapper;		//TODO: legal delete?
+		}
 	}
 }
 
+//reschedules timer for next "addToken" when switching to another state
+void DCC::rescheduleAddToken(Channels::t_access_category ac) {
+	if(addedFirstToken[ac]) {
+		//reschedule based on last token that was added (rather than time of state-switch)
+		boost::posix_time::ptime newTime = lastTokenAt[ac] + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00);
+
+		mTimerAddToken[ac]->expires_at(newTime);
+		mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
+	}
+}
+
+//sets txPower and data rate for a packet (before being sent)
+void DCC::setMessageLimits(wrapperPackage::WRAPPER* wrapper) {
+	Channels::t_access_category ac = (Channels::t_access_category) wrapper->priority();		//get AC of packet
+	dcc_Mechanism_t dcc_mechanism = currentDcc(ac);
+
+	if(dcc_mechanism == dcc_TPC || dcc_mechanism == dcc_TPC_TRC || dcc_mechanism == dcc_TPC_TDC || dcc_mechanism == dcc_TPC_TRC_TDC || dcc_mechanism == dcc_ALL)
+		wrapper->set_txpower(currentTxPower(ac));	//adjust transmission power
+
+	if(dcc_mechanism == dcc_TDC || dcc_mechanism == dcc_TPC_TDC || dcc_mechanism == dcc_TPC_TRC_TDC || dcc_mechanism == dcc_ALL)
+		wrapper->set_bitrate(currentDatarate(ac));	//adjust data rate
+}
 
 //get parameters of current state
 dcc_Mechanism_t DCC::currentDcc(Channels::t_access_category ac) {
@@ -299,10 +338,7 @@ double DCC::currentCarrierSense(Channels::t_access_category ac) {
 int main() {
 	DccConfig config;
 	try {
-		// TODO: set proper path to config.xml
-		// Right now, pwd is dcc/Debug while running dcc
-		config.load_base_Parameters("../src/config.xml");
-		config.load_NDL_Parameters();
+		config.loadParameters("../src/config.xml");
 	} catch (exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;

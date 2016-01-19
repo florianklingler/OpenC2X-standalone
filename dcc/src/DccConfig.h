@@ -183,13 +183,14 @@ struct DccConfig {
 	size_t NDL_numActiveState;
 	std::map<size_t, DCC_State_Config> stateConfig;
 
-	void load_base_Parameters(const std::string &filename) {
+	void loadParameters(const std::string &filename) {
 		using boost::property_tree::ptree;
 		ptree pt;
 
 		read_xml(filename, pt);
 
 		xml_file = std::string(filename);
+		load_NDL_Parameters();
 	}
 
 	void load_NDL_Parameters() {
