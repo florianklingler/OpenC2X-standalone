@@ -6,8 +6,9 @@
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 
-
 #include <mutex>
+
+class RecieveFromHarwareViaIP;
 
 class DCC {
 public:
@@ -17,19 +18,17 @@ public:
 	void init();
 	void receiveFromCa();
 	void receiveFromDen();
-	void receiveFromHw();
+	void receiveFromHw(string msg);
 
 private:
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverFromDen;
-	CommunicationReceiver* mReceiverFromHw;
-	//CommunicationSender* mSenderToHw;
 	CommunicationSender* mSenderToServices;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
-	boost::thread* mThreadReceiveFromHw;
 
 	SendToHardwareViaIP* mSenderToHw;
+	RecieveFromHarwareViaIP* mRecieveFromHw;
 };
 #endif

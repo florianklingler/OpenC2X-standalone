@@ -3,14 +3,14 @@
 
 
 #include "RecieveFromHarwareViaIP.h"
+#include "dcc.h"
 #include <string>
 #include <arpa/inet.h>
 #include <sstream>
 
 
-RecieveFromHarwareViaIP::RecieveFromHarwareViaIP() {
-
-	mSenderToDcc = new CommunicationSender("RecieveFromHardware", "4444");
+RecieveFromHarwareViaIP::RecieveFromHarwareViaIP(DCC* dcc) {
+	mOwner = dcc;
 	mLogger = new LoggingUtility("RecieveFromHardware");
 }
 
@@ -67,7 +67,7 @@ void RecieveFromHarwareViaIP::recieve(){
 				mLogger->logDebug(oss.str());
 				//send to dcc
 				std::string tmp(reinterpret_cast<char*>(mRecvBuffer));
-				mSenderToDcc->sendToHw(tmp);
+				mOwner->receiveFromHw(tmp);
 			}
 			seqno++;
 		}

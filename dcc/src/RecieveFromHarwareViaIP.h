@@ -16,9 +16,11 @@
 
 #define BUFSIZE 4096
 
+class DCC;
+
 class RecieveFromHarwareViaIP {
 public:
-	RecieveFromHarwareViaIP();
+	RecieveFromHarwareViaIP(DCC* dcc);
 	virtual ~RecieveFromHarwareViaIP();
 	void init();
 	void recieve();
@@ -33,7 +35,7 @@ private:
 	int mService_port = 21234;
 	int mRepetition = 0;
 
-	CommunicationSender* mSenderToDcc;
+	DCC* mOwner;
 	boost::thread* mThreadReceive;
 	LoggingUtility* mLogger;
 };

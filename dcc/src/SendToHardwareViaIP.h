@@ -18,7 +18,7 @@ public:
 private:
 	LoggingUtility* mLogger;
 
-	char* mServer;
+	const char* mServer;
 	int mServicePort = 21234;
 	int mSocket;
 	struct sockaddr_in mMyAddr;
