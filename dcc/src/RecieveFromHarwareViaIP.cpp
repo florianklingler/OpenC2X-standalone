@@ -59,14 +59,15 @@ void RecieveFromHarwareViaIP::recieve(){
 			if (mRecvlen > 0) {
 				mRecvBuffer[mRecvlen] = 0;
 				//printf("received message: \"%s\"\n", buf);
-
+				//cout << "Recv: len: "<< mRecvlen << " raw: " << mRecvBuffer << endl;
 				std::ostringstream oss;
 				oss <<  "\n seqno: " << seqno << " buf: "<< mRecvBuffer
 						<< " serservice_port: " << mService_port
-						<< " repetition: " << mRepetition << std::endl;
+						<< " repetition: " << mRepetition << " len: "<< mRecvlen <<  std::endl;
 				mLogger->logDebug(oss.str());
+
 				//send to dcc
-				std::string tmp(reinterpret_cast<char*>(mRecvBuffer));
+				std::string tmp(reinterpret_cast<char*>(mRecvBuffer), mRecvlen);
 				mOwner->receiveFromHw(tmp);
 			}
 			seqno++;

@@ -11,7 +11,7 @@ using namespace std;
 SendToHardwareViaIP::SendToHardwareViaIP() {
 	mLogger = new LoggingUtility("SendToHardware");
 	//TODO: change this IP, current value is for testing on my virtual machine
-	mServer = "172.16.207.255";
+	mServer = "127.0.0.255";
 }
 
 SendToHardwareViaIP::~SendToHardwareViaIP() {
@@ -65,20 +65,18 @@ bool SendToHardwareViaIP::init() {
 }
 
 void SendToHardwareViaIP::send(string msg) {
-	fflush(stdout);
-
-	char *buf = new char[msg.size() + 1];
-	buf[msg.size()] = 0;
-	memcpy(buf, msg.c_str(), msg.size());
+//	cout << "Send: String to send: length: "<< sizeof(msg) << ":"<<msg.length()<< " raw: "<<msg<<endl;
+	char buf[(msg.length() + 1) *sizeof(char)];
+	//buf[msg.length()] = 0;
+	memcpy(buf, msg.c_str(), (msg.length()+1)*sizeof(char));
+//	cout << "Send: buffer to send: length: "<< sizeof(buf)<<":"<<strlen(buf) << " raw: " << buf<< endl;
 
 	// send packet
-	if (sendto(mSocket, buf, sizeof(buf)/*strlen(buf)*/, MSG_DONTWAIT,
+	if (sendto(mSocket, buf, (msg.length() + 1) *sizeof(char), MSG_DONTWAIT,
 			(struct sockaddr *) &mRemoteAddr, mAddrLen) == -1) {
 		//fprintf(stderr, "sendto");
 	}
-	printf("%d\t%s\t%d\t%d\n", mSequenceNo, buf, mServicePort, mRepitition);
-	//fflush(stdout);
+	//printf("%d\t%s\t%d\t%d\n", mSequenceNo, buf, mServicePort, mRepitition);
 	mSequenceNo++;
 
-	fflush(stdout);
 }

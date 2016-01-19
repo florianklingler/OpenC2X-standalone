@@ -29,6 +29,7 @@ DCC::~DCC() {
 
 void DCC::init() {
 	mSenderToHw->init();
+	mRecieveFromHw->init();
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 }
@@ -42,7 +43,7 @@ void DCC::receiveFromCa() {
 		byteMessage = received.second;
 
 		//processing...
-		cout << "received new CAM and forward to HW" << endl;
+		//cout << "received new CAM and forward to HW \n msg length: " << byteMessage.length() << "  raw message: " << byteMessage << endl;
 		mSenderToHw->send(byteMessage);
 	}
 }

@@ -14,7 +14,7 @@
 #include <boost/thread.hpp>
 #include <zmq.hpp>
 
-#define BUFSIZE 4096
+#define BUFSIZE 2048
 
 class DCC;
 

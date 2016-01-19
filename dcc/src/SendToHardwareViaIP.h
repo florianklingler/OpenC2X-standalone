@@ -6,7 +6,6 @@
 #include <netdb.h>
 #include <string.h>
 
-#define BUFSIZE 4096
 
 class SendToHardwareViaIP {
 public:
