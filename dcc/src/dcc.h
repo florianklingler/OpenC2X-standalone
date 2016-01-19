@@ -5,6 +5,7 @@
 #include "State.h"
 #include "RingBuffer.h"
 #include "LeakyBucket.h"
+#include <mutex>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <utility/CommunicationReceiver.h>
@@ -71,7 +72,8 @@ private:
 	int mCurrentStateId;
 	State* mCurrentState;
 
-	map<Channels::t_access_category, bool> addedFirstToken;					//was any token added in this state, yet?
-	map<Channels::t_access_category, boost::posix_time::ptime> lastTokenAt;	//when was the last token added in this state
+	mutex mMutexLastTokenAt;
+	map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
+	map<Channels::t_access_category, boost::posix_time::ptime> mLastTokenAt;	//when was the last token added in this state
 };
 #endif

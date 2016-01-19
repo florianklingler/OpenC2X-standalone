@@ -38,7 +38,7 @@ DCC::DCC(DccConfig &config) {
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//create and map the timers for the four ACs
 		mTimerAddToken.insert(make_pair(accessCategory, new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(accessCategory)*1000.00))));
-		addedFirstToken[accessCategory] = false;
+		mAddedFirstToken[accessCategory] = false;
 	}
 }
 
@@ -132,7 +132,7 @@ void DCC::receiveFromDen() {
 		byteMessage = received.second;
 
 		//processing...
-		cout << "received new DENM and enqueue to BE" << endl;
+		cout << "received new DENM -> enqueue at DCC" << endl;
 
 		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
@@ -235,9 +235,11 @@ void DCC::setCurrentState(int state) {
 	}
 
 	//reschedule addToken
+	mMutexLastTokenAt.lock();
 	for (Channels::t_access_category accessCategory : mAccessCategories) {
 		rescheduleAddToken(accessCategory);
 	}
+	mMutexLastTokenAt.unlock();
 
 	//print current state
 	switch (mCurrentStateId) {
@@ -263,19 +265,24 @@ void DCC::addToken(const boost::system::error_code& e, Channels::t_access_catego
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
 	if (ac == Channels::AC_BE)
-		cout << "Available tokens: " << mBucket[ac]->availableTokens << endl;
+		cout << "Added token -> available tokens: " << mBucket[ac]->availableTokens << endl;
 	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
-	lastTokenAt[ac] = mTimerAddToken[ac]->expires_at();
-	addedFirstToken[ac] = true;
+	mMutexLastTokenAt.lock();
+	mLastTokenAt[ac] = mTimerAddToken[ac]->expires_at();
+	mAddedFirstToken[ac] = true;
 
 	mTimerAddToken[ac]->expires_at(mTimerAddToken[ac]->expires_at() + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
 	mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
+
+	if (ac == Channels::AC_BE)
+		cout << "next token at: " << mTimerAddToken[ac]->expires_at() << endl;
+	mMutexLastTokenAt.unlock();
 }
 
 //sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
 void DCC::sendQueuedPackets(Channels::t_access_category ac) {
-	while(wrapperPackage::WRAPPER* wrapper = mBucket[ac]->dequeue()) {				//true if packet and token available
+	while(wrapperPackage::WRAPPER* wrapper = mBucket[ac]->dequeue()) {				//true if packet and token available -> pop 1st packet from queue
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		if(wrapper->validuntil() >= nowTime) {										//message still valid
 			setMessageLimits(wrapper);
@@ -283,9 +290,9 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 			string byteMessage;
 			wrapper->SerializeToString(&byteMessage);
 			mSenderToHw->sendToHw(byteMessage);
-			cout << "Send message to HW" << endl;
+			cout << "Send wrapper " << wrapper->id() << " to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
-			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
+			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;
 		}
 		else {	//TODO: does this work correctly? flushQueue deletes packets which are ignored here (it seems, packets remain in queue after being sent)		//message expired
 			cerr << "--sendQueuedPackets: message expired" << endl;
@@ -295,13 +302,20 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 }
 
 //reschedules timer for next "addToken" when switching to another state
-void DCC::rescheduleAddToken(Channels::t_access_category ac) {
-	if(addedFirstToken[ac]) {
+void DCC::rescheduleAddToken(Channels::t_access_category ac) {	//TODO: fix (token interval unchanged but addToken called at very high frequency)
+	if(mAddedFirstToken[ac]) {
 		//reschedule based on last token that was added (rather than time of state-switch)
-		boost::posix_time::ptime newTime = lastTokenAt[ac] + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00);
+		boost::posix_time::ptime newTime = mLastTokenAt[ac] + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00);
+		cout << "last token at: " << mLastTokenAt[ac] << endl;
+		cout << "newTime: " << newTime << endl;
 
 		mTimerAddToken[ac]->expires_at(newTime);
 		mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
+
+		if (ac == Channels::AC_BE) {
+			cout << "next token at: " << mTimerAddToken[ac]->expires_at() << endl;
+		}
+		exit(-1);
 	}
 }
 
