@@ -127,7 +127,7 @@ public:
 			T* msg = p.second;
 
 			if(validUntil < t || eraseAll) {
-				std::cout << "--flushQueue: message expired" << std::endl;
+				std::cout << "--flushQueue: message " << msg->id() << " expired" << std::endl;
 				//delete msg;	//TODO
 				queue.erase(it++);
 			} else {

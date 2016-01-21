@@ -12,7 +12,7 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-DCC::DCC(DccConfig &config) {
+DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	string module = "Dcc";
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
@@ -64,11 +64,11 @@ void DCC::init() {
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 
 	//start timers
-	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
-	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
+	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
+	mTimerStateUpdate->async_wait(mStrand.wrap(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error)));
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
-		mTimerAddToken[accessCategory]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory));
+		mTimerAddToken[accessCategory]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory)));
 	}
 
 	mIoService.run();
@@ -188,18 +188,26 @@ double DCC::simulateChannelLoad() {	//just for testing/simulation
 }
 
 //gets the measured (or simulated) channel load and stores it in 2 ring buffers (to decide state changes)
-void DCC::measureChannel(const boost::system::error_code &ec) {
+void DCC::measureChannel(const boost::system::error_code& ec) {
+	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not measure channel
+		return;
+	}
+
 	double channelLoad = simulateChannelLoad();
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(channelLoad);
 
 	mTimerMeasure->expires_at(mTimerMeasure->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1s
-	mTimerMeasure->async_wait(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error));
+	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
 }
 
 //updates state according to recent channel load measurements
-void DCC::updateState(const boost::system::error_code &ec) {
+void DCC::updateState(const boost::system::error_code& ec) {
+	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not update state
+		return;
+	}
+
 	double clMinInTimeUp = mChannelLoadInTimeUp.min();		//minimal channel load during TimeUp-interval
 	double clMaxInTimeDown = mChannelLoadInTimeDown.max();	//TimeDown-interval > TimeUp-interval
 
@@ -213,7 +221,7 @@ void DCC::updateState(const boost::system::error_code &ec) {
 		setCurrentState(STATE_RESTRICTED);
 
 	mTimerStateUpdate->expires_at(mTimerStateUpdate->expires_at() + boost::posix_time::milliseconds(mConfig.NDL_minDccSampling*1000));	//1s
-	mTimerStateUpdate->async_wait(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error));
+	mTimerStateUpdate->async_wait(mStrand.wrap(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error)));
 }
 
 //sets the current state and updates corresponding characteristics and intervals
@@ -235,11 +243,9 @@ void DCC::setCurrentState(int state) {
 	}
 
 	//reschedule addToken
-	mMutexLastTokenAt.lock();
 	for (Channels::t_access_category accessCategory : mAccessCategories) {
 		rescheduleAddToken(accessCategory);
 	}
-	mMutexLastTokenAt.unlock();
 
 	//print current state
 	switch (mCurrentStateId) {
@@ -260,7 +266,11 @@ void DCC::setCurrentState(int state) {
 }
 
 //adds a token=send-permit to the specified bucket of an AC in a fixed time interval
-void DCC::addToken(const boost::system::error_code& e, Channels::t_access_category ac) {
+void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_category ac) {
+	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not add token
+		return;
+	}
+
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
@@ -272,11 +282,9 @@ void DCC::addToken(const boost::system::error_code& e, Channels::t_access_catego
 	mLastTokenAt[ac] = mTimerAddToken[ac]->expires_at();
 	mAddedFirstToken[ac] = true;
 
-	mTimerAddToken[ac]->expires_at(mTimerAddToken[ac]->expires_at() + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
-	mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
+	mTimerAddToken[ac]->expires_at(mLastTokenAt[ac] + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00));	//fixed time interval depending on state and AC
+	mTimerAddToken[ac]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac)));
 
-	if (ac == Channels::AC_BE)
-		cout << "next token at: " << mTimerAddToken[ac]->expires_at() << endl;
 	mMutexLastTokenAt.unlock();
 }
 
@@ -302,20 +310,16 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 }
 
 //reschedules timer for next "addToken" when switching to another state
-void DCC::rescheduleAddToken(Channels::t_access_category ac) {	//TODO: fix (token interval unchanged but addToken called at very high frequency)
+void DCC::rescheduleAddToken(Channels::t_access_category ac) {
 	if(mAddedFirstToken[ac]) {
+		mMutexLastTokenAt.lock();
 		//reschedule based on last token that was added (rather than time of state-switch)
 		boost::posix_time::ptime newTime = mLastTokenAt[ac] + boost::posix_time::milliseconds(currentTokenInterval(ac)*1000.00);
-		cout << "last token at: " << mLastTokenAt[ac] << endl;
-		cout << "newTime: " << newTime << endl;
 
 		mTimerAddToken[ac]->expires_at(newTime);
-		mTimerAddToken[ac]->async_wait(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac));
+		mTimerAddToken[ac]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, ac)));
 
-		if (ac == Channels::AC_BE) {
-			cout << "next token at: " << mTimerAddToken[ac]->expires_at() << endl;
-		}
-		exit(-1);
+		mMutexLastTokenAt.unlock();
 	}
 }
 

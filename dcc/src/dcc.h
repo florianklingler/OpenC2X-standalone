@@ -26,10 +26,10 @@ public:
 	void initStates(int numActiveStates);
 	void setCurrentState(int state);
 	double simulateChannelLoad();
-	void measureChannel(const boost::system::error_code &ec);
-	void updateState(const boost::system::error_code &ec);
+	void measureChannel(const boost::system::error_code& ec);
+	void updateState(const boost::system::error_code& ec);
 	void initLeakyBuckets();
-	void addToken(const boost::system::error_code& e, Channels::t_access_category ac);
+	void addToken(const boost::system::error_code& ec, Channels::t_access_category ac);
 	void rescheduleAddToken(Channels::t_access_category ac);
 	void sendQueuedPackets(Channels::t_access_category ac);
 	void setMessageLimits(wrapperPackage::WRAPPER* wrapper);
@@ -52,6 +52,7 @@ private:
 	boost::thread* mThreadReceiveFromHw;
 
 	boost::asio::io_service mIoService;
+	boost::asio::io_service::strand mStrand;
 	boost::asio::deadline_timer* mTimerMeasure;
 	boost::asio::deadline_timer* mTimerStateUpdate;
 
