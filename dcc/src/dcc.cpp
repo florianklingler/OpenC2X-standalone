@@ -52,10 +52,8 @@ DCC::~DCC() {
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
 		mTimerAddToken[accessCategory]->cancel();
+		delete mTimerAddToken[accessCategory];	//TODO: correct deletes for everything
 	}
-
-
-//	delete mBucketBE;	//TODO: correct deletes for everything
 }
 
 void DCC::init() {
@@ -85,10 +83,10 @@ void DCC::initStates(int numActiveStates) {
 }
 
 void DCC::initLeakyBuckets() {
-	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI)));
-	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO)));
-	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE)));
-	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<wrapperPackage::WRAPPER>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK)));
+	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI)));
+	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO)));
+	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE)));
+	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK)));
 }
 
 
@@ -97,8 +95,8 @@ void DCC::initLeakyBuckets() {
 
 void DCC::receiveFromCa() {
 	string envelope;					//envelope
-	string byteMessage;					//byte string (serialized WRAPPER)
-	wrapperPackage::WRAPPER wrapper;	//deserialized WRAPPER
+	string byteMessage;					//byte string (serialized DATA)
+	dataPackage::DATA data;				//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
@@ -108,12 +106,12 @@ void DCC::receiveFromCa() {
 		//processing...
 		cout << "received new CAM -> enqueue to BE" << endl;
 
-		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
+		data.ParseFromString(byteMessage);		//deserialize DATA
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 
-		Channels::t_access_category ac = (Channels::t_access_category) wrapper.priority();
+		Channels::t_access_category ac = (Channels::t_access_category) data.priority();
 		mBucket[ac]->flushQueue(nowTime);
-		bool enqueued = mBucket[ac]->enqueue(&wrapper, wrapper.validuntil());
+		bool enqueued = mBucket[ac]->enqueue(&data, data.validuntil());
 		if (enqueued) {
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
 			sendQueuedPackets(ac);
@@ -123,8 +121,8 @@ void DCC::receiveFromCa() {
 
 void DCC::receiveFromDen() {
 	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized WRAPPER)
-	wrapperPackage::WRAPPER wrapper;	//deserialized WRAPPER
+	string byteMessage;		//byte string (serialized DATA)
+	dataPackage::DATA data;	//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();
@@ -134,12 +132,12 @@ void DCC::receiveFromDen() {
 		//processing...
 		cout << "received new DENM -> enqueue at DCC" << endl;
 
-		wrapper.ParseFromString(byteMessage);		//deserialize WRAPPER
+		data.ParseFromString(byteMessage);		//deserialize DATA
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 
-		Channels::t_access_category ac = (Channels::t_access_category) wrapper.priority();
+		Channels::t_access_category ac = (Channels::t_access_category) data.priority();
 		mBucket[ac]->flushQueue(nowTime);
-		bool enqueued = mBucket[ac]->enqueue(&wrapper, wrapper.validuntil());
+		bool enqueued = mBucket[ac]->enqueue(&data, data.validuntil());
 		if (enqueued) {
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
 			sendQueuedPackets(ac);
@@ -149,17 +147,17 @@ void DCC::receiveFromDen() {
 
 void DCC::receiveFromHw() {
 	string byteMessage;		//byte string (serialized message)
-	wrapperPackage::WRAPPER wrapper;
+	dataPackage::DATA data;
 
 	while (1) {
-		byteMessage = mReceiverFromHw->receiveFromHw();		//receive serialized WRAPPER
-		wrapper.ParseFromString(byteMessage);				//deserialize WRAPPER
+		byteMessage = mReceiverFromHw->receiveFromHw();		//receive serialized DATA
+		data.ParseFromString(byteMessage);				//deserialize DATA
 
 		//processing...
 		cout << "forward message from HW to services" << endl;
-		switch(wrapper.type()) {							//send serialized WRAPPER to corresponding module
-			case wrapperPackage::WRAPPER_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
-			case wrapperPackage::WRAPPER_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
+		switch(data.type()) {							//send serialized DATA to corresponding module
+			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
+			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
 			default:	break;
 		}
 	}
@@ -290,21 +288,21 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 
 //sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
 void DCC::sendQueuedPackets(Channels::t_access_category ac) {
-	while(wrapperPackage::WRAPPER* wrapper = mBucket[ac]->dequeue()) {				//true if packet and token available -> pop 1st packet from queue
+	while(dataPackage::DATA* data = mBucket[ac]->dequeue()) {				//true if packet and token available -> pop 1st packet from queue
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-		if(wrapper->validuntil() >= nowTime) {										//message still valid
-			setMessageLimits(wrapper);
+		if(data->validuntil() >= nowTime) {										//message still valid
+			setMessageLimits(data);
 
 			string byteMessage;
-			wrapper->SerializeToString(&byteMessage);
+			data->SerializeToString(&byteMessage);
 			mSenderToHw->sendToHw(byteMessage);
-			cout << "Send wrapper " << wrapper->id() << " to HW" << endl;
+			cout << "Send data " << data->id() << " to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;
 		}
 		else {	//TODO: does this work correctly? flushQueue deletes packets which are ignored here (it seems, packets remain in queue after being sent)		//message expired
 			cerr << "--sendQueuedPackets: message expired" << endl;
-//			delete wrapper;		//TODO: legal delete?
+			delete data;		//TODO: legal delete?
 		}
 	}
 }
@@ -324,15 +322,15 @@ void DCC::rescheduleAddToken(Channels::t_access_category ac) {
 }
 
 //sets txPower and data rate for a packet (before being sent)
-void DCC::setMessageLimits(wrapperPackage::WRAPPER* wrapper) {
-	Channels::t_access_category ac = (Channels::t_access_category) wrapper->priority();		//get AC of packet
+void DCC::setMessageLimits(dataPackage::DATA* data) {
+	Channels::t_access_category ac = (Channels::t_access_category) data->priority();		//get AC of packet
 	dcc_Mechanism_t dcc_mechanism = currentDcc(ac);
 
 	if(dcc_mechanism == dcc_TPC || dcc_mechanism == dcc_TPC_TRC || dcc_mechanism == dcc_TPC_TDC || dcc_mechanism == dcc_TPC_TRC_TDC || dcc_mechanism == dcc_ALL)
-		wrapper->set_txpower(currentTxPower(ac));	//adjust transmission power
+		data->set_txpower(currentTxPower(ac));	//adjust transmission power
 
 	if(dcc_mechanism == dcc_TDC || dcc_mechanism == dcc_TPC_TDC || dcc_mechanism == dcc_TPC_TRC_TDC || dcc_mechanism == dcc_ALL)
-		wrapper->set_bitrate(currentDatarate(ac));	//adjust data rate
+		data->set_bitrate(currentDatarate(ac));	//adjust data rate
 }
 
 //get parameters of current state

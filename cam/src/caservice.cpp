@@ -50,15 +50,15 @@ void CaService::init() {
 void CaService::receive() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized)
-	wrapperPackage::WRAPPER wrapper;
+	dataPackage::DATA data;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
-		byteMessage = received.second;			//serialized WRAPPER
+		byteMessage = received.second;			//serialized DATA
 
-		wrapper.ParseFromString(byteMessage);	//deserialize WRAPPER
-		byteMessage = wrapper.content();		//serialized CAM
+		data.ParseFromString(byteMessage);	//deserialize DATA
+		byteMessage = data.content();		//serialized CAM
 		logDelay(byteMessage);
 
 		cout << "forward incoming CAM to LDM" << endl;
@@ -95,14 +95,14 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 void CaService::send() {
 	string byteMessage;
 	camPackage::CAM cam;
-	wrapperPackage::WRAPPER wrapper;
+	dataPackage::DATA data;
 
 	cam = generateCam();
-	wrapper = generateWrapper(cam);
-	wrapper.SerializeToString(&byteMessage);
+	data = generateData(cam);
+	data.SerializeToString(&byteMessage);
 	cout << "send new CAM to LDM and DCC" << endl;
-	mSenderToLdm->send("CAM", wrapper.content()); //send serialized CAM to LDM
-	mSenderToDcc->send("CAM", byteMessage);	//send serialized WRAPPER to DCC
+	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
+	mSenderToDcc->send("CAM", byteMessage);	//send serialized DATA to DCC
 }
 
 //generate new CAM with increasing ID and current timestamp
@@ -117,23 +117,23 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
-wrapperPackage::WRAPPER CaService::generateWrapper(camPackage::CAM cam) {
-	wrapperPackage::WRAPPER wrapper;
+dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
+	dataPackage::DATA data;
 	string serializedCam;
 
 	//serialize CAM
 	cam.SerializeToString(&serializedCam);
 
-	//create WRAPPER
-	wrapper.set_id(cam.id());
-	wrapper.set_type(wrapperPackage::WRAPPER_Type_CAM);
-	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
+	//create DATA
+	data.set_id(cam.id());
+	data.set_type(dataPackage::DATA_Type_CAM);
+	data.set_priority(dataPackage::DATA_Priority_BE);
 
-	wrapper.set_createtime(cam.createtime());
-	wrapper.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s
-	wrapper.set_content(serializedCam);
+	data.set_createtime(cam.createtime());
+	data.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s
+	data.set_content(serializedCam);
 
-	return wrapper;
+	return data;
 }
 
 void CaConfig::loadConfigXML(const string &filename) {

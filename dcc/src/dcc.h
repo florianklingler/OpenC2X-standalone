@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
-#include <buffers/build/wrapper.pb.h>
+#include <buffers/build/data.pb.h>
 
 
 class DCC {
@@ -32,7 +32,7 @@ public:
 	void addToken(const boost::system::error_code& ec, Channels::t_access_category ac);
 	void rescheduleAddToken(Channels::t_access_category ac);
 	void sendQueuedPackets(Channels::t_access_category ac);
-	void setMessageLimits(wrapperPackage::WRAPPER* wrapper);
+	void setMessageLimits(dataPackage::DATA* data);
 
 	dcc_Mechanism_t currentDcc(Channels::t_access_category ac);
 	double currentTxPower(Channels::t_access_category ac);
@@ -65,7 +65,7 @@ private:
 	RingBuffer<double> mChannelLoadInTimeUp;	//holds the recent channel load measurements (influences state changes)
 	RingBuffer<double> mChannelLoadInTimeDown;
 
-	map<Channels::t_access_category, LeakyBucket<wrapperPackage::WRAPPER>*> mBucket;	//LeakyBuckets for all four ACs
+	map<Channels::t_access_category, LeakyBucket<dataPackage::DATA>*> mBucket;	//LeakyBuckets for all four ACs
 
 	DccConfig mConfig;
 

@@ -1,6 +1,6 @@
-package wrapperPackage;
+package dataPackage;
 
-message WRAPPER {
+message DATA {
 	 enum Type {
 		CAM = 1;
 		DENM = 2;

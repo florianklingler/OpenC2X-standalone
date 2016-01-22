@@ -4,7 +4,7 @@
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
-#include <buffers/build/wrapper.pb.h>
+#include <buffers/build/data.pb.h>
 #include <buffers/build/cam.pb.h>
 #include <boost/asio.hpp>
 
@@ -25,7 +25,7 @@ public:
 	void send();
 	void triggerCam(const boost::system::error_code &ec);
 	camPackage::CAM generateCam();
-	wrapperPackage::WRAPPER generateWrapper(camPackage::CAM cam);
+	dataPackage::DATA generateData(camPackage::CAM cam);
 	void receiveGpsData();
 
 private:
