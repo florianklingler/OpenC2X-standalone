@@ -16,6 +16,9 @@ CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, 
 	mLogger = new LoggingUtility(mOwnerModule);
 }
 
+CommunicationReceiver::~CommunicationReceiver() {
+}
+
 pair<string, string> CommunicationReceiver::receive() {
 	string envelope = s_recv(*mSubscriber);
 	string message = s_recv(*mSubscriber);

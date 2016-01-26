@@ -46,13 +46,25 @@ DCC::~DCC() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
 	mThreadReceiveFromHw->join();
+	delete mThreadReceiveFromCa;
+	delete mThreadReceiveFromDen;
+	delete mThreadReceiveFromHw;
+
+	delete mReceiverFromCa;
+	delete mReceiverFromDen;
+	delete mReceiverFromHw;
+	delete mSenderToHw;
+	delete mSenderToServices;
 
 	mTimerMeasure->cancel();
 	mTimerStateUpdate->cancel();
+	delete mTimerMeasure;
+	delete mTimerStateUpdate;
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
 		mTimerAddToken[accessCategory]->cancel();
-		delete mTimerAddToken[accessCategory];	//TODO: correct deletes for everything
+		delete mTimerAddToken[accessCategory];	//delete deadline_timers
+		delete mBucket[accessCategory];			//delete LeakyBuckets
 	}
 }
 
@@ -96,22 +108,21 @@ void DCC::initLeakyBuckets() {
 void DCC::receiveFromCa() {
 	string envelope;					//envelope
 	string byteMessage;					//byte string (serialized DATA)
-	dataPackage::DATA data;				//deserialized DATA
+	dataPackage::DATA* data;			//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
 		envelope = received.first;
 		byteMessage = received.second;
 
-		//processing...
-		cout << "received new CAM -> enqueue to BE" << endl;
+		data = new dataPackage::DATA();
+		data->ParseFromString(byteMessage);		//deserialize DATA
+		cout << "received new CAM (packet " << data->id() << ") -> enqueue to BE" << endl;
 
-		data.ParseFromString(byteMessage);		//deserialize DATA
+		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-
-		Channels::t_access_category ac = (Channels::t_access_category) data.priority();
 		mBucket[ac]->flushQueue(nowTime);
-		bool enqueued = mBucket[ac]->enqueue(&data, data.validuntil());
+		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
 			sendQueuedPackets(ac);
@@ -151,11 +162,11 @@ void DCC::receiveFromHw() {
 
 	while (1) {
 		byteMessage = mReceiverFromHw->receiveFromHw();		//receive serialized DATA
-		data.ParseFromString(byteMessage);				//deserialize DATA
+		data.ParseFromString(byteMessage);					//deserialize DATA
 
 		//processing...
 		cout << "forward message from HW to services" << endl;
-		switch(data.type()) {							//send serialized DATA to corresponding module
+		switch(data.type()) {								//send serialized DATA to corresponding module
 			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
 			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
 			default:	break;
@@ -167,7 +178,7 @@ void DCC::receiveFromHw() {
 //////////////////////////////////////////
 //Decentralized congestion control
 
-//simulates realistic channel load; to be replaced with actual measuremetns
+//simulates realistic channel load; to be replaced with actual measurements
 double DCC::simulateChannelLoad() {	//just for testing/simulation
 	double pCurr = mBernoulli.p();
 	double pNew = pCurr + mUniform(mRandNumberGen);
@@ -272,8 +283,9 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
-	if (ac == Channels::AC_BE)
+	if (ac == Channels::AC_BE) {
 		cout << "Added token -> available tokens: " << mBucket[ac]->availableTokens << endl;
+	}
 	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
 	mMutexLastTokenAt.lock();
@@ -288,21 +300,23 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 
 //sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
 void DCC::sendQueuedPackets(Channels::t_access_category ac) {
-	while(dataPackage::DATA* data = mBucket[ac]->dequeue()) {				//true if packet and token available -> pop 1st packet from queue
+	while(dataPackage::DATA* data = mBucket[ac]->dequeue()) { 		//true if packet and token available -> pop 1st packet from queue and remove token
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-		if(data->validuntil() >= nowTime) {										//message still valid
+		if(data->validuntil() >= nowTime) {							//message still valid
 			setMessageLimits(data);
 
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
 			mSenderToHw->sendToHw(byteMessage);
-			cout << "Send data " << data->id() << " to HW" << endl;
+			cout << "Send data (packet " << data->id() << ") to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;
+			delete data;
 		}
-		else {	//TODO: does this work correctly? flushQueue deletes packets which are ignored here (it seems, packets remain in queue after being sent)		//message expired
-			cerr << "--sendQueuedPackets: message expired" << endl;
-			delete data;		//TODO: legal delete?
+		else {														//message expired
+			mBucket[ac]->increment();								//undo decrement in dequeue because message expired and token is still valid (nothing was sent)
+			cerr << "--sendQueuedPackets: message (packet " << data->id() << ") expired" << endl;
+			delete data;
 		}
 	}
 }

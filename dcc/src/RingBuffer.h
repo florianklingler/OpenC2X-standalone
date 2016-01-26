@@ -19,6 +19,9 @@ public:
 		reset(maxSize);
 	}
 
+	~RingBuffer() {
+	}
+
 	void reset(size_t maxSize) {
 		entries.clear();
 		this->maxSize = maxSize;

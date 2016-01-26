@@ -128,11 +128,23 @@ public:
 
 			if(validUntil < t || eraseAll) {
 				std::cout << "--flushQueue: message " << msg->id() << " expired" << std::endl;
-				//delete msg;	//TODO
+				delete msg;
 				queue.erase(it++);
 			} else {
 				it++;
 			}
+		}
+		mutex_queue.unlock();
+	}
+
+	//prints the whole queue. for debugging
+	void printQueue() {
+		mutex_queue.lock();
+		std::cout << "printing queue" << std::endl;
+
+		typename std::list<std::pair<int64_t, T*>>::iterator it;
+		for(it=queue.begin(); it != queue.end(); it++) {
+			std::cout << "packet " << it->second->id() << ", createTime: " << it->second->createtime() << ", validUntil: " << it->first << std::endl;
 		}
 		mutex_queue.unlock();
 	}

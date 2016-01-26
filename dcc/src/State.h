@@ -25,7 +25,9 @@ public:
 		asDatarate = DCC_NDL_Param<double>(cfg.asDatarate);
 		asCarrierSense = DCC_NDL_Param<double>(cfg.asCarrierSense);
 	}
-	~State() {}
+
+	~State() {
+	}
 };
 
 typedef std::map<size_t, State> States;		//map of all states

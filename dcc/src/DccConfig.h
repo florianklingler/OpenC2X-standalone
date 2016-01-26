@@ -126,6 +126,9 @@ class DCC_State_Config {
 				asCarrierSense.ac[accessCategory] = asCarrierSense_val;
 			}
 		}
+
+		~DCC_State_Config() {
+		}
 };
 
 struct DccConfig {
