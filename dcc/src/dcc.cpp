@@ -43,6 +43,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 }
 
 DCC::~DCC() {
+	//stop and delete threads
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
 	mThreadReceiveFromHw->join();
@@ -50,12 +51,14 @@ DCC::~DCC() {
 	delete mThreadReceiveFromDen;
 	delete mThreadReceiveFromHw;
 
+	//delete sender and receiver
 	delete mReceiverFromCa;
 	delete mReceiverFromDen;
 	delete mReceiverFromHw;
 	delete mSenderToHw;
 	delete mSenderToServices;
 
+	//stop and delete timers
 	mTimerMeasure->cancel();
 	mTimerStateUpdate->cancel();
 	delete mTimerMeasure;
@@ -63,12 +66,13 @@ DCC::~DCC() {
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
 		mTimerAddToken[accessCategory]->cancel();
-		delete mTimerAddToken[accessCategory];	//delete deadline_timers
-		delete mBucket[accessCategory];			//delete LeakyBuckets
+		delete mTimerAddToken[accessCategory];	//delete deadline_timer
+		delete mBucket[accessCategory];			//delete LeakyBucket
 	}
 }
 
 void DCC::init() {
+	//create and start threads
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
@@ -78,7 +82,7 @@ void DCC::init() {
 	mTimerStateUpdate->async_wait(mStrand.wrap(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error)));
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
-		mTimerAddToken[accessCategory]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory)));
+		mTimerAddToken[accessCategory]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory)));	//start timer
 	}
 
 	mIoService.run();
@@ -94,6 +98,7 @@ void DCC::initStates(int numActiveStates) {
 	states.insert(make_pair(STATE_RESTRICTED, State(mConfig.stateConfig.find(STATE_RESTRICTED)->second)));	//restricted states
 }
 
+//initializes leaky buckets
 void DCC::initLeakyBuckets() {
 	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI)));
 	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO)));
@@ -106,17 +111,15 @@ void DCC::initLeakyBuckets() {
 //Send & receive
 
 void DCC::receiveFromCa() {
-	string envelope;					//envelope
-	string byteMessage;					//byte string (serialized DATA)
+string serializedData;					//serialized DATA
 	dataPackage::DATA* data;			//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
-		envelope = received.first;
-		byteMessage = received.second;
+		serializedData = received.second;
 
 		data = new dataPackage::DATA();
-		data->ParseFromString(byteMessage);		//deserialize DATA
+		data->ParseFromString(serializedData);		//deserialize DATA
 		cout << "received new CAM (packet " << data->id() << ") -> enqueue to BE" << endl;
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
@@ -131,17 +134,15 @@ void DCC::receiveFromCa() {
 }
 
 void DCC::receiveFromDen() {
-	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized DATA)
-	dataPackage::DATA* data;//deserialized DATA
+	string serializedData;		//serialized DATA
+	dataPackage::DATA* data;	//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();
-		envelope = received.first;
-		byteMessage = received.second;
+		serializedData = received.second;
 
 		data = new dataPackage::DATA();
-		data->ParseFromString(byteMessage);		//deserialize DATA
+		data->ParseFromString(serializedData);		//deserialize DATA
 		cout << "received new DENM (packet " << data->id() << ") -> enqueue to BE" << endl;
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
@@ -156,18 +157,18 @@ void DCC::receiveFromDen() {
 }
 
 void DCC::receiveFromHw() {
-	string byteMessage;		//byte string (serialized message)
-	dataPackage::DATA data;
+	string serializedData;		//serialized DATA
+	dataPackage::DATA data;		//deserialized DATA
 
 	while (1) {
-		byteMessage = mReceiverFromHw->receiveFromHw();		//receive serialized DATA
-		data.ParseFromString(byteMessage);					//deserialize DATA
+		serializedData = mReceiverFromHw->receiveFromHw();		//receive serialized DATA
+		data.ParseFromString(serializedData);					//deserialize DATA
 
 		//processing...
 		cout << "forward message from HW to services" << endl;
 		switch(data.type()) {								//send serialized DATA to corresponding module
-			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", byteMessage);	break;
-			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", byteMessage);	break;
+			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", serializedData);		break;
+			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", serializedData);	break;
 			default:	break;
 		}
 	}
@@ -201,7 +202,12 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 		return;
 	}
 
-	double channelLoad = simulateChannelLoad();
+	double channelLoad = 0;
+	if(mConfig.simulateChannelLoad) {
+		channelLoad = simulateChannelLoad();
+	} else {
+		//TODO: get real channel load from hw
+	}
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(channelLoad);
@@ -211,7 +217,7 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 }
 
 //updates state according to recent channel load measurements
-void DCC::updateState(const boost::system::error_code& ec) {
+void DCC::updateState(const boost::system::error_code& ec) {	//TODO: adjust to more than 1 active state
 	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not update state
 		return;
 	}
