@@ -135,6 +135,9 @@ struct DccConfig {
 	// General
 	std::string xml_file;
 
+	//set to true to simulate channel load, false to use real data
+	bool simulateChannelLoad;
+
 	// Leaky Bucket
 	int bucketSize_AC_VI;
 	int bucketSize_AC_VO;
@@ -191,6 +194,7 @@ struct DccConfig {
 		ptree pt;
 
 		read_xml(filename, pt);
+		simulateChannelLoad = pt.get("dcc.simulateChannelLoad", true);
 
 		xml_file = std::string(filename);
 		load_NDL_Parameters();
