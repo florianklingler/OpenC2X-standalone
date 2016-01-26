@@ -124,6 +124,7 @@ dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
 	data.set_createtime(denm.createtime());
+	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s
 	data.set_content(byteMessage);
 
 	return data;

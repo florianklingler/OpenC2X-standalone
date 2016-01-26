@@ -133,22 +133,21 @@ void DCC::receiveFromCa() {
 void DCC::receiveFromDen() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized DATA)
-	dataPackage::DATA data;	//deserialized DATA
+	dataPackage::DATA* data;//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();
 		envelope = received.first;
 		byteMessage = received.second;
 
-		//processing...
-		cout << "received new DENM -> enqueue at DCC" << endl;
+		data = new dataPackage::DATA();
+		data->ParseFromString(byteMessage);		//deserialize DATA
+		cout << "received new DENM (packet " << data->id() << ") -> enqueue to BE" << endl;
 
-		data.ParseFromString(byteMessage);		//deserialize DATA
+		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-
-		Channels::t_access_category ac = (Channels::t_access_category) data.priority();
 		mBucket[ac]->flushQueue(nowTime);
-		bool enqueued = mBucket[ac]->enqueue(&data, data.validuntil());
+		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
 			sendQueuedPackets(ac);
