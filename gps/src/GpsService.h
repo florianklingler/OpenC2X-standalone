@@ -4,6 +4,7 @@
 #include <gps.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
+#include <buffers/build/gps.pb.h>
 
 struct GPSDataContainer {
 	double mLat;
@@ -13,12 +14,14 @@ struct GPSDataContainer {
 
 class GpsService {
 public:
-	GpsService();
+	GpsService(bool simulate);
 	~GpsService();
 	bool connectToGpsd();
 	int getGpsData2(struct gps_data_t* gpsdata);
-	void receiveData();
 	void gpsDataToString(struct gps_data_t* gpsdata, char* output_dump);
+	gpsPackage::GPS gpsDataToBuffer(struct gps_data_t* gpsdata);
+	void receiveData();
+	void simulateData();
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();

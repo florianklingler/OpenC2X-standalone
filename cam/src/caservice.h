@@ -6,6 +6,7 @@
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
 #include <buffers/build/cam.pb.h>
+#include <buffers/build/gps.pb.h>
 #include <boost/asio.hpp>
 
 struct CaConfig {

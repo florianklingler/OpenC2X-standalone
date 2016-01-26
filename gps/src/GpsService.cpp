@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <iostream>
 #include <cstdlib>
+#include <chrono>
 
 using namespace std;
 
@@ -15,9 +16,22 @@ INITIALIZE_EASYLOGGINGPP
 
 struct gps_data_t GpsService::mGpsData;
 
-GpsService::GpsService() {
+GpsService::GpsService(bool simulate) {
 	mLastTime = NAN;
 	mSender = new CommunicationSender("GpsService", "3333");
+
+	if (!simulate) {	//use real GPS data
+		while (!connectToGpsd()) {
+			// Could not connect to GPSd. Keep trying every 1 sec
+			sleep(1);
+		}
+
+		startStreaming();
+		receiveData();
+	}
+	else {				//use simulated GPS data
+		simulateData();
+	}
 }
 
 GpsService::~GpsService() {
@@ -47,8 +61,8 @@ int GpsService::getGpsData2(gps_data_t* gpsdata) {
 	return 0;
 }
 
-void GpsService::gpsDataToString(struct gps_data_t* gpsdata,
-		char* output_dump) {
+
+void GpsService::gpsDataToString(struct gps_data_t* gpsdata, char* output_dump) {
 	sprintf(output_dump,
 			"%17.12f,%17.12f,%17.12f,%17.12f,%23.12f,%23.12f,%3u\n",
 			gpsdata->fix.latitude, gpsdata->fix.longitude,
@@ -56,6 +70,21 @@ void GpsService::gpsDataToString(struct gps_data_t* gpsdata,
 			(gpsdata->fix.epx > gpsdata->fix.epy) ?
 					gpsdata->fix.epx : gpsdata->fix.epy, gpsdata->fix.time,
 			gpsdata->online, gpsdata->satellites_visible);
+}
+
+gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
+	gpsPackage::GPS buffer;
+
+	buffer.set_latitude(gpsdata->fix.latitude);
+	buffer.set_longitude(gpsdata->fix.longitude);
+	buffer.set_altitude(gpsdata->fix.altitude);
+	buffer.set_epx(gpsdata->fix.epx);
+	buffer.set_epy(gpsdata->fix.epy);
+	buffer.set_time(gpsdata->fix.time);
+	buffer.set_online(gpsdata->online);
+	buffer.set_satellites(gpsdata->satellites_visible);
+
+	return buffer;
 }
 
 void GpsService::receiveData() {
@@ -74,9 +103,33 @@ void GpsService::receiveData() {
 		}
 		mLastTime = mGpsData.fix.time;
 
-		gpsDataToString(&mGpsData, gpsDumpMsg);
-		fprintf(stdout, "%s", gpsDumpMsg);
-		mSender->sendGpsData("GPS", gpsDumpMsg);
+//		gpsDataToString(&mGpsData, gpsDumpMsg);
+//		fprintf(stdout, "%s", gpsDumpMsg);
+		gpsPackage::GPS buffer = gpsDataToBuffer(&mGpsData);
+		string serializedGps;
+		buffer.SerializeToString(&serializedGps);
+		mSender->sendGpsData("GPS", serializedGps);
+	}
+}
+
+void GpsService::simulateData() {
+	gpsPackage::GPS buffer;
+	string serializedGps;
+
+	while (1) {
+		buffer.set_latitude(1);
+		buffer.set_longitude(2);
+		buffer.set_altitude(3);
+		buffer.set_epx(4);
+		buffer.set_epy(5);
+		buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		buffer.set_online(0);
+		buffer.set_satellites(6);
+
+		buffer.SerializeToString(&serializedGps);
+		mSender->sendGpsData("GPS", serializedGps);
+		cout << "sent GPS data" << endl;
+		sleep(1);
 	}
 }
 
@@ -99,18 +152,11 @@ void sigHandler(int sigNum) {
 }
 
 int main() {
+	GpsService gps(true);	//true = simulate
+
 	signal(SIGINT, &sigHandler);
 	signal(SIGTERM, &sigHandler);
 
-	GpsService gps;
-	while (!gps.connectToGpsd()) {
-		// Could not connect to GPSd. Keep trying every 1 sec
-		sleep(1);
-	}
-
-	gps.startStreaming();
-
-	gps.receiveData();
 
 	return 0;
 }

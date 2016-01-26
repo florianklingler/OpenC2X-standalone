@@ -67,9 +67,13 @@ void CaService::receive() {
 }
 
 void CaService::receiveGpsData() {
+	string serializedGps;
+	gpsPackage::GPS gps;
+
 	while (1) {
-		string data = mReceiverGps->receiveGpsData();
-		cout << "GPS DATA: " << data << endl;
+		serializedGps = mReceiverGps->receiveGpsData();
+		gps.ParseFromString(serializedGps);
+		cout << "Received GPS with latitude: " << gps.latitude() << ", longitude: " << gps.longitude() << endl;
 	}
 }
 
