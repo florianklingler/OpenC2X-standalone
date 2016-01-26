@@ -8,11 +8,18 @@
 #include <buffers/build/cam.pb.h>
 #include <buffers/build/gps.pb.h>
 #include <boost/asio.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 struct CaConfig {
 	double mCamTriggerInterval;
 
-	void loadConfigXML(const std::string &filename);
+	void loadConfigXML(const string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mCamTriggerInterval = pt.get("cam.TriggerInterval", 500);
+	}
 };
 
 class CaService {

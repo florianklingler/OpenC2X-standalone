@@ -8,8 +8,6 @@
 #include <ctime>
 #include <chrono>
 #include <string>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 
 using namespace std;
 
@@ -39,7 +37,6 @@ CaService::~CaService() {
 
 void CaService::init() {
 	mThreadReceive = new boost::thread(&CaService::receive, this);
-
 	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
 
 	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
@@ -138,12 +135,6 @@ dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
 	data.set_content(serializedCam);
 
 	return data;
-}
-
-void CaConfig::loadConfigXML(const string &filename) {
-	boost::property_tree::ptree pt;
-	read_xml(filename, pt);
-	mCamTriggerInterval = pt.get("cam.TriggerInterval", 500);
 }
 
 int main() {

@@ -16,11 +16,12 @@ INITIALIZE_EASYLOGGINGPP
 
 struct gps_data_t GpsService::mGpsData;
 
-GpsService::GpsService(bool simulate) {
+GpsService::GpsService(GpsConfig &config) {
+	mConfig = config;
 	mLastTime = NAN;
 	mSender = new CommunicationSender("GpsService", "3333");
 
-	if (!simulate) {	//use real GPS data
+	if (!mConfig.mSimulateData) {	//use real GPS data
 		while (!connectToGpsd()) {
 			// Could not connect to GPSd. Keep trying every 1 sec
 			sleep(1);
@@ -35,6 +36,7 @@ GpsService::GpsService(bool simulate) {
 }
 
 GpsService::~GpsService() {
+	delete mSender;
 }
 
 bool GpsService::connectToGpsd() {
@@ -152,11 +154,18 @@ void sigHandler(int sigNum) {
 }
 
 int main() {
-	GpsService gps(true);	//true = simulate
+	GpsConfig config;
+	try {
+		config.loadConfigXML("../src/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		return EXIT_FAILURE;
+	}
+	GpsService gps(config);
 
 	signal(SIGINT, &sigHandler);
 	signal(SIGTERM, &sigHandler);
-
 
 	return 0;
 }

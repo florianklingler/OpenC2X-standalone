@@ -5,16 +5,23 @@
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
 #include <buffers/build/gps.pb.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
-struct GPSDataContainer {
-	double mLat;
-	double mLong;
-	double mAlt;
+struct GpsConfig {
+	bool mSimulateData;
+
+	void loadConfigXML(const string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mSimulateData = pt.get("gps.SimulateData", true);
+	}
 };
 
 class GpsService {
 public:
-	GpsService(bool simulate);
+	GpsService(GpsConfig &config);
 	~GpsService();
 	bool connectToGpsd();
 	int getGpsData2(struct gps_data_t* gpsdata);
@@ -27,8 +34,8 @@ public:
 	static void stopStreaming();
 
 private:
+	GpsConfig mConfig;
 	static struct gps_data_t mGpsData;
-	//GPSDataContainer* mDataContainer;
 	double mLastTime;
 	CommunicationSender* mSender;
 
