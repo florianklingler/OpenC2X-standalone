@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+#include <math.h>
 
 using namespace std;
 
@@ -114,24 +115,50 @@ void GpsService::receiveData() {
 	}
 }
 
+position GpsService::simulateNewPosition(position start, double offsetN, double offsetE) {
+	 //Position, decimal degrees
+	 double lat = start.first;
+	 double lon = start.second;
+
+	 //Earth’s radius, sphere
+	 double R=6378137;
+
+	 //Coordinate offsets in radians
+	 double dLat = offsetN/R;
+	 double dLon = offsetE/(R*cos(M_PI*lat/180));
+
+	 //OffsetPosition, decimal degrees
+	 double latO = lat + dLat * 180/M_PI;
+	 double lonO = lon + dLon * 180/M_PI;
+
+	return make_pair(latO, lonO);
+}
+
 void GpsService::simulateData() {
 	gpsPackage::GPS buffer;
 	string serializedGps;
+	position currentPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
+	double currentSpeed = 50.0; 					//current speed in kmh
 
 	while (1) {
-		buffer.set_latitude(1);
-		buffer.set_longitude(2);
-		buffer.set_altitude(3);
-		buffer.set_epx(4);
-		buffer.set_epy(5);
+		//write current position to protocol buffer
+		buffer.set_latitude(currentPosition.first);
+		buffer.set_longitude(currentPosition.second);
+		buffer.set_altitude(0);
+		buffer.set_epx(0);
+		buffer.set_epy(0);
 		buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 		buffer.set_online(0);
-		buffer.set_satellites(6);
+		buffer.set_satellites(1);
 
+		//send buffer to CaService
 		buffer.SerializeToString(&serializedGps);
 		mSender->sendGpsData("GPS", serializedGps);
 		cout << "sent GPS data" << endl;
+
+		//calculate new position
 		sleep(1);
+		currentPosition = simulateNewPosition(currentPosition, (currentSpeed/3.6), 0);	//drive north at current speed converted to m/s
 	}
 }
 

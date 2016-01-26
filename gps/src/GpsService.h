@@ -19,6 +19,8 @@ struct GpsConfig {
 	}
 };
 
+typedef struct pair<double, double> position;
+
 class GpsService {
 public:
 	GpsService(GpsConfig &config);
@@ -29,6 +31,7 @@ public:
 	gpsPackage::GPS gpsDataToBuffer(struct gps_data_t* gpsdata);
 	void receiveData();
 	void simulateData();
+	position simulateNewPosition(position start, double offsetN, double offsetE);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
