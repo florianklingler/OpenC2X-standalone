@@ -7,6 +7,7 @@
 #include <iostream>
 #include <buffers/build/cam.pb.h>
 #include <buffers/build/denm.pb.h>
+#include <buffers/build/gps.pb.h>
 #include <google/protobuf/text_format.h>
 
 using namespace std;

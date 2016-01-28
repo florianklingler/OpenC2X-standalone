@@ -1,7 +1,9 @@
 package denmPackage;
+import "gps.proto";
 
 message DENM {
 	required int32 id = 1;
 	required string content = 2;
 	optional int64 createTime = 3;
+	optional gpsPackage.GPS gps = 4;
 }

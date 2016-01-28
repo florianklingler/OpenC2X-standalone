@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <mutex>
 
 struct CaConfig {
 	double mCamTriggerInterval;
@@ -54,6 +55,9 @@ private:
 
 	long mIdCounter;
 	double mCamTriggerInterval;
+
+	gpsPackage::GPS mLatestGps;
+	mutex mMutexLatestGps;
 };
 
 #endif

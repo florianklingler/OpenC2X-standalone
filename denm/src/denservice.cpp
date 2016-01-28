@@ -15,9 +15,12 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 DenService::DenService() {
-	mReceiverFromDcc = new CommunicationReceiver("DenService", "5555", "DENM");
-	mSenderToDcc = new CommunicationSender("DenService", "7777");
-	mSenderToLdm = new CommunicationSender("DenService", "9999");
+	string module = "DenService";
+	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM");
+	mSenderToDcc = new CommunicationSender(module, "7777");
+	mSenderToLdm = new CommunicationSender(module, "9999");
+
+	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
 
 	mLogger = new LoggingUtility("DenService");
 
@@ -26,38 +29,66 @@ DenService::DenService() {
 
 DenService::~DenService() {
 	mThreadReceive->join();
+	mThreadGpsDataReceive->join();
 	mThreadSend->join();
+	delete mThreadReceive;
+	delete mThreadGpsDataReceive;
+	delete mThreadSend;
+
+	delete mReceiverFromDcc;
+	delete mSenderToDcc;
+	delete mSenderToLdm;
+
+	delete mReceiverGps;
+
+	delete mLogger;
 }
 
 void DenService::init() {
 	mThreadReceive = new boost::thread(&DenService::receive, this);
+	mThreadGpsDataReceive = new boost::thread(&DenService::receiveGpsData, this);
+
 	mThreadSend = new boost::thread(&DenService::triggerDenm, this);
 }
 
 //receive DENM from DCC and forward to LDM
 void DenService::receive() {
-	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized)
+	string envelope;			//envelope
+	string serializedData;		//serialized DATA
 	dataPackage::DATA data;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
-		byteMessage = received.second;
+		serializedData = received.second;
 
-		data.ParseFromString(byteMessage);	//deserialize DATA
-		byteMessage = data.content();		//serialized DENM
-		logDelay(byteMessage);
+		data.ParseFromString(serializedData);	//deserialize DATA
+		serializedData = data.content();		//serialized DENM
+		logDelay(serializedData);
 
 		cout << "forward incoming DENM to LDM" << endl;
-		mSenderToLdm->send(envelope, byteMessage);
+		mSenderToLdm->send(envelope, serializedData);
+	}
+}
+
+void DenService::receiveGpsData() {
+	string serializedGps;
+	gpsPackage::GPS newGps;
+
+	while (1) {
+		serializedGps = mReceiverGps->receiveGpsData();
+		newGps.ParseFromString(serializedGps);
+		cout << "Received GPS with latitude: " << newGps.latitude() << ", longitude: " << newGps.longitude() << endl;
+		mMutexLatestGps.lock();
+		mLatestGps = newGps;
+		mMutexLatestGps.unlock();
 	}
 }
 
 //log delay of received DENM
-void DenService::logDelay(string byteMessage) {
+void DenService::logDelay(string serializedDenm) {
 	denmPackage::DENM denm;
-	denm.ParseFromString(byteMessage);
+	denm.ParseFromString(serializedDenm);
 	int64_t createTime = denm.createtime();
 	int64_t receiveTime =
 			chrono::high_resolution_clock::now().time_since_epoch()
@@ -87,16 +118,16 @@ void DenService::microSleep(double microSeconds) {
 
 //generate DENM and send to LDM and DCC
 void DenService::send() {
-	string byteMessage;
+	string serializedData;
 	denmPackage::DENM denm;
 	dataPackage::DATA data;
 
 	denm = generateDenm();
 	data = generateData(denm);
-	data.SerializeToString(&byteMessage);
+	data.SerializeToString(&serializedData);
 	cout << "send new DENM to LDM and DCC" << endl;
 	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
-	mSenderToDcc->send("DENM", byteMessage);		//send serialized DATA to DCC
+	mSenderToDcc->send("DENM", serializedData);		//send serialized DATA to DCC
 }
 
 //generate new DENM with increasing ID and current timestamp
@@ -107,16 +138,22 @@ denmPackage::DENM DenService::generateDenm() {
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
 	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	if(mLatestGps.has_time()) {									//only add gps if valid data is available
+		mMutexLatestGps.lock();
+		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);	//data needs to be copied to a new buffer because new gps data can be received before sending
+		mMutexLatestGps.unlock();
+		denm.set_allocated_gps(gps);
+	}
 
 	return denm;
 }
 
 dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
 	dataPackage::DATA data;
-	string byteMessage;
+	string serializedDenm;
 
 	//serialize DENM
-	denm.SerializeToString(&byteMessage);
+	denm.SerializeToString(&serializedDenm);
 
 	//create DATA
 	data.set_id(denm.id());
@@ -125,7 +162,7 @@ dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
 
 	data.set_createtime(denm.createtime());
 	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s
-	data.set_content(byteMessage);
+	data.set_content(serializedDenm);
 
 	return data;
 }

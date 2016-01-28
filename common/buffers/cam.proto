@@ -1,7 +1,9 @@
 package camPackage;
+import "gps.proto";
 
 message CAM {
 	required int32 id = 1;
 	required string content = 2;
 	optional int64 createTime = 3;
+	optional gpsPackage.GPS gps = 4;
 }
