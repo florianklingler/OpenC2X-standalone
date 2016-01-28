@@ -30,8 +30,11 @@ public:
 	void gpsDataToString(struct gps_data_t* gpsdata, char* output_dump);
 	gpsPackage::GPS gpsDataToBuffer(struct gps_data_t* gpsdata);
 	void receiveData();
+
+	double simulateSpeed();
 	void simulateData();
 	position simulateNewPosition(position start, double offsetN, double offsetE);
+
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
@@ -42,6 +45,9 @@ private:
 	double mLastTime;
 	CommunicationSender* mSender;
 
+	default_random_engine mRandNumberGen;
+	bernoulli_distribution mBernoulli;
+	uniform_real_distribution<double> mUniform;
 };
 
 #endif
