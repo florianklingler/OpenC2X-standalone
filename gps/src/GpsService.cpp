@@ -21,6 +21,10 @@ GpsService::GpsService(GpsConfig &config) {
 	mConfig = config;
 	mLastTime = NAN;
 	mSender = new CommunicationSender("GpsService", "3333");
+	
+	mRandNumberGen = default_random_engine(0);
+	mBernoulli = bernoulli_distribution(0);
+	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
 
 	if (!mConfig.mSimulateData) {	//use real GPS data
 		while (!connectToGpsd()) {
@@ -115,6 +119,25 @@ void GpsService::receiveData() {
 	}
 }
 
+//simulates realistic vehicle speed; to be replaced with actual measurements
+double GpsService::simulateSpeed() {		//just for testing/simulation
+	double pCurr = mBernoulli.p();
+	double pNew = pCurr + mUniform(mRandNumberGen);
+	pNew = min(0.5, max(0.0, pNew));		//pNew always between 0 and 0.5 -> 0-50km/h
+
+	mBernoulli = bernoulli_distribution(pNew);
+
+	double sum = 0;
+
+	for (int i=0; i<1000; i++) {
+		double r = mBernoulli(mRandNumberGen);
+		sum += min(1.0, max(0.0, r)) * 100;	//*100 to convert to km/h
+	}
+
+	return sum / 1000.0;					//avg to avoid rapid/drastic changes in speed
+}
+
+//calculates new position: start + offsetN/E in north/east direction in meters
 position GpsService::simulateNewPosition(position start, double offsetN, double offsetE) {
 	 //Position, decimal degrees
 	 double lat = start.first;
@@ -131,19 +154,23 @@ position GpsService::simulateNewPosition(position start, double offsetN, double 
 	 double latO = lat + dLat * 180/M_PI;
 	 double lonO = lon + dLon * 180/M_PI;
 
-	return make_pair(latO, lonO);
+	 return make_pair(latO, lonO);
 }
 
 void GpsService::simulateData() {
-	gpsPackage::GPS buffer;
 	string serializedGps;
-	position currentPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
-	double currentSpeed = 50.0; 					//current speed in kmh
+	gpsPackage::GPS buffer;
+
+	position position(51.732724, 8.735936);	//start position at HNI: latitude, longitude
+	double speed; 							//current speed in kmh
 
 	while (1) {
+		speed = simulateSpeed();
+		cout << "current speed: " << speed << endl;
+
 		//write current position to protocol buffer
-		buffer.set_latitude(currentPosition.first);
-		buffer.set_longitude(currentPosition.second);
+		buffer.set_latitude(position.first);	//TODO: why only 4 digits accuracy?
+		buffer.set_longitude(position.second);
 		buffer.set_altitude(0);
 		buffer.set_epx(0);
 		buffer.set_epy(0);
@@ -154,11 +181,12 @@ void GpsService::simulateData() {
 		//send buffer to CaService
 		buffer.SerializeToString(&serializedGps);
 		mSender->sendGpsData("GPS", serializedGps);
+		//TODO: send to DEN
 		cout << "sent GPS data" << endl;
 
 		//calculate new position
-		sleep(1);
-		currentPosition = simulateNewPosition(currentPosition, (currentSpeed/3.6), 0);	//drive north at current speed converted to m/s
+		sleep(1);	//1s	//TODO: use deadline_timer?
+		position = simulateNewPosition(position, (speed/3.6), 0);	//drive north with current speed converted to m/s
 	}
 }
 
