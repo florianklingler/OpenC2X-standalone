@@ -17,6 +17,11 @@ CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, 
 }
 
 CommunicationReceiver::~CommunicationReceiver() {
+	mContext->close();
+	mSubscriber->close();
+	delete mContext;
+	delete mSubscriber;
+	delete mLogger;
 }
 
 pair<string, string> CommunicationReceiver::receive() {

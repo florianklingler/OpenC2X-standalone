@@ -22,6 +22,11 @@ LDM::LDM() {
 LDM::~LDM() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
+	delete mThreadReceiveFromCa;
+	delete mThreadReceiveFromDen;
+
+	delete mReceiverFromCa;
+	delete mReceiverFromDen;
 }
 
 void LDM::init() {
@@ -30,40 +35,36 @@ void LDM::init() {
 }
 
 void LDM::receiveFromCa() {
-	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized CAM)
+	string serializedCam;	//serialized CAM
 	string textMessage;		//text string (human readable)
 
 	camPackage::CAM cam;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();	//receive
-		envelope = received.first;
-		byteMessage = received.second;
+		serializedCam = received.second;
 		cout << "received CAM" << endl;
 
 		//print CAM
-		cam.ParseFromString(byteMessage);
+		cam.ParseFromString(serializedCam);
 		google::protobuf::TextFormat::PrintToString(cam, &textMessage);
 		cout << textMessage << endl;
 	}
 }
 
 void LDM::receiveFromDen() {
-	string envelope;		//envelope
-	string byteMessage;		//byte string (serialized DENM)
+	string serializedDenm;		//serialized DENM
 	string textMessage;		//text string (human readable)
 
 	denmPackage::DENM denm;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();//receive
-		envelope = received.first;
-		byteMessage = received.second;
+		serializedDenm = received.second;
 		cout << "received DENM" << endl;
 
 		//print DENM
-		denm.ParseFromString(byteMessage);
+		denm.ParseFromString(serializedDenm);
 		google::protobuf::TextFormat::PrintToString(denm, &textMessage);
 		cout << textMessage << endl;
 	}

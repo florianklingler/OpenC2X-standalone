@@ -11,6 +11,11 @@ CommunicationSender::CommunicationSender(string ownerModule, string portOut) {
 }
 
 CommunicationSender::~CommunicationSender() {
+	mContext->close();
+	mPublisher->close();
+	delete mContext;
+	delete mPublisher;
+	delete mLogger;
 }
 
 void CommunicationSender::send(string envelope, string message) {

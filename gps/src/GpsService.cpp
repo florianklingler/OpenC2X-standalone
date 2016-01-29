@@ -41,6 +41,8 @@ GpsService::GpsService(GpsConfig &config) {
 }
 
 GpsService::~GpsService() {
+	stopStreaming();
+	closeGps();
 	delete mSender;
 }
 

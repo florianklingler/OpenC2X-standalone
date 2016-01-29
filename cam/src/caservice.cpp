@@ -44,6 +44,7 @@ CaService::~CaService() {
 
 	delete mLogger;
 
+	mTimer->cancel();
 	delete mTimer;
 }
 
