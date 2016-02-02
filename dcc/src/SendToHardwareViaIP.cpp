@@ -8,14 +8,14 @@
 
 using namespace std;
 
-SendToHardwareViaIP::SendToHardwareViaIP() {
+SendToHardwareViaIP::SendToHardwareViaIP(string ip) {
 	mLogger = new LoggingUtility("SendToHardware");
-	//TODO: change this IP, current value is for testing on my virtual machine
-	mServer = "127.0.0.255";
+	mServer = ip.c_str();
 }
 
 SendToHardwareViaIP::~SendToHardwareViaIP() {
 	close(mSocket);
+	delete mLogger;
 }
 
 bool SendToHardwareViaIP::init() {

@@ -19,7 +19,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaIP();
+	mSenderToHw = new SendToHardwareViaIP(mConfig.ip);
 	mReceiverFromHw = new ReceiveFromHardwareViaIP(this);
 	mSenderToServices = new CommunicationSender(module, "5555");
 

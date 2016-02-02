@@ -9,7 +9,7 @@
 
 class SendToHardwareViaIP {
 public:
-	SendToHardwareViaIP();
+	SendToHardwareViaIP(string ip);
 	virtual ~SendToHardwareViaIP();
 	bool init();
 	void send(string msg);

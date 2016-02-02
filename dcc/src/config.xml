@@ -1,5 +1,6 @@
 <dcc>
 	<simulateChannelLoad>true</simulateChannelLoad>
+	<ip>127.0.0.1</ip>
 
 	<bucketSize_AC_VI>25</bucketSize_AC_VI>
 	<bucketSize_AC_VO>25</bucketSize_AC_VO>
