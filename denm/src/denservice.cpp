@@ -38,15 +38,15 @@ void DenService::init() {
 void DenService::receive() {
 	string envelope;		//envelope
 	string byteMessage;		//byte string (serialized)
-	wrapperPackage::WRAPPER wrapper;
+	dataPackage::DATA data;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
 		byteMessage = received.second;
 
-		wrapper.ParseFromString(byteMessage);	//deserialize WRAPPER
-		byteMessage = wrapper.content();		//serialized DENM
+		data.ParseFromString(byteMessage);	//deserialize DATA
+		byteMessage = data.content();		//serialized DENM
 		logDelay(byteMessage);
 
 		cout << "forward incoming DENM to LDM" << endl;
@@ -89,14 +89,14 @@ void DenService::microSleep(double microSeconds) {
 void DenService::send() {
 	string byteMessage;
 	denmPackage::DENM denm;
-	wrapperPackage::WRAPPER wrapper;
+	dataPackage::DATA data;
 
 	denm = generateDenm();
-	wrapper = generateWrapper(denm);
-	wrapper.SerializeToString(&byteMessage);
+	data = generateData(denm);
+	data.SerializeToString(&byteMessage);
 	cout << "send new DENM to LDM and DCC" << endl;
-	mSenderToLdm->send("DENM", wrapper.content());//send serialized DENM to LDM
-	mSenderToDcc->send("DENM", byteMessage);//send serialized WRAPPER to DCC
+	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
+	mSenderToDcc->send("DENM", byteMessage);		//send serialized DATA to DCC
 }
 
 //generate new DENM with increasing ID and current timestamp
@@ -106,29 +106,28 @@ denmPackage::DENM DenService::generateDenm() {
 	//create DENM
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
-	denm.set_createtime(
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1));
+	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	return denm;
 }
 
-wrapperPackage::WRAPPER DenService::generateWrapper(denmPackage::DENM denm) {
-	wrapperPackage::WRAPPER wrapper;
+dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
+	dataPackage::DATA data;
 	string byteMessage;
 
 	//serialize DENM
 	denm.SerializeToString(&byteMessage);
 
-	//create WRAPPER
-	wrapper.set_id(denm.id());
-	wrapper.set_type(wrapperPackage::WRAPPER_Type_DENM);
-	wrapper.set_priority(wrapperPackage::WRAPPER_Priority_BE);
+	//create DATA
+	data.set_id(denm.id());
+	data.set_type(dataPackage::DATA_Type_DENM);
+	data.set_priority(dataPackage::DATA_Priority_BE);
 
-	wrapper.set_createtime(denm.createtime());
-	wrapper.set_content(byteMessage);
+	data.set_createtime(denm.createtime());
+	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s
+	data.set_content(byteMessage);
 
-	return wrapper;
+	return data;
 }
 
 int main() {

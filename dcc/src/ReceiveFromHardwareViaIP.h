@@ -5,8 +5,8 @@
  *      Author: jan
  */
 
-#ifndef RECIEVEFROMHARWAREVIAIP_H_
-#define RECIEVEFROMHARWAREVIAIP_H_
+#ifndef RECEIVEFROMHARDWAREVIAIP_H_
+#define RECEIVEFROMHARDWAREVIAIP_H_
 
 #include <utility/CommunicationSender.h>
 #include <sys/socket.h>
@@ -18,12 +18,12 @@
 
 class DCC;
 
-class RecieveFromHarwareViaIP {
+class ReceiveFromHardwareViaIP {
 public:
-	RecieveFromHarwareViaIP(DCC* dcc);
-	virtual ~RecieveFromHarwareViaIP();
+	ReceiveFromHardwareViaIP(DCC* dcc);
+	virtual ~ReceiveFromHardwareViaIP();
 	void init();
-	void recieve();
+	void receive();
 
 private:
 	struct sockaddr_in mMyaddr;	/* our address */
@@ -40,4 +40,4 @@ private:
 	LoggingUtility* mLogger;
 };
 
-#endif /* RECIEVEFROMHARWAREVIAIP_H_ */
+#endif /* RECEIVEFROMHARDWAREVIAIP_H_ */

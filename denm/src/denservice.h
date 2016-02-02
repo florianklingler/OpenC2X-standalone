@@ -5,7 +5,7 @@
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
-#include <buffers/build/wrapper.pb.h>
+#include <buffers/build/data.pb.h>
 #include <buffers/build/denm.pb.h>
 
 class DenService {
@@ -19,7 +19,7 @@ public:
 	void triggerDenm();
 	void send();
 	denmPackage::DENM generateDenm();
-	wrapperPackage::WRAPPER generateWrapper(denmPackage::DENM denm);
+	dataPackage::DATA generateData(denmPackage::DENM denm);
 
 private:
 	void microSleep(double us_sleep); // in us

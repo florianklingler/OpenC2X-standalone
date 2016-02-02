@@ -1,0 +1,67 @@
+<dcc>
+	<simulateChannelLoad>true</simulateChannelLoad>
+
+	<bucketSize_AC_VI>25</bucketSize_AC_VI>
+	<bucketSize_AC_VO>25</bucketSize_AC_VO>
+	<bucketSize_AC_BE>25</bucketSize_AC_BE>
+	<bucketSize_AC_BK>25</bucketSize_AC_BK>
+
+	<queueSize_AC_VI>25</queueSize_AC_VI>
+	<queueSize_AC_VO>25</queueSize_AC_VO>
+	<queueSize_AC_BE>25</queueSize_AC_BE>
+	<queueSize_AC_BK>25</queueSize_AC_BK>
+
+	<NDL_minPacketInterval>2.00</NDL_minPacketInterval>	<!-- default 0.04! -->
+	<NDL_maxPacketInterval>4.00</NDL_maxPacketInterval> <!-- default 1.00! -->
+	<NDL_defPacketInterval>0.50</NDL_defPacketInterval>
+
+	<NDL_maxTxPower>33.00</NDL_maxTxPower>
+	<NDL_minTxPower>-10.00</NDL_minTxPower>
+	<NDL_defTxPower>23.00</NDL_defTxPower>
+
+	<NDL_minDatarate>3.00</NDL_minDatarate>
+	<NDL_maxDatarate>12.00</NDL_maxDatarate>
+	<NDL_defDatarate>6.00</NDL_defDatarate>
+
+	<NDL_minCarrierSense>-95.0</NDL_minCarrierSense>
+	<NDL_maxCarrierSense>-65.0</NDL_maxCarrierSense>
+	<NDL_defCarrierSense>-85.0</NDL_defCarrierSense>
+
+	<NDL_minChannelLoad>0.15</NDL_minChannelLoad>
+	<NDL_maxChannelLoad>0.40</NDL_maxChannelLoad>
+
+	<NDL_numActiveState>1</NDL_numActiveState>
+
+	<NDL_asChanLoad_active1>0.20</NDL_asChanLoad_active1>
+
+	<NDL_asDcc_active1_AC_VI>0</NDL_asDcc_active1_AC_VI>
+	<NDL_asDcc_active1_AC_VO>1</NDL_asDcc_active1_AC_VO>
+	<NDL_asDcc_active1_AC_BE>1</NDL_asDcc_active1_AC_BE>
+	<NDL_asDcc_active1_AC_BK>1</NDL_asDcc_active1_AC_BK>
+
+	<NDL_asTxPower_active1_AC_VI>ref</NDL_asTxPower_active1_AC_VI>
+	<NDL_asTxPower_active1_AC_VO>25.00</NDL_asTxPower_active1_AC_VO>
+	<NDL_asTxPower_active1_AC_BE>20.00</NDL_asTxPower_active1_AC_BE>
+	<NDL_asTxPower_active1_AC_BK>15.00</NDL_asTxPower_active1_AC_BK>
+
+	<NDL_asPacketInterval_active1_AC_VI>ref</NDL_asPacketInterval_active1_AC_VI>
+	<NDL_asPacketInterval_active1_AC_VO>ref</NDL_asPacketInterval_active1_AC_VO>
+	<NDL_asPacketInterval_active1_AC_BE>ref</NDL_asPacketInterval_active1_AC_BE>
+	<NDL_asPacketInterval_active1_AC_BK>ref</NDL_asPacketInterval_active1_AC_BK>
+
+	<NDL_asDatarate_active1_AC_VI>ref</NDL_asDatarate_active1_AC_VI>
+	<NDL_asDatarate_active1_AC_VO>ref</NDL_asDatarate_active1_AC_VO>
+	<NDL_asDatarate_active1_AC_BE>ref</NDL_asDatarate_active1_AC_BE>
+	<NDL_asDatarate_active1_AC_BK>ref</NDL_asDatarate_active1_AC_BK>
+
+	<NDL_asCarrierSense_active1_AC_VI>ref</NDL_asCarrierSense_active1_AC_VI>
+	<NDL_asCarrierSense_active1_AC_VO>ref</NDL_asCarrierSense_active1_AC_VO>
+	<NDL_asCarrierSense_active1_AC_BE>ref</NDL_asCarrierSense_active1_AC_BE>
+	<NDL_asCarrierSense_active1_AC_BK>ref</NDL_asCarrierSense_active1_AC_BK>
+	
+	<NDL_timeUp>1.00</NDL_timeUp>
+	<NDL_timeDown>5.00</NDL_timeDown>
+	<DCC_probe_interval_Tm>1000</DCC_probe_interval_Tm> <!-- in microseconds -->
+	<DCC_measure_interval_Tm>1.00</DCC_measure_interval_Tm>
+	<NDL_minDccSampling>1.00</NDL_minDccSampling>
+</dcc>

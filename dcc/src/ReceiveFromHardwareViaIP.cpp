@@ -1,24 +1,25 @@
+
 #define ELPP_THREAD_SAFE
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 
-#include "RecieveFromHarwareViaIP.h"
+#include "ReceiveFromHardwareViaIP.h"
 #include "dcc.h"
 #include <string>
 #include <arpa/inet.h>
 #include <sstream>
 
 
-RecieveFromHarwareViaIP::RecieveFromHarwareViaIP(DCC* dcc) {
+ReceiveFromHardwareViaIP::ReceiveFromHardwareViaIP(DCC* dcc) {
 	mOwner = dcc;
-	mLogger = new LoggingUtility("RecieveFromHardware");
+	mLogger = new LoggingUtility("ReceiveFromHardware");
 }
 
-RecieveFromHarwareViaIP::~RecieveFromHarwareViaIP() {
+ReceiveFromHardwareViaIP::~ReceiveFromHardwareViaIP() {
 	mThreadReceive->join();
 }
 
-void RecieveFromHarwareViaIP::init(){
+void ReceiveFromHardwareViaIP::init(){
 	/* create a UDP socket */
 
 	if ((mSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -41,12 +42,12 @@ void RecieveFromHarwareViaIP::init(){
 
 
 
-	mThreadReceive = new boost::thread(&RecieveFromHarwareViaIP::recieve, this);
+	mThreadReceive = new boost::thread(&ReceiveFromHardwareViaIP::receive, this);
 
 
 }
 
-void RecieveFromHarwareViaIP::recieve(){
+void ReceiveFromHardwareViaIP::receive(){
 	int seqno = 0;
 
 	mLogger->logDebug("seqno\tdata\tport\trepetition\n");
