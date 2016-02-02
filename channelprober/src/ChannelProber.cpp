@@ -109,23 +109,20 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 		return NL_SKIP;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_FREQUENCY]) {
-		channel = nla_get_u32(
-				sinfo[NL80211_SURVEY_INFO_FREQUENCY]);
-		cout <<"\tfrequency:\t\t\t"<<channel<<" MHz"<<endl;
+		channel = nla_get_u32(sinfo[NL80211_SURVEY_INFO_FREQUENCY]);
+		cout << "\tfrequency:\t\t\t" << channel << " MHz" << endl;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_NOISE]) {
 		noise = (int8_t) nla_get_u8(sinfo[NL80211_SURVEY_INFO_NOISE]);
 //		cout<<"\tnoise:\t\t\t\t"<< noise <<" dBm"<<endl;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]) {
-		total_time = nla_get_u64(
-				sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]);
-		cout<<"\tchannel active time:\t\t"<<total_time<<" ms"<<endl;
+		total_time = nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]);
+		cout << "\tchannel active time:\t\t" << total_time << " ms" << endl;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]) {
-		busy_time = nla_get_u64(
-				sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
-		cout<<"\tchannel busy time:\t\t"<<busy_time<<" ms"<<endl;
+		busy_time = nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
+		cout << "\tchannel busy time:\t\t" << busy_time << " ms" << endl;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_EXT_BUSY]) {
 //		printf("\textension channel busy time:\t%llu ms\n",
@@ -133,14 +130,14 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 //						sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_EXT_BUSY]));
 	}
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX]) {
-//		printf("\tchannel receive time:\t\t%llu ms\n",
-//				(unsigned long long) nla_get_u64(
-//						sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX]));
+		cout << "\tchannel receive time:\t\t"
+				<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX])
+				<< " ms" << endl;
 	}
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX]) {
-//		printf("\tchannel transmit time:\t\t%llu ms\n",
-//				(unsigned long long) nla_get_u64(
-//						sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX]));
+		cout << "\tchannel transmit time:\t\t"
+				<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX])
+				<< " ms" << endl;
 	}
 
 	// Update stats
@@ -153,10 +150,8 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->wifi[0].load.busy_time_last = busy_time;
 	cp->wifi[0].load.noise = noise;
 	cp->wifi[0].load.mutex_channelLoad.unlock();
-//	cout << "channel: " << channel << endl;
-//	cout << "total time: " << total_time << endl;
-//	cout << "busy time: " << busy_time << endl;
-//	cout << "noise: " << noise << endl;
+	cout << "time since last check: " << total_time_diff << endl;
+	cout << "busy time since last check: " << busy_time_diff << endl;
 	cout << "Calculated Load: " << load << endl;
 	cout << "-----------------------" << endl;
 	return NL_SKIP;
@@ -185,10 +180,10 @@ int ChannelProber::send(uint8_t msgCmd, void *payload, unsigned int pLength,
 		uint8_t protocol_version) {
 	int ret = 0;
 
-// create a new Netlink message
+	// create a new Netlink message
 	nl_msg *msg = nlmsg_alloc();
 
-// create message header
+	// create message header
 	if (genlmsg_put(msg, 0, seq, protocol_id, 0, flags, msgCmd,
 			protocol_version) == NULL) {
 		cout
@@ -197,7 +192,7 @@ int ChannelProber::send(uint8_t msgCmd, void *payload, unsigned int pLength,
 		return -1;
 	}
 
-// add message attributes (=payload)
+	// add message attributes (=payload)
 	if (pLength > 0) {
 		ret = nla_put(msg, attrType, pLength, payload);
 		if (ret < 0) {

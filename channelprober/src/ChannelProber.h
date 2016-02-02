@@ -23,12 +23,6 @@ public:
 	// Callback functions for netlink. Not to be used by user!
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
 
-
-	struct nl80211_state {
-		struct nl_sock *nl_sock;
-		int nl80211_id;
-	};
-
 	struct channelload {
 		boost::mutex mutex_channelLoad;
 		uint8_t noise;
