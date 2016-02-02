@@ -13,8 +13,8 @@ public:
 	virtual ~LoggingUtility();
 
 	string timeString();
-	void logStats(string messageType, long id, int64_t delay);
-	void logDebug(string message);
+	void logStats(std::string messageType, long id, int64_t delay);
+	void logDebug(std::string message);
 
 private:
 	string mModuleName;
