@@ -21,7 +21,9 @@ GpsService::GpsService(GpsConfig &config) {
 	mConfig = config;
 	mLastTime = NAN;
 	mSender = new CommunicationSender("GpsService", "3333");
+	mLogger = new LoggingUtility("GPS");
 	
+	//for simulation only
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
@@ -44,7 +46,11 @@ GpsService::~GpsService() {
 	stopStreaming();
 	closeGps();
 	delete mSender;
+	delete mLogger;
 }
+
+
+//receive & use actual GPS data with gpsd
 
 bool GpsService::connectToGpsd() {
 	if (gps_open("localhost", "2947", &mGpsData) < 0) {
@@ -54,33 +60,24 @@ bool GpsService::connectToGpsd() {
 	return true;
 }
 
-int GpsService::getGpsData2(gps_data_t* gpsdata) {
+//writes actual GPS in gpsdata struct
+int GpsService::getGpsData(gps_data_t* gpsdata) {
 	while (1) {
 		if (!gps_waiting(gpsdata, 1 * 1000 * 1000)) {
 			continue;
 		}
 		if (gps_read(gpsdata) == -1) {
 			fprintf(stderr, "GPSd Error\n");
-			return (-1);
+			return (-1);	//error
 		}
 		if (gpsdata->set && gpsdata->status > STATUS_NO_FIX) {
 			break;
 		}
 	}
-	return 0;
+	return 0;				//success
 }
 
-
-void GpsService::gpsDataToString(struct gps_data_t* gpsdata, char* output_dump) {
-	sprintf(output_dump,
-			"%17.12f,%17.12f,%17.12f,%17.12f,%23.12f,%23.12f,%3u\n",
-			gpsdata->fix.latitude, gpsdata->fix.longitude,
-			gpsdata->fix.altitude,
-			(gpsdata->fix.epx > gpsdata->fix.epy) ?
-					gpsdata->fix.epx : gpsdata->fix.epy, gpsdata->fix.time,
-			gpsdata->online, gpsdata->satellites_visible);
-}
-
+//converts measured gpsdata struct to GPS protobuf
 gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
 	gpsPackage::GPS buffer;
 
@@ -96,33 +93,30 @@ gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
 	return buffer;
 }
 
+//receives actual GPS data, logs and sends it
 void GpsService::receiveData() {
-	char gpsDumpMsg[1024];
-	sprintf(gpsDumpMsg, "%17s,%17s,%17s,%17s,%23s,%23s,%3s\n", "Lat", "Lon",
-			"Alt", "Accuracy", "Time", "Online", "Sat");
 	while (1) {
-		if (getGpsData2(&mGpsData) != 0) {
+		if (getGpsData(&mGpsData) != 0) {				//if gpsd error, skip this iteration
 			continue;
 		}
-		if (mGpsData.fix.time != mGpsData.fix.time) {
+		if (mGpsData.fix.time != mGpsData.fix.time) {	//??
 			continue;
 		}
-		if (mGpsData.fix.time == mLastTime) {
+		if (mGpsData.fix.time == mLastTime) {			//if no time progressed since last GPS, skip this iteration
 			continue;
 		}
 		mLastTime = mGpsData.fix.time;
 
-//		gpsDataToString(&mGpsData, gpsDumpMsg);
-//		fprintf(stdout, "%s", gpsDumpMsg);
 		gpsPackage::GPS buffer = gpsDataToBuffer(&mGpsData);
-		string serializedGps;
-		buffer.SerializeToString(&serializedGps);
-		mSender->sendGpsData("GPS", serializedGps);
+		sendToServices(buffer);
 	}
 }
 
-//simulates realistic vehicle speed; to be replaced with actual measurements
-double GpsService::simulateSpeed() {		//just for testing/simulation
+
+//simulate & use fake GPS data for testing
+
+//simulates realistic vehicle speed
+double GpsService::simulateSpeed() {
 	double pCurr = mBernoulli.p();
 	double pNew = pCurr + mUniform(mRandNumberGen);
 	pNew = min(0.5, max(0.0, pNew));		//pNew always between 0 and 0.5 -> 0-50km/h
@@ -159,6 +153,7 @@ position GpsService::simulateNewPosition(position start, double offsetN, double 
 	 return make_pair(latO, lonO);
 }
 
+//simulates GPS data, logs and sends it
 void GpsService::simulateData() {
 	string serializedGps;
 	gpsPackage::GPS buffer;
@@ -180,16 +175,28 @@ void GpsService::simulateData() {
 		buffer.set_online(0);
 		buffer.set_satellites(1);
 
-		//send buffer to CaService
-		buffer.SerializeToString(&serializedGps);
-		mSender->sendGpsData("GPS", serializedGps);
-		//TODO: send to DEN
-		cout << "sent GPS data" << endl;
+		sendToServices(buffer);
+		position = simulateNewPosition(position, (speed/3.6), 0);	//calculate new position (drive north with current speed converted to m/s)
 
-		//calculate new position
 		sleep(1);	//1s	//TODO: use deadline_timer?
-		position = simulateNewPosition(position, (speed/3.6), 0);	//drive north with current speed converted to m/s
 	}
+}
+
+
+//other
+
+//logs and sends GPS
+void GpsService::sendToServices(gpsPackage::GPS buffer) {
+	//log position
+	string csvPosition = to_string(buffer.latitude()) + "\t" + to_string(buffer.longitude()) + "\t" + to_string(buffer.altitude());
+	mLogger->logDebug(csvPosition);
+
+	//send buffer to CaService
+	string serializedGps;
+	buffer.SerializeToString(&serializedGps);
+	mSender->sendGpsData("GPS", serializedGps);
+	//TODO: send to DEN
+	cout << "sent GPS data" << endl;
 }
 
 void GpsService::closeGps() {
@@ -209,6 +216,7 @@ void sigHandler(int sigNum) {
 	GpsService::stopStreaming();
 	GpsService::closeGps();
 }
+
 
 int main() {
 	GpsConfig config;

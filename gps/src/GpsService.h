@@ -25,9 +25,9 @@ class GpsService {
 public:
 	GpsService(GpsConfig &config);
 	~GpsService();
+
 	bool connectToGpsd();
-	int getGpsData2(struct gps_data_t* gpsdata);
-	void gpsDataToString(struct gps_data_t* gpsdata, char* output_dump);
+	int getGpsData(struct gps_data_t* gpsdata);
 	gpsPackage::GPS gpsDataToBuffer(struct gps_data_t* gpsdata);
 	void receiveData();
 
@@ -35,6 +35,7 @@ public:
 	void simulateData();
 	position simulateNewPosition(position start, double offsetN, double offsetE);
 
+	void sendToServices(gpsPackage::GPS buffer);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
@@ -42,9 +43,12 @@ public:
 private:
 	GpsConfig mConfig;
 	static struct gps_data_t mGpsData;
-	double mLastTime;
-	CommunicationSender* mSender;
+	double mLastTime;		//time of last received/measured GPS
 
+	CommunicationSender* mSender;
+	LoggingUtility* mLogger;
+
+	//for simulation only
 	default_random_engine mRandNumberGen;
 	bernoulli_distribution mBernoulli;
 	uniform_real_distribution<double> mUniform;
