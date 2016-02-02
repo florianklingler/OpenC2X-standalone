@@ -4,31 +4,54 @@
 #include <gps.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
+#include <buffers/build/gps.pb.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
-struct GPSDataContainer {
-	double mLat;
-	double mLong;
-	double mAlt;
+struct GpsConfig {
+	bool mSimulateData;
+
+	void loadConfigXML(const string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mSimulateData = pt.get("gps.SimulateData", true);
+	}
 };
+
+typedef struct pair<double, double> position;
 
 class GpsService {
 public:
-	GpsService();
+	GpsService(GpsConfig &config);
 	~GpsService();
+
 	bool connectToGpsd();
-	int getGpsData2(struct gps_data_t* gpsdata);
+	int getGpsData(struct gps_data_t* gpsdata);
+	gpsPackage::GPS gpsDataToBuffer(struct gps_data_t* gpsdata);
 	void receiveData();
-	void gpsDataToString(struct gps_data_t* gpsdata, char* output_dump);
+
+	double simulateSpeed();
+	void simulateData();
+	position simulateNewPosition(position start, double offsetN, double offsetE);
+
+	void sendToServices(gpsPackage::GPS buffer);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
 
 private:
+	GpsConfig mConfig;
 	static struct gps_data_t mGpsData;
-	//GPSDataContainer* mDataContainer;
-	double mLastTime;
-	CommunicationSender* mSender;
+	double mLastTime;		//time of last received/measured GPS
 
+	CommunicationSender* mSender;
+	LoggingUtility* mLogger;
+
+	//for simulation only
+	default_random_engine mRandNumberGen;
+	bernoulli_distribution mBernoulli;
+	uniform_real_distribution<double> mUniform;
 };
 
 #endif

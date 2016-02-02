@@ -1,0 +1,14 @@
+package gpsPackage;
+
+message GPS {
+	optional double latitude = 1;
+	optional double longitude = 2;
+	optional double altitude = 3;
+	
+	optional double epx = 4;
+	optional double epy = 5;
+	
+	optional int64 time = 6;
+	optional int64 online = 7;
+	optional int32 satellites = 8;
+}
