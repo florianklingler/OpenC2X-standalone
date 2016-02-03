@@ -23,6 +23,11 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mReceiverFromHw = new ReceiveFromHardwareViaIP(this);
 	mSenderToServices = new CommunicationSender(module, "5555");
 
+	// Use real channel prober when we are not simulating channel load
+	if(!mConfig.simulateChannelLoad) {
+		mChannelProber = new ChannelProber();
+	}
+
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
@@ -48,7 +53,6 @@ DCC::~DCC() {
 	//stop and delete threads
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
-	mThreadReceiveFromHw->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
 
@@ -70,9 +74,19 @@ DCC::~DCC() {
 		delete mTimerAddToken[accessCategory];	//delete deadline_timer
 		delete mBucket[accessCategory];			//delete LeakyBucket
 	}
+
+	// delete channel prober
+	if(!mConfig.simulateChannelLoad) {
+		delete mChannelProber;
+	}
 }
 
 void DCC::init() {
+	// Initialize channel prober only when we are not simulating
+	if(!mConfig.simulateChannelLoad) {
+		mChannelProber->init();
+	}
+
 	mSenderToHw->init();
 	mReceiverFromHw->init();
 	
@@ -206,7 +220,7 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 	if(mConfig.simulateChannelLoad) {
 		channelLoad = simulateChannelLoad();
 	} else {
-		//TODO: get real channel load from hw
+		channelLoad = mChannelProber->getChannelLoad();
 	}
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
