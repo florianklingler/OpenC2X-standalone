@@ -17,61 +17,55 @@ ReceiveFromHardwareViaIP::ReceiveFromHardwareViaIP(DCC* dcc) {
 
 ReceiveFromHardwareViaIP::~ReceiveFromHardwareViaIP() {
 	mThreadReceive->join();
+	delete mThreadReceive;
+
+	delete mLogger;
 }
 
 void ReceiveFromHardwareViaIP::init(){
 	/* create a UDP socket */
 
 	if ((mSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		mLogger->logDebug("cannot create socket\n");
+		mLogger->logDebug("cannot create socket");
 		return;
 	}
 
 
 	/* bind the socket to any valid IP address and a specific port */
 
-	memset((char *)&mMyaddr, 0, sizeof(mMyaddr));
-	mMyaddr.sin_family = AF_INET;
-	mMyaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	mMyaddr.sin_port = htons(mService_port);
+	memset((char *)&mMyAddr, 0, sizeof(mMyAddr));
+	mMyAddr.sin_family = AF_INET;
+	mMyAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	mMyAddr.sin_port = htons(mServicePort);
 
-	if (bind(mSocket, (struct sockaddr *)&mMyaddr, sizeof(mMyaddr)) < 0) {
+	if (bind(mSocket, (struct sockaddr *)&mMyAddr, sizeof(mMyAddr)) < 0) {
 		mLogger->logDebug("bind failed");
 		return;
 	}
 
-
-
 	mThreadReceive = new boost::thread(&ReceiveFromHardwareViaIP::receive, this);
-
-
 }
 
 void ReceiveFromHardwareViaIP::receive(){
 	int seqno = 0;
 
-	mLogger->logDebug("seqno\tdata\tport\trepetition\n");
 	fflush(stdout);
 	/* now loop, receiving data and printing what we received */
-		while(true) {
-			//fprintf(stderr, "waiting on port %d\n", service_port);
-			mRecvlen = recvfrom(mSocket, mRecvBuffer, BUFSIZE, 0, (struct sockaddr *)&mRemoteAddr, &mAddrlen);
-			//printf("received %d bytes\n", recvlen);
-			if (mRecvlen > 0) {
-				mRecvBuffer[mRecvlen] = 0;
-				//printf("received message: \"%s\"\n", buf);
-				//cout << "Recv: len: "<< mRecvlen << " raw: " << mRecvBuffer << endl;
-				std::ostringstream oss;
-				oss <<  "\n seqno: " << seqno << " buf: "<< mRecvBuffer
-						<< " serservice_port: " << mService_port
-						<< " repetition: " << mRepetition << " len: "<< mRecvlen <<  std::endl;
-				mLogger->logDebug(oss.str());
+	while(true) {
+		//fprintf(stderr, "waiting on port %d\n", service_port);
+		mRecvLen = recvfrom(mSocket, mRecvBuffer, BUFSIZE, 0, (struct sockaddr *)&mRemoteAddr, &mAddrLen);
+		//printf("received %d bytes\n", recvlen);
+		if (mRecvLen > 0) {
+			mRecvBuffer[mRecvLen] = 0;
+			//printf("received message: \"%s\"\n", buf);
+			//cout << "Recv: len: "<< mRecvlen << " raw: " << mRecvBuffer << endl;
+			mLogger->logDebug("Sequence no: " + std::to_string(seqno) + "\tService port: " + std::to_string(mServicePort) + "\tRepetition: " + std::to_string(mRepetition) + "\tLength: " + std::to_string(mRecvLen));
 
-				//send to dcc
-				std::string tmp(reinterpret_cast<char*>(mRecvBuffer), mRecvlen);
-				mOwner->receiveFromHw(tmp);
-			}
-			seqno++;
+			//send to dcc
+			std::string tmp(reinterpret_cast<char*>(mRecvBuffer), mRecvLen);
+			mOwner->receiveFromHw(tmp);
 		}
-		/* never exits */
+		seqno++;
+	}
+	/* never exits */
 }

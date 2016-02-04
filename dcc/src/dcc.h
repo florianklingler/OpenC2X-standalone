@@ -50,7 +50,6 @@ private:
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
-	boost::thread* mThreadReceiveFromHw;
 
 	SendToHardwareViaIP* mSenderToHw;
 	ReceiveFromHardwareViaIP* mReceiverFromHw;

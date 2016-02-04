@@ -48,7 +48,6 @@ DCC::~DCC() {
 	//stop and delete threads
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
-	mThreadReceiveFromHw->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
 

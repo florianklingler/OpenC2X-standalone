@@ -1,10 +1,3 @@
-/*
- * RecieveFromHarwareViaIP.h
- *
- *  Created on: Jan 14, 2016
- *      Author: jan
- */
-
 #ifndef RECEIVEFROMHARDWAREVIAIP_H_
 #define RECEIVEFROMHARDWAREVIAIP_H_
 
@@ -26,13 +19,13 @@ public:
 	void receive();
 
 private:
-	struct sockaddr_in mMyaddr;	/* our address */
+	struct sockaddr_in mMyAddr;	/* our address */
 	struct sockaddr_in mRemoteAddr;	/* remote address */
-	socklen_t mAddrlen = sizeof(mRemoteAddr);		/* length of addresses */
-	int mRecvlen = 0;			/* # bytes received */
+	socklen_t mAddrLen = sizeof(mRemoteAddr);		/* length of addresses */
+	int mRecvLen = 0;			/* # bytes received */
 	int mSocket =0;					/* our socket */
 	unsigned char mRecvBuffer[BUFSIZE];	/* receive buffer */
-	int mService_port = 21234;
+	int mServicePort = 21234;
 	int mRepetition = 0;
 
 	DCC* mOwner;
