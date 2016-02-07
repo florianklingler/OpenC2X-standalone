@@ -12,23 +12,21 @@
 
 class ChannelProber {
 public:
-	ChannelProber();
+	ChannelProber(string ifname);
 	virtual ~ChannelProber();
 
 	void init();
 	void probe();
-	int sendNl80211(uint8_t msgCmd, void *payload, unsigned int pLength, int payloadType, unsigned int seq, int flags = 0);
-	int send(uint8_t msgCmd, void *payload, unsigned int pLength, int attrType, unsigned int seq, int protocol_id, int flags = 0, uint8_t protocol_version = 0x01);
+	int sendNl80211(uint8_t msgCmd, void *payload, unsigned int length, int payloadType, unsigned int seq, int flags = 0);
+	int send(uint8_t msgCmd, void *payload, unsigned int length, int attrType, unsigned int seq, int protocolId, int flags = 0, uint8_t protocolVersion = 0x01);
 	double getChannelLoad();
-
-	// Callback functions for netlink. Not to be used by user!
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
 
 	struct channelload {
-		boost::mutex mutex_channelLoad;
+		boost::mutex mutexChannelLoad;
 		uint8_t noise;
-		uint64_t total_time_last;
-		uint64_t busy_time_last;
+		uint64_t totalTimeLast;
+		uint64_t busyTimeLast;
 		double load;
 	};
 	struct netinterface {
@@ -38,13 +36,11 @@ public:
 	};
 
 	nl_sock *mSocket;
-	int socket_state;
 	static int mNl80211Id;
 	boost::thread* mThreadProbe;
 
-	netinterface *wifi;
-	int mTotalWifi;
-	unsigned int mChannelLoadProbingPeriod;
+	netinterface *mWifi;
+	string mIfname;
 };
 
 #endif

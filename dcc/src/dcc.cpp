@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <signal.h>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber();
+		mChannelProber = new ChannelProber("wlan0"); // wlan1-ath9k
 	}
 
 	mRandNumberGen = default_random_engine(0);
@@ -383,8 +384,18 @@ double DCC::currentCarrierSense(Channels::t_access_category ac) {
 	return mCurrentState->asCarrierSense.ac[ac].val;
 }
 
+void onSigTermOk(int sig) {
+	cout << "Signal " << sig << " received. Requesting exit." << endl;
+	exit(0);
+}
 
 int main() {
+	signal(SIGINT, &onSigTermOk);
+	signal(SIGQUIT, &onSigTermOk);
+	signal(SIGABRT, &onSigTermOk);
+	signal(SIGKILL, &onSigTermOk);
+	signal(SIGTERM, &onSigTermOk);
+
 	DccConfig config;
 	try {
 		config.loadParameters("../src/config.xml");
