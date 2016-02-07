@@ -26,7 +26,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber("wlan0"); // wlan1-ath9k
+		mChannelProber = new ChannelProber("wlan1-ath9k"); // wlan0
 	}
 
 	mRandNumberGen = default_random_engine(0);
