@@ -36,9 +36,11 @@ private:
 	CommunicationSender* mSenderToLdm;
 
 	CommunicationReceiver* mReceiverGps;
+	CommunicationReceiver* mReceiverObd2;
 
 	boost::thread* mThreadReceive;
 	boost::thread* mThreadGpsDataReceive;
+	boost::thread* mThreadObd2DataReceive;
 
 	LoggingUtility* mLogger;
 

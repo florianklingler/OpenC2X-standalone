@@ -31,7 +31,7 @@ void CommunicationSender::sendToHw(string message) {
 	mLogger->logDebug("sent to HW");
 }
 
-void CommunicationSender::sendGpsData(string envelope, string message) {
+void CommunicationSender::sendData(string envelope, string message) {
 	s_sendmore(*mPublisher, envelope);
 	s_send(*mPublisher, message);
 }

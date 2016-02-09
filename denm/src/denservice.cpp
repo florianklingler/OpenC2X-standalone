@@ -76,7 +76,7 @@ void DenService::receiveGpsData() {
 	gpsPackage::GPS newGps;
 
 	while (1) {
-		serializedGps = mReceiverGps->receiveGpsData();
+		serializedGps = mReceiverGps->receiveData();
 		newGps.ParseFromString(serializedGps);
 		cout << "Received GPS with latitude: " << newGps.latitude() << ", longitude: " << newGps.longitude() << endl;
 		mMutexLatestGps.lock();

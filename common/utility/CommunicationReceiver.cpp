@@ -41,7 +41,7 @@ string CommunicationReceiver::receiveFromHw() {
 	return message;
 }
 
-string CommunicationReceiver::receiveGpsData() {
+string CommunicationReceiver::receiveData() {
 	string envelope = s_recv(*mSubscriber);
 	string message = s_recv(*mSubscriber);
 	return message;

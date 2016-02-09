@@ -26,7 +26,7 @@ GpsService::GpsService(GpsConfig &config) {
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
-	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
+	mUniform = uniform_real_distribution<double>(-0.01, 0.01);
 
 	if (!mConfig.mSimulateData) {	//use real GPS data
 		while (!connectToGpsd()) {
@@ -125,7 +125,7 @@ void GpsService::receiveData() {
 double GpsService::simulateSpeed() {
 	double pCurr = mBernoulli.p();
 	double pNew = pCurr + mUniform(mRandNumberGen);
-	pNew = min(0.5, max(0.0, pNew));		//pNew always between 0 and 0.5 -> 0-50km/h
+	pNew = min(0.15, max(0.0, pNew));		//pNew always between 0 and 0.15
 
 	mBernoulli = bernoulli_distribution(pNew);
 
@@ -133,7 +133,7 @@ double GpsService::simulateSpeed() {
 
 	for (int i=0; i<1000; i++) {
 		double r = mBernoulli(mRandNumberGen);
-		sum += min(1.0, max(0.0, r)) * 100;	//*100 to convert to km/h
+		sum += min(1.0, max(0.0, r)) * 100;	//*100 to convert to 0-15 m/s
 	}
 
 	return sum / 1000.0;					//avg to avoid rapid/drastic changes in speed
@@ -161,11 +161,10 @@ position GpsService::simulateNewPosition(position start, double offsetN, double 
 
 //simulates GPS data, logs and sends it
 void GpsService::simulateData(const boost::system::error_code &ec, position currentPosition) {
-	string serializedGps;
 	gpsPackage::GPS buffer;
 
-	double speed = simulateSpeed();			//current speed in kmh
-	cout << "current speed: " << speed << endl;
+	double speed = simulateSpeed();			//current speed in m/s
+	cout << "current speed in km/h: " << speed*3.6 << endl;
 
 	//write current position to protocol buffer
 	buffer.set_latitude(currentPosition.first);
@@ -178,7 +177,7 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 	buffer.set_satellites(1);
 
 	sendToServices(buffer);
-	currentPosition = simulateNewPosition(currentPosition, (speed/3.6)/10, 0);	//calculate new position (drive north with current speed converted to m/s)
+	currentPosition = simulateNewPosition(currentPosition, speed/10, 0);	//calculate new position (drive north with current speed converted to m/s)
 
 	mTimer->expires_from_now(boost::posix_time::millisec(100));
 	mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, currentPosition));
@@ -193,10 +192,10 @@ void GpsService::sendToServices(gpsPackage::GPS buffer) {
 	string csvPosition = to_string(buffer.latitude()) + "\t" + to_string(buffer.longitude()) + "\t" + to_string(buffer.altitude());
 	mLogger->logDebug(csvPosition);
 
-	//send buffer to CaService
+	//send buffer to services
 	string serializedGps;
 	buffer.SerializeToString(&serializedGps);
-	mSender->sendGpsData("GPS", serializedGps);
+	mSender->sendData("GPS", serializedGps);
 	cout << "sent GPS data" << endl;
 }
 

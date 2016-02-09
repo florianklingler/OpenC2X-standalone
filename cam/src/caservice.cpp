@@ -21,6 +21,7 @@ CaService::CaService() {
 	mSenderToLdm = new CommunicationSender(module, "8888");
 
 	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
+	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2");
 
 	mLogger = new LoggingUtility("CaService");
 
@@ -32,14 +33,17 @@ CaService::CaService() {
 CaService::~CaService() {
 	mThreadReceive->join();
 	mThreadGpsDataReceive->join();
+	mThreadObd2DataReceive->join();
 	delete mThreadReceive;
 	delete mThreadGpsDataReceive;
+	delete mThreadObd2DataReceive;
 
 	delete mReceiverFromDcc;
 	delete mSenderToDcc;
 	delete mSenderToLdm;
 
 	delete mReceiverGps;
+	delete mReceiverObd2;
 
 	delete mLogger;
 
@@ -50,6 +54,7 @@ CaService::~CaService() {
 void CaService::init() {
 	mThreadReceive = new boost::thread(&CaService::receive, this);
 	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
+	mThreadObd2DataReceive = new boost::thread(&CaService::receiveObd2Data, this);
 
 	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
 	mIoService.run();
@@ -80,7 +85,7 @@ void CaService::receiveGpsData() {
 	gpsPackage::GPS newGps;
 
 	while (1) {
-		serializedGps = mReceiverGps->receiveGpsData();
+		serializedGps = mReceiverGps->receiveData();
 		newGps.ParseFromString(serializedGps);
 		cout << "Received GPS with latitude: " << newGps.latitude() << ", longitude: " << newGps.longitude() << endl;
 		mMutexLatestGps.lock();
@@ -90,18 +95,16 @@ void CaService::receiveGpsData() {
 }
 
 void CaService::receiveObd2Data() {
-	string serializedGps;
+	string serializedObd2;
 	obd2Package::OBD2 newObd2;
 
 	while (1) {
-		//serializedGps = mReceiverGps->receiveGpsData();	//TODO: implement OBD2
-		//newObd2.ParseFromString(serializedGps);
-		newObd2.set_speed(10.0);
+		serializedObd2 = mReceiverObd2->receiveData();
+		newObd2.ParseFromString(serializedObd2);
 		cout << "Received Obd2 with speed: " << newObd2.speed() << endl;
 		mMutexLatestObd2.lock();
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();
-		sleep(1);
 	}
 }
 
