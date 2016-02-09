@@ -1,0 +1,6 @@
+package obd2Package;
+
+message OBD2 {
+	optional double speed = 1;
+	optional int64 time = 2;
+}

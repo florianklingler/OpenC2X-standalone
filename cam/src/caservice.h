@@ -7,25 +7,15 @@
 #include <buffers/build/data.pb.h>
 #include <buffers/build/cam.pb.h>
 #include <buffers/build/gps.pb.h>
+#include <buffers/build/obd2.pb.h>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
 
-struct CaConfig {
-	double mCamTriggerInterval;
-
-	void loadConfigXML(const string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
-		mCamTriggerInterval = pt.get("cam.TriggerInterval", 500);
-	}
-};
-
 class CaService {
 public:
-	CaService(CaConfig &config);
+	CaService();
 	~CaService();
 
 	void init();
@@ -36,6 +26,9 @@ public:
 	camPackage::CAM generateCam();
 	dataPackage::DATA generateData(camPackage::CAM cam);
 	void receiveGpsData();
+	void receiveObd2Data();
+	double getHeading(double lat1, double lon1, double lat2, double lon2);
+	double getDistance(double lat1, double lon1, double lat2, double lon2);
 
 private:
 	CommunicationReceiver* mReceiverFromDcc;
@@ -48,7 +41,6 @@ private:
 	boost::thread* mThreadGpsDataReceive;
 
 	LoggingUtility* mLogger;
-	CaConfig mConfig;
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
@@ -58,6 +50,11 @@ private:
 
 	gpsPackage::GPS mLatestGps;
 	mutex mMutexLatestGps;
+
+	obd2Package::OBD2 mLatestObd2;
+	mutex mMutexLatestObd2;
+
+	camPackage::CAM mLastSentCam;
 };
 
 #endif
