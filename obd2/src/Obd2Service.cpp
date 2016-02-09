@@ -83,7 +83,7 @@ void Obd2Service::sendToServices(obd2Package::OBD2 obd2) {
 	string serializedObd2;
 	obd2.SerializeToString(&serializedObd2);
 	mSender->sendData("OBD2", serializedObd2);
-	cout << "sent OBD2 data with speed " << obd2.speed()*3.6 << " km/h" << endl;
+	cout << "Sent OBD2 with speed: " << obd2.speed()*3.6 << " km/h" << endl;
 }
 
 int main() {

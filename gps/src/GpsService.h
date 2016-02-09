@@ -36,7 +36,7 @@ public:
 	void simulateData(const boost::system::error_code &ec, position currentPosition);
 	position simulateNewPosition(position start, double offsetN, double offsetE);
 
-	void sendToServices(gpsPackage::GPS buffer);
+	void sendToServices(gpsPackage::GPS gps);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();

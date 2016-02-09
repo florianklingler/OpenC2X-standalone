@@ -75,7 +75,7 @@ void CaService::receive() {
 		serializedData = data.content();		//serialized CAM
 		logDelay(serializedData);
 
-		cout << "forward incoming CAM to LDM" << endl;
+		cout << "Forward incoming CAM to LDM" << endl;
 		mSenderToLdm->send(envelope, serializedData);	//send serialized CAM to LDM
 	}
 }
@@ -101,7 +101,7 @@ void CaService::receiveObd2Data() {
 	while (1) {
 		serializedObd2 = mReceiverObd2->receiveData();
 		newObd2.ParseFromString(serializedObd2);
-		cout << "Received Obd2 with speed: " << newObd2.speed() << endl;
+		cout << "Received OBD2 with speed: " << newObd2.speed() << endl;
 		mMutexLatestObd2.lock();
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();
@@ -201,7 +201,7 @@ void CaService::send() {
 	cam = generateCam();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
-	cout << "send new CAM to LDM and DCC\n" << endl;
+	cout << "Send new CAM to LDM and DCC\n" << endl;
 	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
 

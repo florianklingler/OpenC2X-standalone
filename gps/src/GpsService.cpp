@@ -163,7 +163,6 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 	gpsPackage::GPS buffer;
 
 	double speed = simulateSpeed();			//current speed in m/s
-	cout << "current speed in km/h: " << speed*3.6 << endl;
 
 	//write current position to protocol buffer
 	buffer.set_latitude(currentPosition.first);
@@ -186,16 +185,16 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 //other
 
 //logs and sends GPS
-void GpsService::sendToServices(gpsPackage::GPS buffer) {
+void GpsService::sendToServices(gpsPackage::GPS gps) {
 	//log position
-	string csvPosition = to_string(buffer.latitude()) + "\t" + to_string(buffer.longitude()) + "\t" + to_string(buffer.altitude());
+	string csvPosition = to_string(gps.latitude()) + "\t" + to_string(gps.longitude()) + "\t" + to_string(gps.altitude());
 	mLogger->logDebug(csvPosition);
 
 	//send buffer to services
 	string serializedGps;
-	buffer.SerializeToString(&serializedGps);
+	gps.SerializeToString(&serializedGps);
 	mSender->sendData("GPS", serializedGps);
-	cout << "sent GPS data" << endl;
+	cout << "Sent GPS with latitude: " << gps.latitude() << ", longitude: " << gps.longitude() << endl;
 }
 
 void GpsService::closeGps() {
