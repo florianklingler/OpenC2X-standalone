@@ -4,9 +4,6 @@
 
 #include "Obd2Service.h"
 #include <unistd.h>
-#include <math.h>
-#include <signal.h>
-#include <sys/ioctl.h>
 #include <iostream>
 #include <cstdlib>
 #include <chrono>

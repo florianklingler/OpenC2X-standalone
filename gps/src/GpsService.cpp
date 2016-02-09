@@ -3,7 +3,6 @@
 
 #include "GpsService.h"
 #include <unistd.h>
-#include <math.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <iostream>

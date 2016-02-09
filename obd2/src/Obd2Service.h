@@ -1,7 +1,6 @@
 #ifndef OBD2SERVICE_H_
 #define OBD2SERVICE_H_
 
-#include <gps.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
 #include <buffers/build/obd2.pb.h>
