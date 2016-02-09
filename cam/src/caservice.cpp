@@ -140,7 +140,7 @@ double CaService::getHeading(double lat1, double lon1, double lat2, double lon2)
 	return phi;
 }
 
-//periodically trigger sending to LDM and DCC
+//periodically check generation rules for sending to LDM and DCC
 void CaService::triggerCam(const boost::system::error_code &ec) {
 	bool sendCam = false;
 

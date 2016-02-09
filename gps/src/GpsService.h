@@ -7,6 +7,7 @@
 #include <buffers/build/gps.pb.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/asio.hpp>
 
 struct GpsConfig {
 	bool mSimulateData;
@@ -32,7 +33,7 @@ public:
 	void receiveData();
 
 	double simulateSpeed();
-	void simulateData();
+	void simulateData(const boost::system::error_code &ec, position currentPosition);
 	position simulateNewPosition(position start, double offsetN, double offsetE);
 
 	void sendToServices(gpsPackage::GPS buffer);
@@ -52,6 +53,9 @@ private:
 	default_random_engine mRandNumberGen;
 	bernoulli_distribution mBernoulli;
 	uniform_real_distribution<double> mUniform;
+
+	boost::asio::io_service mIoService;
+	boost::asio::deadline_timer* mTimer;
 };
 
 #endif

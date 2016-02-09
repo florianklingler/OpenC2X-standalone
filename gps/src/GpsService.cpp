@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
-#include <math.h>
+#include <cmath>
 
 using namespace std;
 
@@ -38,7 +38,10 @@ GpsService::GpsService(GpsConfig &config) {
 		receiveData();
 	}
 	else {				//use simulated GPS data
-		simulateData();
+		position startPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
+		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+		mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
+		mIoService.run();
 	}
 }
 
@@ -47,6 +50,9 @@ GpsService::~GpsService() {
 	closeGps();
 	delete mSender;
 	delete mLogger;
+
+	mTimer->cancel();
+	delete mTimer;
 }
 
 
@@ -154,32 +160,28 @@ position GpsService::simulateNewPosition(position start, double offsetN, double 
 }
 
 //simulates GPS data, logs and sends it
-void GpsService::simulateData() {
+void GpsService::simulateData(const boost::system::error_code &ec, position currentPosition) {
 	string serializedGps;
 	gpsPackage::GPS buffer;
 
-	position position(51.732724, 8.735936);	//start position at HNI: latitude, longitude
-	double speed; 							//current speed in kmh
+	double speed = simulateSpeed();			//current speed in kmh
+	cout << "current speed: " << speed << endl;
 
-	while (1) {
-		speed = simulateSpeed();
-		cout << "current speed: " << speed << endl;
+	//write current position to protocol buffer
+	buffer.set_latitude(currentPosition.first);
+	buffer.set_longitude(currentPosition.second);
+	buffer.set_altitude(0);
+	buffer.set_epx(0);
+	buffer.set_epy(0);
+	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_online(0);
+	buffer.set_satellites(1);
 
-		//write current position to protocol buffer
-		buffer.set_latitude(position.first);	//TODO: why only 4 digits accuracy?
-		buffer.set_longitude(position.second);
-		buffer.set_altitude(0);
-		buffer.set_epx(0);
-		buffer.set_epy(0);
-		buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
-		buffer.set_online(0);
-		buffer.set_satellites(1);
+	sendToServices(buffer);
+	currentPosition = simulateNewPosition(currentPosition, (speed/3.6)/10, 0);	//calculate new position (drive north with current speed converted to m/s)
 
-		sendToServices(buffer);
-		position = simulateNewPosition(position, (speed/3.6), 0);	//calculate new position (drive north with current speed converted to m/s)
-
-		sleep(1);	//1s	//TODO: use deadline_timer?
-	}
+	mTimer->expires_from_now(boost::posix_time::millisec(100));
+	mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, currentPosition));
 }
 
 
@@ -195,7 +197,6 @@ void GpsService::sendToServices(gpsPackage::GPS buffer) {
 	string serializedGps;
 	buffer.SerializeToString(&serializedGps);
 	mSender->sendGpsData("GPS", serializedGps);
-	//TODO: send to DEN
 	cout << "sent GPS data" << endl;
 }
 
