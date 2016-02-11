@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <signal.h>
 
 using namespace std;
 
@@ -22,6 +23,11 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mSenderToHw = new SendToHardwareViaIP(mConfig.ip);
 	mReceiverFromHw = new ReceiveFromHardwareViaIP(this);
 	mSenderToServices = new CommunicationSender(module, "5555");
+
+	// Use real channel prober when we are not simulating channel load
+	if(!mConfig.simulateChannelLoad) {
+		mChannelProber = new ChannelProber("wlan1-ath9k"); // wlan0
+	}
 
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
@@ -69,9 +75,19 @@ DCC::~DCC() {
 		delete mTimerAddToken[accessCategory];	//delete deadline_timer
 		delete mBucket[accessCategory];			//delete LeakyBucket
 	}
+
+	// delete channel prober
+	if(!mConfig.simulateChannelLoad) {
+		delete mChannelProber;
+	}
 }
 
 void DCC::init() {
+	// Initialize channel prober only when we are not simulating
+	if(!mConfig.simulateChannelLoad) {
+		mChannelProber->init();
+	}
+
 	mSenderToHw->init();
 	mReceiverFromHw->init();
 	
@@ -205,7 +221,7 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 	if(mConfig.simulateChannelLoad) {
 		channelLoad = simulateChannelLoad();
 	} else {
-		//TODO: get real channel load from hw
+		channelLoad = mChannelProber->getChannelLoad();
 	}
 
 	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
@@ -368,8 +384,18 @@ double DCC::currentCarrierSense(Channels::t_access_category ac) {
 	return mCurrentState->asCarrierSense.ac[ac].val;
 }
 
+void onSigTermOk(int sig) {
+	cout << "Signal " << sig << " received. Requesting exit." << endl;
+	exit(0);
+}
 
 int main() {
+	signal(SIGINT, &onSigTermOk);
+	signal(SIGQUIT, &onSigTermOk);
+	signal(SIGABRT, &onSigTermOk);
+	signal(SIGKILL, &onSigTermOk);
+	signal(SIGTERM, &onSigTermOk);
+
 	DccConfig config;
 	try {
 		config.loadParameters("../src/config.xml");

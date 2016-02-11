@@ -12,6 +12,7 @@
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
 #include "SendToHardwareViaIP.h"
+#include "ChannelProber.h"
 
 
 class ReceiveFromHardwareViaIP;
@@ -75,6 +76,8 @@ private:
 	States states;			//map of all states
 	int mCurrentStateId;
 	State* mCurrentState;
+
+	ChannelProber* mChannelProber;
 
 	mutex mMutexLastTokenAt;
 	map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
