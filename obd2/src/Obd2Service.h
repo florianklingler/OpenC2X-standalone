@@ -1,6 +1,7 @@
 #ifndef OBD2SERVICE_H_
 #define OBD2SERVICE_H_
 
+#include "SerialPort.h"
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
 #include <buffers/build/obd2.pb.h>
@@ -15,7 +16,7 @@ struct Obd2Config {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
-		mSimulateData = pt.get("gps.SimulateData", true);
+		mSimulateData = pt.get("obd2.SimulateData", true);
 	}
 };
 
@@ -24,6 +25,7 @@ public:
 	Obd2Service(Obd2Config &config);
 	~Obd2Service();
 
+	void readSpeed(const boost::system::error_code &ec, SerialPort* serial);
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec);
 	void sendToServices(obd2Package::OBD2 obd2);
