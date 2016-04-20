@@ -21,6 +21,7 @@ DenService::DenService() {
 	mSenderToLdm = new CommunicationSender(module, "9999");
 
 	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
+	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2");
 
 	mLogger = new LoggingUtility("DenService");
 
@@ -30,9 +31,11 @@ DenService::DenService() {
 DenService::~DenService() {
 	mThreadReceive->join();
 	mThreadGpsDataReceive->join();
+	mThreadObd2DataReceive->join();
 	mThreadSend->join();
 	delete mThreadReceive;
 	delete mThreadGpsDataReceive;
+	delete mThreadObd2DataReceive;
 	delete mThreadSend;
 
 	delete mReceiverFromDcc;
@@ -40,6 +43,7 @@ DenService::~DenService() {
 	delete mSenderToLdm;
 
 	delete mReceiverGps;
+	delete mReceiverObd2;
 
 	delete mLogger;
 }
@@ -47,6 +51,7 @@ DenService::~DenService() {
 void DenService::init() {
 	mThreadReceive = new boost::thread(&DenService::receive, this);
 	mThreadGpsDataReceive = new boost::thread(&DenService::receiveGpsData, this);
+	mThreadObd2DataReceive = new boost::thread(&DenService::receiveObd2Data, this);
 
 	mThreadSend = new boost::thread(&DenService::triggerDenm, this);
 }
@@ -82,6 +87,20 @@ void DenService::receiveGpsData() {
 		mMutexLatestGps.lock();
 		mLatestGps = newGps;
 		mMutexLatestGps.unlock();
+	}
+}
+
+void DenService::receiveObd2Data() {
+	string serializedObd2;
+	obd2Package::OBD2 newObd2;
+
+	while (1) {
+		serializedObd2 = mReceiverObd2->receiveData();
+		newObd2.ParseFromString(serializedObd2);
+		cout << "Received OBD2 with speed (m/s): " << newObd2.speed() << endl;
+		mMutexLatestObd2.lock();
+		mLatestObd2 = newObd2;
+		mMutexLatestObd2.unlock();
 	}
 }
 
@@ -138,12 +157,21 @@ denmPackage::DENM DenService::generateDenm() {
 	denm.set_id(mIdCounter++);
 	denm.set_content("DENM from DEN service");
 	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
-	if(mLatestGps.has_time()) {									//only add gps if valid data is available
-		mMutexLatestGps.lock();
-		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);	//data needs to be copied to a new buffer because new gps data can be received before sending
-		mMutexLatestGps.unlock();
+
+	mMutexLatestGps.lock();
+	if(mLatestGps.has_time()) {											//only add gps if valid data is available
+		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);			//data needs to be copied to a new buffer because new gps data can be received before sending
 		denm.set_allocated_gps(gps);
 	}
+	mMutexLatestGps.unlock();
+
+	mMutexLatestObd2.lock();
+	if(mLatestObd2.has_time()) {										//only add obd2 if valid data is available
+		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
+		denm.set_allocated_obd2(obd2);
+		//TODO: delete obd2, gps?
+	}
+	mMutexLatestObd2.unlock();
 
 	return denm;
 }

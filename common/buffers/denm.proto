@@ -1,9 +1,11 @@
 package denmPackage;
 import "gps.proto";
+import "obd2.proto";
 
 message DENM {
 	required int32 id = 1;
 	required string content = 2;
 	optional int64 createTime = 3;
 	optional gpsPackage.GPS gps = 4;
+	optional obd2Package.OBD2 obd2 = 5;
 }

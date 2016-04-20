@@ -8,6 +8,7 @@
 #include <buffers/build/data.pb.h>
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/gps.pb.h>
+#include <buffers/build/obd2.pb.h>
 #include <mutex>
 
 class DenService {
@@ -23,6 +24,7 @@ public:
 	denmPackage::DENM generateDenm();
 	dataPackage::DATA generateData(denmPackage::DENM denm);
 	void receiveGpsData();
+	void receiveObd2Data();
 
 private:
 	void microSleep(double us_sleep); // in us
@@ -32,9 +34,11 @@ private:
 	CommunicationSender* mSenderToLdm;
 
 	CommunicationReceiver* mReceiverGps;
+	CommunicationReceiver* mReceiverObd2;
 
 	boost::thread* mThreadReceive;
 	boost::thread* mThreadGpsDataReceive;
+	boost::thread* mThreadObd2DataReceive;
 	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;
@@ -43,6 +47,9 @@ private:
 
 	gpsPackage::GPS mLatestGps;
 	mutex mMutexLatestGps;
+
+	obd2Package::OBD2 mLatestObd2;
+	mutex mMutexLatestObd2;
 };
 
 #endif
