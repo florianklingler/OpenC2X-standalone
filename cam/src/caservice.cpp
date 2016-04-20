@@ -101,7 +101,7 @@ void CaService::receiveObd2Data() {
 	while (1) {
 		serializedObd2 = mReceiverObd2->receiveData();
 		newObd2.ParseFromString(serializedObd2);
-		cout << "Received OBD2 with speed: " << newObd2.speed() << endl;
+		cout << "Received OBD2 with speed (m/s): " << newObd2.speed() << endl;
 		mMutexLatestObd2.lock();
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();

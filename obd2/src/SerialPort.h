@@ -1,5 +1,3 @@
-//code partly from http://softwaresouls.com/softwaresouls/2012/03/05/linux-c-dynamixel-reading-and-writing-example/
-
 #ifndef SERIALPORT_H_
 #define SERIALPORT_H_
 
@@ -8,21 +6,19 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define BUFFER_SIZE 30
+
 class SerialPort {
 private:
-	 int fileDescriptor;
+	 int mFileDescriptor;
+	 char mBuffer[BUFFER_SIZE] = {0};
 
    public:
-	 int connect ();
-	 int connect (char * device);
+	 int connect(char *device);
 	 void disconnect(void);
+	 void init();
 
-	 int readSpeed();
-	 int sendArray(unsigned char *buffer, int len);
-	 int getArray (unsigned char *buffer, int len);
-
-	 int bytesToRead();
-	 void clear();
+	 double readSpeed();
 };
 
 

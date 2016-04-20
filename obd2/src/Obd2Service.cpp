@@ -25,8 +25,10 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 
 	if (!mConfig.mSimulateData) {	//use real Obd2 data
 		SerialPort* serial = new SerialPort();
-		if (serial->connect("//dev//ttyUSB0") != 0) {
+		if (serial->connect("//dev//ttyUSB0") != -1) {
 			cout << "Connected to serial port successfully" << endl;
+
+			serial->init();
 
 			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
 			mTimer->async_wait(boost::bind(&Obd2Service::readSpeed, this, boost::asio::placeholders::error, serial));
@@ -35,7 +37,7 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 			serial->disconnect();
 		}
 		else {
-			cerr << "Cannot open serial port" << endl;
+			cerr << "Cannot open serial port -> plug in OBD2 and run with sudo" << endl;
 		}
 	}
 	else {				//use simulated Obd2 data
@@ -55,17 +57,16 @@ Obd2Service::~Obd2Service() {
 
 //reads the actual vehicle spead from OBD2
 void Obd2Service::readSpeed(const boost::system::error_code &ec, SerialPort* serial) {
-	cout << "reading speed" << endl;
+	double speed = serial->readSpeed();
 
-	serial->readSpeed();
+	if (speed != -1) {		//valid speed
+		//write current speed to protocol buffer
+		obd2Package::OBD2 obd2;
+		obd2.set_speed(speed);
+		obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
-//	obd2Package::OBD2 obd2;
-//
-//	//write current speed to protocol buffer
-//	obd2.set_speed(simulateSpeed());
-//	obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
-//
-//	sendToServices(obd2);
+		sendToServices(obd2);
+	}
 
 	mTimer->expires_from_now(boost::posix_time::millisec(1000));
 	mTimer->async_wait(boost::bind(&Obd2Service::readSpeed, this, boost::asio::placeholders::error, serial));
