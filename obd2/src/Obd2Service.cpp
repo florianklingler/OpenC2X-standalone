@@ -38,6 +38,7 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 		}
 		else {
 			cerr << "Cannot open serial port -> plug in OBD2 and run with sudo" << endl;
+			return;
 		}
 	}
 	else {				//use simulated Obd2 data
