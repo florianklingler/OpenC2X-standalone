@@ -12,10 +12,10 @@
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
 #include "SendToHardwareViaMAC.h"
+#include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
 #include <random>
 
-class ReceiveFromHardwareViaIP;
 
 using namespace std;
 
@@ -27,7 +27,7 @@ public:
 	void init();
 	void receiveFromCa();
 	void receiveFromDen();
-	void receiveFromHw(string msg);
+	void receiveFromHw();
 
 	void initStates(int numActiveStates);
 	void setCurrentState(int state);
@@ -53,6 +53,7 @@ private:
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
+	boost::thread* mThreadReceiveFromHw;
 
 	SendToHardwareViaMAC* mSenderToHw;
 	ReceiveFromHardwareViaMAC* mReceiverFromHw;

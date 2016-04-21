@@ -24,7 +24,6 @@ ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule) {
 		perror("socket() failed");
 		exit(1);
 	}
-
 }
 
 ReceiveFromHardwareViaMAC::~ReceiveFromHardwareViaMAC() {
@@ -52,6 +51,21 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 			//not Car communication package, ignore! restart while loop and read next package
 			continue;
 		}
+
+		 /** not needed right now
+		 * get time of package arrival
+			time_t curtime;
+			struct timeval tv;
+			int milliseconds;
+			char time_buffer[30];
+
+			ioctl(s, SIOCGSTAMP, &tv);
+			curtime=tv.tv_sec;
+			milliseconds=(int)tv.tv_usec;
+			strftime (time_buffer, 30, "%Y-%m-%d, %T", localtime(&curtime));
+			printf("nTime: %s.%06d\n", time_buffer, milliseconds);
+
+		 */
 
 		int payloadLength = mBytes - mLinkLayerLength;
 		//convert sender Mac from network byte order to char

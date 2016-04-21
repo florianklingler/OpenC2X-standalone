@@ -16,7 +16,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC() {
 
 
 	// Sender MAC Address
-	string  senderMac = "12:23:34:45:56:67";
+	string senderMac = "12:23:34:45:56:67";
 	// Receiver MAC Address (hier: Broadcast)
 	string  receiverMac = "FF:FF:FF:FF:FF:FF";
 	// Name of Ethernetdevice
@@ -75,14 +75,16 @@ SendToHardwareViaMAC::~SendToHardwareViaMAC() {
 void SendToHardwareViaMAC::send(string* msg, int priority){
 	//TODO: currently priority is set in the init function and this value is ignored
 
-	unsigned int packetsize = sizeof(mEth_hdr) + msg->size();
+	unsigned int packetsize = sizeof(struct ether_header) + msg->size();
 	unsigned char packet[packetsize];
+	unsigned char * payload = packet+sizeof(struct ether_header);
+
 
 	//copy header to packet
-	memcpy(&packet,&mEth_hdr,sizeof(mEth_hdr));
+	memcpy(&packet,&mEth_hdr,sizeof(struct ether_header));
 
 	//copy payload to packet
-	memcpy(&packet,msg->c_str(),msg->size());
+	memcpy(payload,msg->c_str(),msg->size());
 
 	//send Packet
 	printf("sending CAR Packet on Interface %s (%i)...\n",

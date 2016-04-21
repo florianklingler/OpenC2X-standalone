@@ -2,6 +2,7 @@
 #define SENDTOHARDWAREVIAMAC_H_
 
 #include <utility/LoggingUtility.h>
+#include <utility/Constants.h>
 #include <string.h>
 
 #include <unistd.h> // Std. Fct.  getuid() and read()
@@ -15,8 +16,6 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-
-static uint16_t ETHERTYPE_CAR = 0x0CA4;
 
 class SendToHardwareViaMAC {
 public:
