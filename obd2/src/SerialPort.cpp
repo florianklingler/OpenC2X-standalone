@@ -137,3 +137,31 @@ double SerialPort::readSpeed() {
 	return speedMs;
 }
 
+//reads and returns RPM (not included in ETSI standard)
+int SerialPort::readRpm() {
+	int rpm = -1;
+	stringstream stream;
+
+	//request & read RPM
+	write(mFileDescriptor, "010C\r", 5);
+	read(mFileDescriptor, mBuffer, sizeof mBuffer);
+	string response(mBuffer);
+
+	//correct response format: "010C\r41 0C XX XX \r\r>" with XX XX being the RPM*4 in hex
+	if (response.compare(0,4,"010C") == 0 && response.compare(5,5,"41 0C") == 0) {
+		//convert hex to actual decimal RPM
+		stream << hex << response.substr(11,2) << response.substr(14,2);
+		stream >> rpm;
+		rpm = rpm / 4;
+
+		//print
+		cout << "RPM in hex: " << response.substr(11,2) << response.substr(14,2) << endl;
+		cout << "RPM: " << rpm << endl;
+	}
+	else {	//incorrect (eg. "010D\rSEARCHING...\r\r")
+		cout << "Invalid RPM. Plug in OBD2 and start engine." << endl;
+	}
+
+	memset(mBuffer, 0, BUFFER_SIZE);				//reset buffer
+	return rpm;
+}

@@ -8,15 +8,21 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
+#include <string>
 
 struct Obd2Config {
 	bool mSimulateData;
+	char* mDevice;
+	int mFrequency;
 
 	void loadConfigXML(const string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
 		mSimulateData = pt.get("obd2.SimulateData", true);
+		string device = pt.get("obd2.Device", "//dev//ttyUSB0");
+		mDevice = strdup(device.c_str());
+		mFrequency = pt.get("obd2.Frequency", 100);
 	}
 };
 
@@ -25,7 +31,7 @@ public:
 	Obd2Service(Obd2Config &config);
 	~Obd2Service();
 
-	void readSpeed(const boost::system::error_code &ec, SerialPort* serial);
+	void receiveData(const boost::system::error_code &ec, SerialPort* serial);
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec);
 	void sendToServices(obd2Package::OBD2 obd2);

@@ -19,6 +19,7 @@ private:
 	 void init();
 
 	 double readSpeed();
+	 int readRpm();
 };
 
 

@@ -25,24 +25,23 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 
 	if (!mConfig.mSimulateData) {	//use real Obd2 data
 		SerialPort* serial = new SerialPort();
-		if (serial->connect("//dev//ttyUSB0") != -1) {
+		if (serial->connect(mConfig.mDevice) != -1) {
 			cout << "Connected to serial port successfully" << endl;
 
 			serial->init();
 
-			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(1000));
-			mTimer->async_wait(boost::bind(&Obd2Service::readSpeed, this, boost::asio::placeholders::error, serial));
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
+			mTimer->async_wait(boost::bind(&Obd2Service::receiveData, this, boost::asio::placeholders::error, serial));
 			mIoService.run();
 
 			serial->disconnect();
 		}
 		else {
 			cerr << "Cannot open serial port -> plug in OBD2 and run with sudo" << endl;
-			return;
 		}
 	}
 	else {				//use simulated Obd2 data
-		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
 		mTimer->async_wait(boost::bind(&Obd2Service::simulateData, this, boost::asio::placeholders::error));
 		mIoService.run();
 	}
@@ -56,21 +55,25 @@ Obd2Service::~Obd2Service() {
 	delete mTimer;
 }
 
-//reads the actual vehicle spead from OBD2
-void Obd2Service::readSpeed(const boost::system::error_code &ec, SerialPort* serial) {
+//reads the actual vehicle data from OBD2
+void Obd2Service::receiveData(const boost::system::error_code &ec, SerialPort* serial) {
 	double speed = serial->readSpeed();
+	int rpm = serial->readRpm();
 
 	if (speed != -1) {		//valid speed
-		//write current speed to protocol buffer
+		//write current data to protocol buffer
 		obd2Package::OBD2 obd2;
-		obd2.set_speed(speed);
 		obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		obd2.set_speed(speed);
+		if (rpm != -1) {
+			obd2.set_rpm(rpm);
+		}
 
 		sendToServices(obd2);
 	}
 
-	mTimer->expires_from_now(boost::posix_time::millisec(1000));
-	mTimer->async_wait(boost::bind(&Obd2Service::readSpeed, this, boost::asio::placeholders::error, serial));
+	mTimer->expires_from_now(boost::posix_time::millisec(mConfig.mFrequency));
+	mTimer->async_wait(boost::bind(&Obd2Service::receiveData, this, boost::asio::placeholders::error, serial));
 }
 
 
@@ -102,7 +105,7 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 
 	sendToServices(obd2);
 
-	mTimer->expires_from_now(boost::posix_time::millisec(100));
+	mTimer->expires_from_now(boost::posix_time::millisec(mConfig.mFrequency));
 	mTimer->async_wait(boost::bind(&Obd2Service::simulateData, this, boost::asio::placeholders::error));
 }
 
