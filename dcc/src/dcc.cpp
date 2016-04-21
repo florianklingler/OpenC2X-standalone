@@ -19,7 +19,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaMAC();
+	mSenderToHw = new SendToHardwareViaMAC(mConfig.ethernetDevice);
 	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
 	mSenderToServices = new CommunicationSender(module, "5555");
 
@@ -177,7 +177,7 @@ void DCC::receiveFromHw() {
 	pair<string,string> receivedData;		//MAC Sender, serialized DATA
 	string* serializedData = &receivedData.second;
 	dataPackage::DATA data;
-
+	cout << "starting receiving via Hardware" << endl;
 	while (1) {
 		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
 		data.ParseFromString(*serializedData);	//deserialize DATA

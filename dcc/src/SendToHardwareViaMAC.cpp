@@ -4,7 +4,7 @@
 
 
 
-SendToHardwareViaMAC::SendToHardwareViaMAC() {
+SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 	mLogger = new LoggingUtility("SendToHardware");
 
 	//has root?
@@ -16,11 +16,11 @@ SendToHardwareViaMAC::SendToHardwareViaMAC() {
 
 
 	// Sender MAC Address
-	string senderMac = "12:23:34:45:56:67";
+	string senderMac = "12:23:34:45:56:67"; //TODO: get real mac
 	// Receiver MAC Address (hier: Broadcast)
 	string  receiverMac = "FF:FF:FF:FF:FF:FF";
 	// Name of Ethernetdevice
-	string  ethDevice = "enp0s3"; //get via console: "ip link show"
+	string  ethDevice = ethernetDevice; //get via console: "ip link show"
 
 	//SOCKET--------------------------------
 	//create PACKET Socket
