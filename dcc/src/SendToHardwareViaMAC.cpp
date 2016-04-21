@@ -2,15 +2,7 @@
 
 #include "SendToHardwareViaMAC.h"
 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <netinet/ether.h>
 
-#include <linux/if_packet.h>
-
-#include <sys/ioctl.h>
-#include <net/if.h>
 
 SendToHardwareViaMAC::SendToHardwareViaMAC() {
 	mLogger = new LoggingUtility("SendToHardware");
@@ -22,21 +14,13 @@ SendToHardwareViaMAC::SendToHardwareViaMAC() {
 		exit(1);
 	}
 
-}
-
-SendToHardwareViaMAC::~SendToHardwareViaMAC() {
-	close(mSocket);
-	delete mLogger;
-}
-
-bool SendToHardwareViaMAC::init(){
 
 	// Sender MAC Address
-	char * senderMac = "12:23:34:45:56:67";
+	string  senderMac = "12:23:34:45:56:67";
 	// Receiver MAC Address (hier: Broadcast)
-	char * receiverMac = "FF:FF:FF:FF:FF:FF";
+	string  receiverMac = "FF:FF:FF:FF:FF:FF";
 	// Name of Ethernetdevice
-	char * ethDevice = "enp0s3"; //get via console: "ip link show"
+	string  ethDevice = "enp0s3"; //get via console: "ip link show"
 
 	//SOCKET--------------------------------
 	//create PACKET Socket
@@ -55,7 +39,7 @@ bool SendToHardwareViaMAC::init(){
 	}
 
 	//get index number of Network Interface
-	strncpy(mIfr.ifr_name, ethDevice,sizeof(mIfr.ifr_name));
+	strncpy(mIfr.ifr_name, ethDevice.c_str(),sizeof(mIfr.ifr_name));
 
 	if (ioctl(mSocket, SIOCGIFINDEX, &mIfr) != 0){
 		mLogger->logDebug("ioctl (SIOCGIFINDEX) failed");
@@ -72,16 +56,20 @@ bool SendToHardwareViaMAC::init(){
 	//fill ethernet header
 
 	//Destination mac
-	memcpy(mEth_hdr.ether_dhost,(u_char *)ether_aton(receiverMac),ETHER_ADDR_LEN);
+	memcpy(mEth_hdr.ether_dhost,(u_char *)ether_aton(receiverMac.c_str()),ETHER_ADDR_LEN);
 
 	//Source Mac
-	memcpy(mEth_hdr.ether_shost,(u_char *)ether_aton(senderMac),ETHER_ADDR_LEN);
+	memcpy(mEth_hdr.ether_shost,(u_char *)ether_aton(senderMac.c_str()),ETHER_ADDR_LEN);
 
 	//ether type
 	mEth_hdr.ether_type = htons(ETHERTYPE_CAR);
 
 
-	return 1;
+}
+
+SendToHardwareViaMAC::~SendToHardwareViaMAC() {
+	close(mSocket);
+	delete mLogger;
 }
 
 void SendToHardwareViaMAC::send(string* msg, int priority){

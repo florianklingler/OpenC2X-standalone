@@ -3,7 +3,7 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "dcc.h"
-#include "ReceiveFromHardwareViaIP.h"
+#include "ReceiveFromHardwareViaMAC.h"
 #include <unistd.h>
 #include <string>
 #include <iostream>
@@ -20,7 +20,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaIP(mConfig.ip);
+	mSenderToHw = new SendToHardwareViaMAC();
 	mReceiverFromHw = new ReceiveFromHardwareViaIP(this);
 	mSenderToServices = new CommunicationSender(module, "5555");
 
@@ -88,7 +88,6 @@ void DCC::init() {
 		mChannelProber->init();
 	}
 
-	mSenderToHw->init();
 	mReceiverFromHw->init();
 	
 	//create and start threads
@@ -177,6 +176,7 @@ void DCC::receiveFromDen() {
 void DCC::receiveFromHw(string msg) {
 	string serializedData;		//serialized DATA
 	dataPackage::DATA data;
+
 
 	serializedData = msg;						//receive serialized DATA
 	data.ParseFromString(serializedData);	//deserialize DATA
@@ -327,7 +327,7 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
-			mSenderToHw->send(byteMessage);
+			mSenderToHw->send(&byteMessage,0);
 			cout << "Send data (packet " << data->id() << ") to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;

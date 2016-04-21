@@ -4,6 +4,16 @@
 #include <utility/LoggingUtility.h>
 #include <string.h>
 
+#include <unistd.h> // Std. Fct.  getuid() and read()
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <net/ethernet.h>
+#include <netinet/ether.h>
+
+#include <linux/if_packet.h>
+
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 
 static uint16_t ETHERTYPE_CAR = 0x0CA4;
@@ -12,12 +22,12 @@ class SendToHardwareViaMAC {
 public:
 	SendToHardwareViaMAC();
 	virtual ~SendToHardwareViaMAC();
-	bool init();
 	void send(string* msg, int priority);
 private:
 	LoggingUtility* mLogger;
 
 	int mSocket;
+	//ethernet header
 	struct ether_header mEth_hdr;
 	//information of network interface
 	struct ifreq mIfr;
