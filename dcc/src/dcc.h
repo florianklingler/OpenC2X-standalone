@@ -11,11 +11,13 @@
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
-#include "SendToHardwareViaIP.h"
+#include "SendToHardwareViaMAC.h"
+#include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
+#include <random>
 
 
-class ReceiveFromHardwareViaIP;
+using namespace std;
 
 class DCC {
 public:
@@ -25,7 +27,7 @@ public:
 	void init();
 	void receiveFromCa();
 	void receiveFromDen();
-	void receiveFromHw(string msg);
+	void receiveFromHw();
 
 	void initStates(int numActiveStates);
 	void setCurrentState(int state);
@@ -51,9 +53,10 @@ private:
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
+	boost::thread* mThreadReceiveFromHw;
 
-	SendToHardwareViaIP* mSenderToHw;
-	ReceiveFromHardwareViaIP* mReceiverFromHw;
+	SendToHardwareViaMAC* mSenderToHw;
+	ReceiveFromHardwareViaMAC* mReceiverFromHw;
 
 	boost::asio::io_service mIoService;
 	boost::asio::io_service::strand mStrand;

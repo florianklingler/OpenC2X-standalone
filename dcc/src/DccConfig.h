@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <utility/Constants.h>
 
 namespace {
 	const int STATE_UNDEF = -1;
@@ -39,10 +40,10 @@ namespace Channels {
 	};
 
 	enum t_access_category {
-		AC_BK = 0,
-		AC_BE = 1,
-		AC_VI = 2,
-		AC_VO = 3,
+		AC_BK = PRIORITY_BK,
+		AC_BE = PRIORITY_BE,
+		AC_VI = PRIORITY_VI,
+		AC_VO = PRIORITY_VO,
 		NO_AC = -1,
 	};
 
@@ -137,7 +138,7 @@ struct DccConfig {
 
 	//set to true to simulate channel load, false to use real data
 	bool simulateChannelLoad;
-	std::string ip;
+	std::string ethernetDevice;
 
 	// Leaky Bucket
 	int bucketSize_AC_VI;
@@ -196,7 +197,7 @@ struct DccConfig {
 
 		read_xml(filename, pt);
 		simulateChannelLoad = pt.get("dcc.simulateChannelLoad", true);
-		ip = pt.get("dcc.ip", "127.0.0.1");
+		ethernetDevice = pt.get("dcc.ethernetDevice", "notDefined");
 
 		xml_file = std::string(filename);
 		load_NDL_Parameters();

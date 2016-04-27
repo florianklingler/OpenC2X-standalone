@@ -3,7 +3,6 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "dcc.h"
-#include "ReceiveFromHardwareViaIP.h"
 #include <unistd.h>
 #include <string>
 #include <iostream>
@@ -20,8 +19,8 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaIP(mConfig.ip);
-	mReceiverFromHw = new ReceiveFromHardwareViaIP(this);
+	mSenderToHw = new SendToHardwareViaMAC(mConfig.ethernetDevice);
+	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
 	mSenderToServices = new CommunicationSender(module, "5555");
 
 	// Use real channel prober when we are not simulating channel load
@@ -54,8 +53,10 @@ DCC::~DCC() {
 	//stop and delete threads
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
+	mThreadReceiveFromHw->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
+	delete mThreadReceiveFromHw;
 
 	//delete sender and receiver
 	delete mReceiverFromCa;
@@ -87,13 +88,11 @@ void DCC::init() {
 	if(!mConfig.simulateChannelLoad) {
 		mChannelProber->init();
 	}
-
-	mSenderToHw->init();
-	mReceiverFromHw->init();
 	
 	//create and start threads
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
+	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 
 	//start timers
 	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
@@ -174,19 +173,22 @@ void DCC::receiveFromDen() {
 	}
 }
 
-void DCC::receiveFromHw(string msg) {
-	string serializedData;		//serialized DATA
+void DCC::receiveFromHw() {
+	pair<string,string> receivedData;		//MAC Sender, serialized DATA
+	string* serializedData = &receivedData.second;
 	dataPackage::DATA data;
+	cout << "starting receiving via Hardware" << endl;
+	while (1) {
+		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
+		data.ParseFromString(*serializedData);	//deserialize DATA
 
-	serializedData = msg;						//receive serialized DATA
-	data.ParseFromString(serializedData);	//deserialize DATA
-
-	//processing...
-	cout << "forward message from HW to services" << endl;
-	switch(data.type()) {								//send serialized DATA to corresponding module
-		case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", serializedData);		break;
-		case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", serializedData);	break;
-		default:	break;
+		//processing...
+		cout << "forward message from HW to services" << endl;
+		switch(data.type()) {								//send serialized DATA to corresponding module
+			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", *serializedData);	break;
+			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
+			default:	break;
+		}
 	}
 }
 
@@ -327,7 +329,7 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
-			mSenderToHw->send(byteMessage);
+			mSenderToHw->send(&byteMessage,ac);
 			cout << "Send data (packet " << data->id() << ") to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;
