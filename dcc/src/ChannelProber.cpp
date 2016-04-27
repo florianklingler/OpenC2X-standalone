@@ -14,13 +14,16 @@ using namespace std;
 
 int ChannelProber::mNl80211Id;
 
-ChannelProber::ChannelProber(string ifname) {
+ChannelProber::ChannelProber(string ifname, double probeInterval) {
+	mProbeInterval = probeInterval;
 	mIfname = ifname;
+	mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 
 ChannelProber::~ChannelProber() {
-	mThreadProbe->join();
-	delete mThreadProbe;
+	mTimer->cancel();
+	delete mTimer;
+
 	free(mWifi);
 	nl_socket_modify_cb(mSocket, NL_CB_VALID, NL_CB_CUSTOM,
 			NULL, NULL);
@@ -72,7 +75,10 @@ void ChannelProber::init() {
 		return;
 	}
 
-	mThreadProbe = new boost::thread(&ChannelProber::probe, this);
+	mTimer->async_wait(boost::bind(&ChannelProber::probe, this, boost::asio::placeholders::error));
+	mIoService.run();
+
+//	mThreadProbe = new boost::thread(&ChannelProber::probe, this);
 }
 
 int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
@@ -183,14 +189,15 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	return NL_SKIP;
 }
 
-void ChannelProber::probe() {
-	while (true) {
-		sendNl80211(NL80211_CMD_GET_SURVEY, &mWifi->ifindex,
-				sizeof(mWifi->ifindex), NL80211_ATTR_IFINDEX, NL_AUTO_SEQ,
-				NLM_F_DUMP);
-		nl_recvmsgs_default(mSocket);
-		sleep(1);
-	}
+void ChannelProber::probe(const boost::system::error_code &ec) {
+	cout << "probe" << endl;
+	sendNl80211(NL80211_CMD_GET_SURVEY, &mWifi->ifindex,
+			sizeof(mWifi->ifindex), NL80211_ATTR_IFINDEX, NL_AUTO_SEQ,
+			NLM_F_DUMP);
+	nl_recvmsgs_default(mSocket);
+
+	mTimer->expires_from_now(boost::posix_time::millisec(mProbeInterval * 1000));
+	mTimer->async_wait(boost::bind(&ChannelProber::probe, this, boost::asio::placeholders::error));
 }
 
 int ChannelProber::sendNl80211(uint8_t msgCmd, void *payload,

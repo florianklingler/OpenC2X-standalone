@@ -3,6 +3,7 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
+#include <boost/asio.hpp>
 #include <utility/LoggingUtility.h>
 #include <netlink/netlink-kernel.h>
 #include <netlink/socket.h>
@@ -12,11 +13,11 @@
 
 class ChannelProber {
 public:
-	ChannelProber(string ifname);
+	ChannelProber(string ifname, double probeInterval);
 	virtual ~ChannelProber();
 
 	void init();
-	void probe();
+	void probe(const boost::system::error_code &ec);
 	int sendNl80211(uint8_t msgCmd, void *payload, unsigned int length, int payloadType, unsigned int seq, int flags = 0);
 	int send(uint8_t msgCmd, void *payload, unsigned int length, int attrType, unsigned int seq, int protocolId, int flags = 0, uint8_t protocolVersion = 0x01);
 	double getChannelLoad();
@@ -37,10 +38,14 @@ public:
 
 	nl_sock *mSocket;
 	static int mNl80211Id;
-	boost::thread* mThreadProbe;
 
 	netinterface *mWifi;
 	string mIfname;
+	double mProbeInterval;
+
+private:
+	boost::asio::io_service mIoService;
+	boost::asio::deadline_timer* mTimer;
 };
 
 #endif

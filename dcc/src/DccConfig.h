@@ -182,7 +182,6 @@ struct DccConfig {
 	// DCC Process
 	double NDL_timeUp;
 	double NDL_timeDown;
-	double DCC_probe_interval_Tm;
 	double DCC_measure_interval_Tm;
 	double NDL_minDccSampling;
 
@@ -242,7 +241,6 @@ struct DccConfig {
 
 		NDL_timeUp = pt.get("dcc.NDL_timeUp", 1.00);
 		NDL_timeDown = pt.get("dcc.NDL_timeDown", 5.00);
-		DCC_probe_interval_Tm = pt.get("dcc.DCC_probe_interval_Tm", 10); // in microseconds
 		DCC_measure_interval_Tm = pt.get("dcc.DCC_measure_interval_Tm", 1.00);
 		NDL_minDccSampling = pt.get("dcc.NDL_minDccSampling", 1.00);
 

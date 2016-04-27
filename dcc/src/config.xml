@@ -1,6 +1,6 @@
 <dcc>
 	<simulateChannelLoad>false</simulateChannelLoad>
-	<ethernetDevice>enp0s3</ethernetDevice> <!--get via console: "ip link show" -->
+	<ethernetDevice>wlan1-ath9k</ethernetDevice> <!--get via console: "ip link show" -->
 
 	<bucketSize_AC_VI>25</bucketSize_AC_VI>
 	<bucketSize_AC_VO>25</bucketSize_AC_VO>
@@ -62,7 +62,7 @@
 	
 	<NDL_timeUp>1.00</NDL_timeUp>
 	<NDL_timeDown>5.00</NDL_timeDown>
-	<DCC_probe_interval_Tm>1000</DCC_probe_interval_Tm> <!-- in microseconds -->
+	
 	<DCC_measure_interval_Tm>1.00</DCC_measure_interval_Tm>
 	<NDL_minDccSampling>1.00</NDL_minDccSampling>
 </dcc>
