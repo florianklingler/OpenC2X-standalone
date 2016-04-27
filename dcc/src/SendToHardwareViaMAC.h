@@ -25,8 +25,11 @@ public:
 private:
 	LoggingUtility* mLogger;
 
-	int mSocket;
-	//ethernet header
+	int mSocket_VI;
+	int mSocket_VO;
+	int mSocket_BE;
+	int mSocket_BK;
+	//Ethernet header
 	struct ether_header mEth_hdr;
 	//information of network interface
 	struct ifreq mIfr;

@@ -23,16 +23,48 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 	string  ethDevice = ethernetDevice; //get via console: "ip link show"
 
 	//SOCKET--------------------------------
-	//create PACKET Socket
-	if ((mSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
+	//create PACKET Sockets
+	if ((mSocket_VI = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
 	{
 		mLogger->logDebug("Socket() failed.");
 		perror("Socket() failed");
 		exit(1);
 	}
-	//set priority
-	int socket_priority = 1;
-	if (setsockopt(mSocket,SOL_SOCKET ,SO_PRIORITY, &socket_priority,sizeof(socket_priority)) == -1){
+	if ((mSocket_VO = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
+	{
+		mLogger->logDebug("Socket() failed.");
+		perror("Socket() failed");
+		exit(1);
+	}
+	if ((mSocket_BE = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
+	{
+		mLogger->logDebug("Socket() failed.");
+		perror("Socket() failed");
+		exit(1);
+	}
+	if ((mSocket_BK = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
+	{
+		mLogger->logDebug("Socket() failed.");
+		perror("Socket() failed");
+		exit(1);
+	}
+	//set prioritys
+	if (setsockopt(mSocket_VI,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_VI,sizeof(PRIORITY_VI)) == -1){
+		mLogger->logDebug("Setsockop(priority) failed");
+		perror("setsockopt() failed");
+		exit(1);
+	}
+	if (setsockopt(mSocket_VO,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_VO,sizeof(PRIORITY_VO)) == -1){
+		mLogger->logDebug("Setsockop(priority) failed");
+		perror("setsockopt() failed");
+		exit(1);
+	}
+	if (setsockopt(mSocket_BE,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_BE,sizeof(PRIORITY_BE)) == -1){
+		mLogger->logDebug("Setsockop(priority) failed");
+		perror("setsockopt() failed");
+		exit(1);
+	}
+	if (setsockopt(mSocket_BK,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_BK,sizeof(PRIORITY_BK)) == -1){
 		mLogger->logDebug("Setsockop(priority) failed");
 		perror("setsockopt() failed");
 		exit(1);
@@ -41,7 +73,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 	//get index number of Network Interface
 	strncpy(mIfr.ifr_name, ethDevice.c_str(),sizeof(mIfr.ifr_name));
 
-	if (ioctl(mSocket, SIOCGIFINDEX, &mIfr) != 0){
+	if (ioctl(mSocket_VI, SIOCGIFINDEX, &mIfr) != 0){
 		mLogger->logDebug("ioctl (SIOCGIFINDEX) failed");
 		perror("ioctl (SIOCGIFINDEX) failed");
 		exit(1);
@@ -68,7 +100,10 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 }
 
 SendToHardwareViaMAC::~SendToHardwareViaMAC() {
-	close(mSocket);
+	close(mSocket_VO);
+	close(mSocket_VI);
+	close(mSocket_BE);
+	close(mSocket_BK);
 	delete mLogger;
 }
 
@@ -89,13 +124,30 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	//send Packet
 	printf("sending CAR Packet on Interface %s (%i)...\n",
 			mIfr.ifr_name, mIfr.ifr_ifindex);
-	if ((sendto(mSocket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
+
+	int send_to_socket;
+	switch(priority){
+		case PRIORITY_VI:
+			send_to_socket = mSocket_VI;
+			break;
+		case PRIORITY_VO:
+			send_to_socket = mSocket_VO;
+			break;
+		case PRIORITY_BE:
+			send_to_socket = mSocket_BE;
+			break;
+		case PRIORITY_BK:
+			send_to_socket = mSocket_BK;
+			break;
+		default:
+			mLogger->logDebug("No packet priority/queue set");
+	}
+
+	if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
 			sizeof(struct sockaddr_ll))) == -1)
 	{
 		perror("Sendto() failed");
-		exit(1);
 	}
-
 }
 
 
