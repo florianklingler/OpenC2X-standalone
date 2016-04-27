@@ -1,7 +1,7 @@
 //TODO: NON BLOCKING socket?
 
 #include "SendToHardwareViaMAC.h"
-
+#include <ctype.h>
 
 
 SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
@@ -16,7 +16,40 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 
 
 	// Sender MAC Address
-	string senderMac = "12:23:34:45:56:67"; //TODO: get real mac, read  /sys/class/net/eth0/address 
+	string file = string("/sys/class/net/")+ ethernetDevice + "/address";
+	std::ifstream infile(file);
+	string senderMac;
+	getline(infile, senderMac);
+
+	//check for right MAC format copied from http://stackoverflow.com/questions/4792035/how-do-you-validate-that-a-string-is-a-valid-mac-address-in-c
+	int i = 0;
+	int s = 0;
+	const char* mac = senderMac.c_str();
+	while (*mac) {
+	   if (isxdigit(*mac)) {
+		  i++;
+	   }
+	   else if (*mac == ':' || *mac == '-') {
+
+		  if (i == 0 || i / 2 - 1 != s)
+			break;
+
+		  ++s;
+	   }
+	   else {
+		   s = -1;
+	   }
+
+
+	   ++mac;
+	}
+
+	if (!(i == 12 && (s == 5 || s == 0))){
+		mLogger->logDebug("could not get a real sender Mac address. Using 12::23:34:45:56:67");
+		senderMac = "12::23:34:45:56:67";
+	}
+
+
 	// Receiver MAC Address (hier: Broadcast)
 	string  receiverMac = "FF:FF:FF:FF:FF:FF";
 	// Name of Ethernetdevice
