@@ -140,14 +140,18 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 			send_to_socket = mSocket_BK;
 			break;
 		default:
+                        send_to_socket = -1;
 			mLogger->logDebug("No packet priority/queue set");
 	}
 
-	if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
-			sizeof(struct sockaddr_ll))) == -1)
-	{
-		perror("Sendto() failed");
-	}
+	if(send_to_socket != -1){
+            if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
+                            sizeof(struct sockaddr_ll))) == -1)
+            {
+                    mLogger->logDebug("Sendto() failes");
+                    perror("Sendto() failed");
+            }
+        }
 }
 
 
