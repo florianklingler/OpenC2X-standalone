@@ -160,7 +160,7 @@ void DCC::receiveFromDen() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
-		cout << "received new DENM (packet " << data->id() << ") -> enqueue to BE" << endl;
+		cout << "received new DENM (packet " << data->id() << ") -> enqueue to VI" << endl;
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
