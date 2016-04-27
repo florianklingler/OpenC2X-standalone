@@ -15,8 +15,11 @@
 #include <cstdint>
 
 //ethertype for ethernet header used in wifi commuication
-static uint16_t ETHERTYPE_CAR = 0x0CA4;
+static const uint16_t ETHERTYPE_CAR = 0x0CA4;
 
-
+static const uint16_t PRIORITY_VO =6;
+static const uint16_t PRIORITY_VI =4;
+static const uint16_t PRIORITY_BE =0;
+static const uint16_t PRIORITY_BK =1;
 
 #endif /* UTILITY_CONSTANTS_H_ */

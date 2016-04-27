@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <utility/Constants.h>
 
 namespace {
 	const int STATE_UNDEF = -1;
@@ -39,10 +40,10 @@ namespace Channels {
 	};
 
 	enum t_access_category {
-		AC_BK = 0,
-		AC_BE = 1,
-		AC_VI = 2,
-		AC_VO = 3,
+		AC_BK = PRIORITY_BK,
+		AC_BE = PRIORITY_BE,
+		AC_VI = PRIORITY_VI,
+		AC_VO = PRIORITY_VO,
 		NO_AC = -1,
 	};
 

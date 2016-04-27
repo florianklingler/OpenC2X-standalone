@@ -329,7 +329,7 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
-			mSenderToHw->send(&byteMessage,0);
+			mSenderToHw->send(&byteMessage,ac);
 			cout << "Send data (packet " << data->id() << ") to HW" << endl;
 			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
 			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;

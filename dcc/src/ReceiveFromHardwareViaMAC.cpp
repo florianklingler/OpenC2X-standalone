@@ -47,7 +47,7 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 			exit(1);
 		}
 
-		if(ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR){
+		if(ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR){ // TODO: optimization: put this check into hw by creating the socets with ethertype_car instead of ALL ??
 			//not Car communication package, ignore! restart while loop and read next package
 			continue;
 		}
