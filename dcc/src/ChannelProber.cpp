@@ -14,10 +14,11 @@ using namespace std;
 
 int ChannelProber::mNl80211Id;
 
-ChannelProber::ChannelProber(string ifname, double probeInterval) {
+ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io) {
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
-	mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(probeInterval * 1000));
+	mIoService = io;
+	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 
 ChannelProber::~ChannelProber() {
@@ -76,9 +77,6 @@ void ChannelProber::init() {
 	}
 
 	mTimer->async_wait(boost::bind(&ChannelProber::probe, this, boost::asio::placeholders::error));
-	mIoService.run();
-
-//	mThreadProbe = new boost::thread(&ChannelProber::probe, this);
 }
 
 int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
@@ -190,7 +188,6 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 }
 
 void ChannelProber::probe(const boost::system::error_code &ec) {
-	cout << "probe" << endl;
 	sendNl80211(NL80211_CMD_GET_SURVEY, &mWifi->ifindex,
 			sizeof(mWifi->ifindex), NL80211_ATTR_IFINDEX, NL_AUTO_SEQ,
 			NLM_F_DUMP);

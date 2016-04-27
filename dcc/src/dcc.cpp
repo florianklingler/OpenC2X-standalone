@@ -25,7 +25,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber(mConfig.ethernetDevice, mConfig.DCC_measure_interval_Tm); // wlan0
+		mChannelProber = new ChannelProber(mConfig.ethernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
 	}
 
 	mRandNumberGen = default_random_engine(0);
@@ -88,7 +88,6 @@ void DCC::init() {
 	if(!mConfig.simulateChannelLoad) {
 		mChannelProber->init();
 	}
-	
 	//create and start threads
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
