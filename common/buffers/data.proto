@@ -6,10 +6,10 @@ message DATA {
 		DENM = 2;
 	 }
 	 enum Priority {
-		BK = 0;
-		BE = 1;
-		VI = 2;
-		VO = 3;
+		BK = 1;
+		BE = 0;
+		VI = 4;
+		VO = 6;
 	 }
 	required int32 id = 1;
 	required Type type = 2;
