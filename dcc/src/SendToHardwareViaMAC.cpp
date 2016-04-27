@@ -16,7 +16,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
 
 
 	// Sender MAC Address
-	string senderMac = "12:23:34:45:56:67"; //TODO: get real mac
+	string senderMac = "12:23:34:45:56:67"; //TODO: get real mac, read  /sys/class/net/eth0/address 
 	// Receiver MAC Address (hier: Broadcast)
 	string  receiverMac = "FF:FF:FF:FF:FF:FF";
 	// Name of Ethernetdevice
