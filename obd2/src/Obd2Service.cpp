@@ -16,7 +16,7 @@ INITIALIZE_EASYLOGGINGPP
 Obd2Service::Obd2Service(Obd2Config &config) {
 	mConfig = config;
 	mSender = new CommunicationSender("Obd2Service", "2222");
-	mLogger = new LoggingUtility("OBD2");
+	mLogger = new LoggingUtility("Obd2Service");
 	
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);

@@ -7,19 +7,19 @@
 LoggingUtility::LoggingUtility(string moduleName) {
 	mModuleName = moduleName;
 
-	Configurations confDefault("../../logs/config/config.conf");			//default logger for debugging
-	Configurations confPerformance("../../logs/config/config.conf");		//performance logger for stats
+	Configurations confDefault("../config/logging.conf");			//default logger for debugging
+	Configurations confStatistics("../config/statistics.conf");	//statistics logger for stats
 
 	confDefault.setRemainingToDefault();
-	confDefault.setGlobally(ConfigurationType::Format, "DEBUG_" + mModuleName + " \t %datetime \t %msg");
-	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/debug_" + mModuleName + "_" + timeString() + ".log");
+	confDefault.setGlobally(ConfigurationType::Format, mModuleName + ", %datetime{%h:%m:%s,%g} \t %msg");
+	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/log_" + mModuleName + "_" + timeString() + ".log");
 
-	confPerformance.setRemainingToDefault();
-	confPerformance.setGlobally(ConfigurationType::Format, "STATS_" + mModuleName + " \t %msg");
-	confPerformance.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + mModuleName + "_" + timeString() + ".csv");
+	confStatistics.setRemainingToDefault();
+	confStatistics.setGlobally(ConfigurationType::Format, mModuleName + " \t %msg");
+	confStatistics.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + mModuleName + "_" + timeString() + ".csv");
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
-	Loggers::reconfigureLogger("performance_" + mModuleName, confPerformance);
+	Loggers::reconfigureLogger("statistics_" + mModuleName, confStatistics);
 }
 
 LoggingUtility::~LoggingUtility() {
@@ -28,18 +28,18 @@ LoggingUtility::~LoggingUtility() {
 string LoggingUtility::timeString() {
 	time_t rawtime;
 	struct tm * timeinfo;
-	char buffer[15];
+	char buffer[20];
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 
-	strftime(buffer, 15, "%m-%d-%y_%R", timeinfo);	//format time and save in buffer
+	strftime(buffer, 20, "%F_%R", timeinfo);	//format time and save in buffer
 
 	return buffer;
 }
 
 void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
-	CLOG(INFO, ("performance_" + mModuleName).c_str()) << messageType << "\t" << id << "\t" << delay;
+	CLOG(INFO, ("statistics_" + mModuleName).c_str()) << messageType << "\t" << id << "\t" << delay;
 }
 
 void LoggingUtility::logInfo(string message) {
