@@ -4,8 +4,8 @@
 #include <ctype.h>
 
 
-SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice) {
-	mLogger = new LoggingUtility("SendToHardware");
+SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDevice) {
+	mLogger = new LoggingUtility(ownerModule);
 
 	//has root?
 	if (getuid() != 0){

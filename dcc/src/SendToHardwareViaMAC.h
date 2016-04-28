@@ -19,7 +19,7 @@
 
 class SendToHardwareViaMAC {
 public:
-	SendToHardwareViaMAC(string ethernetDevice);
+	SendToHardwareViaMAC(string ownerModule,string ethernetDevice);
 	virtual ~SendToHardwareViaMAC();
 	void send(string* msg, int priority);
 private:
