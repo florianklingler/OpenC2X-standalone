@@ -39,9 +39,19 @@ string LoggingUtility::timeString() {
 }
 
 void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
-	CLOG(INFO, ("performance_" + mModuleName).c_str()) << messageType + "\t" + to_string(id) + "\t" + to_string(delay);
+	CLOG(INFO, ("performance_" + mModuleName).c_str()) << messageType << "\t" << id << "\t" << delay;
 }
 
 void LoggingUtility::logDebug(string message) {
 	CLOG(INFO, ("default_" + mModuleName).c_str()) << message;
 }
+
+void LoggingUtility::logError(string message){
+	CLOG(ERROR,("default_" + mModuleName).c_str()) << "ERROR: " << message;
+}
+
+void LoggingUtility::logPError(string message){
+	CPLOG(ERROR,("default_" + mModuleName).c_str()) << "ERROR: " << message;
+}
+
+
