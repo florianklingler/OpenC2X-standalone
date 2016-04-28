@@ -13,12 +13,22 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
 
+struct CaServiceConfig {
+	bool mGenerateMsgs;
+
+	void loadConfigXML(const string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mGenerateMsgs = pt.get("cam.generateMsgs", true);
+	}
+};
+
 class CaService {
 public:
-	CaService();
+	CaService(CaServiceConfig &config);
 	~CaService();
 
-	void init();
 	void receive();
 	void logDelay(string byteMessage);
 	void send();
@@ -31,6 +41,8 @@ public:
 	double getDistance(double lat1, double lon1, double lat2, double lon2);
 
 private:
+	CaServiceConfig mConfig;
+
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;

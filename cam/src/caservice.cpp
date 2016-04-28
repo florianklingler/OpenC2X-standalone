@@ -14,20 +14,31 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-CaService::CaService() {
-	string module = "CaService";
-	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "CAM");
-	mSenderToDcc = new CommunicationSender(module, "6666");
-	mSenderToLdm = new CommunicationSender(module, "8888");
-
-	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
-	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2");
-
+CaService::CaService(CaServiceConfig &config) {
+	mConfig = config;
 	mLogger = new LoggingUtility("CaService");
+
+	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM");
+	mSenderToDcc = new CommunicationSender("CaService", "6666");
+	mSenderToLdm = new CommunicationSender("CaService", "8888");
+
+	mReceiverGps = new CommunicationReceiver("CaService", "3333", "GPS");
+	mReceiverObd2 = new CommunicationReceiver("CaService", "2222", "OBD2");
+
+	mThreadReceive = new boost::thread(&CaService::receive, this);
+	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
+	mThreadObd2DataReceive = new boost::thread(&CaService::receiveObd2Data, this);
 
 	mIdCounter = 0;
 
-	mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+	if (mConfig.mGenerateMsgs) {
+		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+		mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
+		mIoService.run();
+	}
+	else {
+		cout << "CAM triggering disabled" << endl;
+	}
 }
 
 CaService::~CaService() {
@@ -49,15 +60,6 @@ CaService::~CaService() {
 
 	mTimer->cancel();
 	delete mTimer;
-}
-
-void CaService::init() {
-	mThreadReceive = new boost::thread(&CaService::receive, this);
-	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
-	mThreadObd2DataReceive = new boost::thread(&CaService::receiveObd2Data, this);
-
-	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
-	mIoService.run();
 }
 
 //receive CAM from DCC and forward to LDM
@@ -258,8 +260,15 @@ dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
 }
 
 int main() {
-	CaService cam;
-	cam.init();
+	CaServiceConfig config;
+	try {
+		config.loadConfigXML("../src/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		return EXIT_FAILURE;
+	}
+	CaService cam(config);
 
 	return EXIT_SUCCESS;
 }
