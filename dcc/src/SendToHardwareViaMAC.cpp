@@ -140,7 +140,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	memcpy(payload,msg->c_str(),msg->size());
 
 	//send Packet
-	mLogger->logDebug(string("sending CAR Packet on Interface ")+mIfr.ifr_name + "\n");
+	mLogger->logInfo(string("sending CAR Packet on Interface ")+mIfr.ifr_name + "\n");
 
 	int send_to_socket = -1;
 	switch(priority){
@@ -165,7 +165,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 				mLogger->logPError("Sendto() failed");
 		}
 	} else {
-		mLogger->logDebug("No packet priority/queue set");
+		mLogger->logInfo("No packet priority/queue set");
 	}
 }
 

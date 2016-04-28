@@ -112,7 +112,7 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 //logs and sends Obd2
 void Obd2Service::sendToServices(obd2Package::OBD2 obd2) {
 	//log speed
-	mLogger->logDebug(to_string(obd2.speed()));
+	mLogger->logInfo(to_string(obd2.speed()));
 
 	//send buffer to services
 	string serializedObd2;

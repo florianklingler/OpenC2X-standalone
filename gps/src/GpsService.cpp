@@ -188,7 +188,7 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 void GpsService::sendToServices(gpsPackage::GPS gps) {
 	//log position
 	string csvPosition = to_string(gps.latitude()) + "\t" + to_string(gps.longitude()) + "\t" + to_string(gps.altitude());
-	mLogger->logDebug(csvPosition);
+	mLogger->logInfo(csvPosition);
 
 	//send buffer to services
 	string serializedGps;
