@@ -140,7 +140,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	memcpy(payload,msg->c_str(),msg->size());
 
 	//send Packet
-	mLogger->logDebug("sending CAR Packet on Interface "+mIfr.ifr_name + "(" +mIfr.ifr_ifindex+")\n");
+	mLogger->logDebug(string("sending CAR Packet on Interface ")+mIfr.ifr_name + "\n");
 
 	int send_to_socket = -1;
 	switch(priority){
