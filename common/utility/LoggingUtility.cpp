@@ -42,7 +42,7 @@ void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
 	CLOG(INFO, ("performance_" + mModuleName).c_str()) << messageType << "\t" << id << "\t" << delay;
 }
 
-void LoggingUtility::logDebug(string message) {
+void LoggingUtility::logInfo(string message) {
 	CLOG(INFO, ("default_" + mModuleName).c_str()) << message;
 }
 
