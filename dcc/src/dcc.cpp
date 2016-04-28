@@ -399,7 +399,7 @@ int main() {
 
 	DccConfig config;
 	try {
-		config.loadParameters("../src/config.xml");
+		config.loadParameters("../config/config.xml");
 	} catch (exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;

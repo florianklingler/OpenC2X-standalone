@@ -262,7 +262,7 @@ dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
 int main() {
 	CaServiceConfig config;
 	try {
-		config.loadConfigXML("../src/config.xml");
+		config.loadConfigXML("../config/config.xml");
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;

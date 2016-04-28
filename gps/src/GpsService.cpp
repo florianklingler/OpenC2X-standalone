@@ -219,7 +219,7 @@ void sigHandler(int sigNum) {
 int main() {
 	GpsConfig config;
 	try {
-		config.loadConfigXML("../src/config.xml");
+		config.loadConfigXML("../config/config.xml");
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;

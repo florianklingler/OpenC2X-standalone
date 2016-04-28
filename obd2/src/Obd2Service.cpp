@@ -124,7 +124,7 @@ void Obd2Service::sendToServices(obd2Package::OBD2 obd2) {
 int main() {
 	Obd2Config config;
 	try {
-		config.loadConfigXML("../src/config.xml");
+		config.loadConfigXML("../config/config.xml");
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
