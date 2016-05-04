@@ -17,6 +17,7 @@ INITIALIZE_EASYLOGGINGPP
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
+	mLogger = new LoggingUtility("LDM");
 }
 
 LDM::~LDM() {
@@ -43,12 +44,11 @@ void LDM::receiveFromCa() {
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();	//receive
 		serializedCam = received.second;
-		cout << "received CAM" << endl;
 
 		//print CAM
 		cam.ParseFromString(serializedCam);
 		google::protobuf::TextFormat::PrintToString(cam, &textMessage);
-		cout << textMessage << endl;
+		mLogger->logInfo("received CAM:\n" + textMessage);
 	}
 }
 
@@ -61,12 +61,11 @@ void LDM::receiveFromDen() {
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();//receive
 		serializedDenm = received.second;
-		cout << "received DENM" << endl;
 
 		//print DENM
 		denm.ParseFromString(serializedDenm);
 		google::protobuf::TextFormat::PrintToString(denm, &textMessage);
-		cout << textMessage << endl;
+		mLogger->logInfo("received DENM:\n" + textMessage);
 	}
 }
 

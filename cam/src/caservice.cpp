@@ -37,7 +37,7 @@ CaService::CaService(CaServiceConfig &config) {
 		mIoService.run();
 	}
 	else {
-		cout << "CAM triggering disabled" << endl;
+		mLogger->logInfo("CAM triggering disabled");
 	}
 }
 
@@ -77,7 +77,7 @@ void CaService::receive() {
 		serializedData = data.content();		//serialized CAM
 		logDelay(serializedData);
 
-		cout << "Forward incoming CAM " << data.id() << " to LDM" << endl;
+		mLogger->logInfo("Forward incoming CAM " + to_string(data.id()) + " to LDM");
 		mSenderToLdm->send(envelope, serializedData);	//send serialized CAM to LDM
 	}
 }
@@ -89,7 +89,7 @@ void CaService::receiveGpsData() {
 	while (1) {
 		serializedGps = mReceiverGps->receiveData();
 		newGps.ParseFromString(serializedGps);
-		cout << "Received GPS with latitude: " << newGps.latitude() << ", longitude: " << newGps.longitude() << endl;
+		mLogger->logDebug("Received GPS with latitude: " + to_string(newGps.latitude()) + ", longitude: " + to_string(newGps.longitude()));
 		mMutexLatestGps.lock();
 		mLatestGps = newGps;
 		mMutexLatestGps.unlock();
@@ -103,7 +103,7 @@ void CaService::receiveObd2Data() {
 	while (1) {
 		serializedObd2 = mReceiverObd2->receiveData();
 		newObd2.ParseFromString(serializedObd2);
-		cout << "Received OBD2 with speed (m/s): " << newObd2.speed() << endl;
+		mLogger->logDebug("Received OBD2 with speed (m/s): " + to_string(newObd2.speed()));
 		mMutexLatestObd2.lock();
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();
@@ -117,7 +117,7 @@ void CaService::logDelay(string serializedCam) {
 	int64_t createTime = cam.createtime();
 	int64_t receiveTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t delay = receiveTime - createTime;
-	mLogger->logStats("CAM", cam.id(), delay);
+	mLogger->logStats(to_string(cam.id()) + "\t" + to_string(delay));
 }
 
 double CaService::getDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -153,7 +153,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t deltaTime = currentTime - mLastSentCam.createtime();
 	if(deltaTime >= 1*1000*1000*1000) {
-		cout << "deltaTime: " << deltaTime << endl;
+		mLogger->logInfo("deltaTime: " + to_string(deltaTime));
 		sendCam = true;
 	}
 
@@ -162,7 +162,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	double deltaHeading = abs(currentHeading - mLastSentCam.heading());
 	if(deltaHeading > 4.0) {
-		cout << "deltaHeading: " << deltaHeading << endl;
+		mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
 		sendCam = true;
 	}
 	mMutexLatestGps.unlock();
@@ -171,7 +171,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	mMutexLatestGps.lock();
 	double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	if(distance > 5.0) {
-		cout << "distance: " << distance << endl;
+		mLogger->logInfo("distance: " + to_string(distance));
 		sendCam = true;
 	}
 	mMutexLatestGps.unlock();
@@ -180,7 +180,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	mMutexLatestObd2.lock();
 	double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
 	if(deltaSpeed > 1.0) {
-		cout << "deltaSpeed: " << deltaSpeed << endl;
+		mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
 		sendCam = true;
 	}
 	mMutexLatestObd2.unlock();
@@ -203,7 +203,7 @@ void CaService::send() {
 	cam = generateCam();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
-	cout << "Send new CAM " << data.id() << " to DCC and LDM\n" << endl;
+	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM");
 	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
 	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 
@@ -253,7 +253,7 @@ dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
 	data.set_createtime(cam.createtime());
-	data.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard?
+	data.set_validuntil(cam.createtime() + mConfig.mExpirationTime*1000*1000*1000);
 	data.set_content(serializedCam);
 
 	return data;

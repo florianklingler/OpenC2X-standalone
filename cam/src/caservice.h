@@ -15,12 +15,14 @@
 
 struct CaServiceConfig {
 	bool mGenerateMsgs;
+	int mExpirationTime;
 
 	void loadConfigXML(const string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
 		mGenerateMsgs = pt.get("cam.generateMsgs", true);
+		mExpirationTime = pt.get("cam.expirationTime", 1);
 	}
 };
 

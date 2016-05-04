@@ -26,7 +26,7 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 	if (!mConfig.mSimulateData) {	//use real Obd2 data
 		SerialPort* serial = new SerialPort();
 		if (serial->connect(mConfig.mDevice) != -1) {
-			cout << "Connected to serial port successfully" << endl;
+			mLogger->logInfo("Connected to serial port successfully");
 
 			serial->init();
 
@@ -37,7 +37,7 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 			serial->disconnect();
 		}
 		else {
-			cerr << "Cannot open serial port -> plug in OBD2 and run with sudo" << endl;
+			mLogger->logError("Cannot open serial port -> plug in OBD2 and run with sudo");
 		}
 	}
 	else {				//use simulated Obd2 data
@@ -111,14 +111,11 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 
 //logs and sends Obd2
 void Obd2Service::sendToServices(obd2Package::OBD2 obd2) {
-	//log speed
-	mLogger->logInfo(to_string(obd2.speed()));
-
 	//send buffer to services
 	string serializedObd2;
 	obd2.SerializeToString(&serializedObd2);
 	mSender->sendData("OBD2", serializedObd2);
-	cout << "Sent OBD2 with speed: " << obd2.speed()*3.6 << " km/h" << endl;
+	mLogger->logInfo("Sent OBD2 with speed: " + to_string(obd2.speed()*3.6) + " km/h");
 }
 
 int main() {

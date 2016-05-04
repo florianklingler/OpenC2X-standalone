@@ -38,8 +38,8 @@ string LoggingUtility::timeString() {
 	return buffer;
 }
 
-void LoggingUtility::logStats(string messageType, long id, int64_t delay) {
-	CLOG(INFO, ("statistics_" + mModuleName).c_str()) << messageType << "\t" << id << "\t" << delay;
+void LoggingUtility::logStats(string message) {
+	CLOG(INFO, ("statistics_" + mModuleName).c_str()) << message;
 }
 
 void LoggingUtility::logInfo(string message) {

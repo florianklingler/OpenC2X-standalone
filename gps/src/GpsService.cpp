@@ -19,7 +19,7 @@ struct gps_data_t GpsService::mGpsData;
 GpsService::GpsService(GpsConfig &config) {
 	mConfig = config;
 	mLastTime = NAN;
-	mSender = new CommunicationSender("GpsService", "3333");
+	mSender = new CommunicationSender("GPS", "3333");
 	mLogger = new LoggingUtility("GPS");
 	
 	//for simulation only
@@ -59,7 +59,7 @@ GpsService::~GpsService() {
 
 bool GpsService::connectToGpsd() {
 	if (gps_open("localhost", "2947", &mGpsData) < 0) {
-		cout << "Could not connect to GPSd" << endl;
+		mLogger->logError("Could not connect to GPSd");
 		return false;
 	}
 	return true;
@@ -72,7 +72,7 @@ int GpsService::getGpsData(gps_data_t* gpsdata) {
 			continue;
 		}
 		if (gps_read(gpsdata) == -1) {
-			fprintf(stderr, "GPSd Error\n");
+			mLogger->logError("GPSd Error");
 			return (-1);	//error
 		}
 		if (gpsdata->set && gpsdata->status > STATUS_NO_FIX) {
@@ -186,15 +186,14 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 
 //logs and sends GPS
 void GpsService::sendToServices(gpsPackage::GPS gps) {
-	//log position
-	string csvPosition = to_string(gps.latitude()) + "\t" + to_string(gps.longitude()) + "\t" + to_string(gps.altitude());
-	mLogger->logInfo(csvPosition);
-
 	//send buffer to services
 	string serializedGps;
 	gps.SerializeToString(&serializedGps);
 	mSender->sendData("GPS", serializedGps);
-	cout << "Sent GPS with latitude: " << gps.latitude() << ", longitude: " << gps.longitude() << endl;
+	//log position
+	string csvPosition = to_string(gps.latitude()) + "\t" + to_string(gps.longitude()) + "\t" + to_string(gps.altitude());
+	mLogger->logInfo("Sent GPS: \t" + csvPosition);
+	mLogger->logStats(csvPosition);
 }
 
 void GpsService::closeGps() {

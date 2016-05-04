@@ -1,3 +1,4 @@
 <cam>
 	<generateMsgs>true</generateMsgs>
+	<expirationTime>1</expirationTime> <!-- in seconds ! -->
 </cam>

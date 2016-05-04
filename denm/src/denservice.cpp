@@ -113,7 +113,7 @@ void DenService::logDelay(string serializedDenm) {
 			chrono::high_resolution_clock::now().time_since_epoch()
 					/ chrono::nanoseconds(1);
 	int64_t delay = receiveTime - createTime;
-	mLogger->logStats("DENM", denm.id(), delay);
+	mLogger->logStats(to_string(denm.id()) + "\t" + to_string(delay));
 }
 
 //trigger sending to LDM and DCC every 100 to 1000ms to simulate road safety application

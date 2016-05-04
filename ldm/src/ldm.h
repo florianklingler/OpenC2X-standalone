@@ -3,6 +3,7 @@
 
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
+#include <utility/LoggingUtility.h>
 
 class LDM {
 public:
@@ -19,6 +20,8 @@ private:
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
+
+	LoggingUtility* mLogger;
 };
 
 #endif
