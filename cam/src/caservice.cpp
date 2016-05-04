@@ -77,7 +77,7 @@ void CaService::receive() {
 		serializedData = data.content();		//serialized CAM
 		logDelay(serializedData);
 
-		cout << "Forward incoming CAM to LDM" << endl;
+		cout << "Forward incoming CAM " << data.id() << " to LDM" << endl;
 		mSenderToLdm->send(envelope, serializedData);	//send serialized CAM to LDM
 	}
 }
@@ -203,9 +203,9 @@ void CaService::send() {
 	cam = generateCam();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
-	cout << "Send new CAM to LDM and DCC\n" << endl;
-	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
+	cout << "Send new CAM " << data.id() << " to DCC and LDM\n" << endl;
 	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
+	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 
 	mLastSentCam = cam;
 }
@@ -253,7 +253,7 @@ dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
 	data.set_createtime(cam.createtime());
-	data.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s
+	data.set_validuntil(cam.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard?
 	data.set_content(serializedCam);
 
 	return data;

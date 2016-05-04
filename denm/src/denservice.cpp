@@ -71,7 +71,7 @@ void DenService::receive() {
 		serializedData = data.content();		//serialized DENM
 		logDelay(serializedData);
 
-		cout << "forward incoming DENM to LDM" << endl;
+		cout << "forward incoming DENM " << data.id() << " to LDM" << endl;
 		mSenderToLdm->send(envelope, serializedData);
 	}
 }
@@ -144,9 +144,9 @@ void DenService::send() {
 	denm = generateDenm();
 	data = generateData(denm);
 	data.SerializeToString(&serializedData);
-	cout << "send new DENM to LDM and DCC" << endl;
-	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
+	cout << "send new DENM " << data.id() << " to DCC and LDM" << endl;
 	mSenderToDcc->send("DENM", serializedData);		//send serialized DATA to DCC
+	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
 }
 
 //generate new DENM with increasing ID and current timestamp
@@ -189,7 +189,7 @@ dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
 	data.set_priority(dataPackage::DATA_Priority_VI);
 
 	data.set_createtime(denm.createtime());
-	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s
+	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard?
 	data.set_content(serializedDenm);
 
 	return data;
