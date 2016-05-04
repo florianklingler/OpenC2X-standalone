@@ -8,8 +8,6 @@
 #include <linux/nl80211.h>
 #include <net/if.h>
 
-#define PRINT_STATS 0
-
 using namespace std;
 
 int ChannelProber::mNl80211Id;
@@ -18,6 +16,7 @@ ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::i
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
 	mIoService = io;
+	mLogger = new LoggingUtility("ChannelProber");
 	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 
@@ -37,9 +36,10 @@ void ChannelProber::init() {
 	mWifi = (netinterface*) calloc(1, sizeof(netinterface));
 	mWifi->ifindex = if_nametoindex(mIfname.c_str());
 	if (mWifi->ifindex == 0) {
-		cout << "ChannelProber: error getting network interface. errno: " << errno << endl;
+		mLogger->logError("Error getting interface index for : " + mIfname );
 		mWifi->ifindex = -1;
 		mWifi->channel = -1;
+		exit(1);
 	}
 	mWifi->load.load = -1;
 	mWifi->load.totalTimeLast = 0;
@@ -48,8 +48,8 @@ void ChannelProber::init() {
 	// initialize socket now
 	mSocket = nl_socket_alloc();
 	if (mSocket == NULL) {
-		cout << "ChannelProber: nl_socket_alloc error" << endl;
-		return;
+		mLogger->logError("Could not allocate netlink socket");
+		exit(1);
 	}
 
 	// disable sequence number checking. We want to receive notifications.
@@ -58,24 +58,23 @@ void ChannelProber::init() {
 	ret = nl_socket_modify_cb(mSocket, NL_CB_VALID, NL_CB_CUSTOM,
 			ChannelProber::receivedNetlinkMsg, this);
 	if(ret != 0) {
-		cout << "ChannelProber: error when setting callback : " << ret << endl;
+		mLogger->logError("Failed to modify the callback");
+		exit(1);
 	}
 	// connect socket. Protocol: generic netlink
 	ret = genl_connect(mSocket);
 	if (ret != 0) {
-		cout << "ChannelProber: Connection to Generic Netlink Socket failed! err: "
-				<< nl_geterror(ret) << endl;
-		return;
+		mLogger->logError("Connection to netlink socket failed");
+		exit(1);
 	}
 
 	// resolve mNl80211Id
 	mNl80211Id = genl_ctrl_resolve(mSocket, "nl80211");
 	if (mNl80211Id < 0) {
-		cout << "ChannelProber: error code getting nl80211 id: " << nl_geterror(mNl80211Id)
-				<< endl;
-		return;
+		mLogger->logError("Could not get NL80211 id");
+		exit(1);
 	}
-
+	mLogger->logStats("Channel \tBusy time \tTotal time \tChannel load");
 	mTimer->async_wait(boost::bind(&ChannelProber::probe, this, boost::asio::placeholders::error));
 }
 
@@ -97,14 +96,14 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), dev);
 
 	if (!tb[NL80211_ATTR_SURVEY_INFO]) {
-		cout << "ChannelProber: survey data missing!" << endl;
+		cp->mLogger->logInfo("ChannelProber: survey data missing!");
 		return NL_SKIP;
 	}
 	static struct nla_policy survey_policy[NL80211_SURVEY_INFO_MAX + 1] = { };
 
 	if (nla_parse_nested(sinfo, NL80211_SURVEY_INFO_MAX,
 			tb[NL80211_ATTR_SURVEY_INFO], survey_policy)) {
-		cout << "ChannelProber: failed to parse nested attributes!" << endl;
+		cp->mLogger->logInfo("Failed to parse nested attributes");
 		return NL_SKIP;
 	}
 
@@ -116,31 +115,21 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	// Current channel in use
 	if (sinfo[NL80211_SURVEY_INFO_FREQUENCY]) {
 		channel = nla_get_u32(sinfo[NL80211_SURVEY_INFO_FREQUENCY]);
-		if(PRINT_STATS) {
-			cout << "\tfrequency:\t\t\t" << channel << " MHz" << endl;
-		}
 	}
 
 	// Noise
 	if (sinfo[NL80211_SURVEY_INFO_NOISE]) {
 		noise = (int8_t) nla_get_u8(sinfo[NL80211_SURVEY_INFO_NOISE]);
-		// cout<<"\tnoise:\t\t\t\t"<< noise <<" dBm"<<endl;
 	}
 
 	// Total active time
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]) {
 		total_time = nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]);
-		if(PRINT_STATS) {
-			cout << "\tchannel active time:\t\t" << total_time << " ms" << endl;
-		}
 	}
 
 	// Total busy time
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]) {
 		busy_time = nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
-		if(PRINT_STATS) {
-			cout << "\tchannel busy time:\t\t" << busy_time << " ms" << endl;
-		}
 	}
 
 	// Do we need info about extension channel?
@@ -152,20 +141,16 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 
 	// Total receiving time
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX]) {
-		if(PRINT_STATS) {
-			cout << "\tchannel receive time:\t\t"
-				<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX])
-				<< " ms" << endl;
-		}
+		//cout << "\tchannel receive time:\t\t"
+		//	<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_RX])
+		//	<< " ms" << endl;
 	}
 
 	// Total transmitting time
 	if (sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX]) {
-		if(PRINT_STATS) {
-			cout << "\tchannel transmit time:\t\t"
-				<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX])
-				<< " ms" << endl;
-		}
+		//cout << "\tchannel transmit time:\t\t"
+		//	<< nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_TX])
+		//	<< " ms" << endl;
 	}
 
 	// Update statistics
@@ -178,12 +163,7 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->mWifi->load.busyTimeLast = busy_time;
 	cp->mWifi->load.noise = noise;
 	cp->mWifi->load.mutexChannelLoad.unlock();
-	if(PRINT_STATS) {
-		cout << "time since last check: " << total_time_diff << endl;
-		cout << "busy time since last check: " << busy_time_diff << endl;
-		cout << "Calculated Load: " << load << endl;
-		cout << "-----------------------" << endl;
-	}
+	cp->mLogger->logStats(to_string(channel) + "\t" + to_string(busy_time_diff) + "\t" + to_string(total_time_diff) + "\t" + to_string(load));
 	return NL_SKIP;
 }
 
@@ -214,7 +194,7 @@ int ChannelProber::send(uint8_t msgCmd, void *payload, unsigned int length,
 	// create message header
 	if (genlmsg_put(msg, 0, seq, protocolId, 0, flags, msgCmd,
 			protocolVersion) == NULL) {
-		cout << "ChannelProber: Error creating generic netlink header for message." << endl;
+		mLogger->logError("Failed to create netlink header for the message");
 		return -1;
 	}
 
@@ -222,14 +202,14 @@ int ChannelProber::send(uint8_t msgCmd, void *payload, unsigned int length,
 	if (length > 0) {
 		ret = nla_put(msg, attrType, length, payload);
 		if (ret < 0) {
-			cout << "ChannelProber: Error message add attribute: " << nl_geterror(ret) << endl;
+			mLogger->logError("Error when adding attributes");
 			return ret;
 		}
 	}
 
 	ret = nl_send_auto(mSocket, msg);
 	if (ret < 0) {
-		cout << "ChannelProber: Error sending message. Error code: " << nl_geterror(ret) << endl;
+		mLogger->logError("Error when sending the message");
 	}
 	nlmsg_free(msg);
 

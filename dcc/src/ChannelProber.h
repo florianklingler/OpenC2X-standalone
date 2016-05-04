@@ -42,6 +42,7 @@ public:
 	netinterface *mWifi;
 	string mIfname;
 	double mProbeInterval;
+	LoggingUtility* mLogger;
 
 private:
 	boost::asio::io_service* mIoService;
