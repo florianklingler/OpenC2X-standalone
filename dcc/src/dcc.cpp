@@ -186,13 +186,19 @@ void DCC::receiveFromDen() {
 
 void DCC::receiveFromHw() {
 	pair<string,string> receivedData;		//MAC Sender, serialized DATA
+	string* senderMac = &receivedData.first;
 	string* serializedData = &receivedData.second;
 	dataPackage::DATA data;
 	mLogger->logInfo("start receiving via Hardware");
 	while (1) {
 		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
-		data.ParseFromString(*serializedData);		//deserialize DATA
 
+		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages
+		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac)){
+			continue;
+		}
+
+		data.ParseFromString(*serializedData);		//deserialize DATA
 		//processing...
 		mLogger->logInfo("forward message from HW to services");
 		switch(data.type()) {								//send serialized DATA to corresponding module

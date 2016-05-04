@@ -17,13 +17,12 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	// Sender MAC Address
 	string file = string("/sys/class/net/")+ ethernetDevice + "/address";
 	std::ifstream infile(file);
-	string senderMac;
-	getline(infile, senderMac);
+	getline(infile, mOwnMac);
 
 	//check for right MAC format copied from http://stackoverflow.com/questions/4792035/how-do-you-validate-that-a-string-is-a-valid-mac-address-in-c
 	int i = 0;
 	int s = 0;
-	const char* mac = senderMac.c_str();
+	const char* mac = mOwnMac.c_str();
 	while (*mac) {
 	   if (isxdigit(*mac)) {
 		  i++;
@@ -40,7 +39,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	}
 	if (!(i == 12 && (s == 5 || s == 0))){
 		mLogger->logError("could not get a real sender Mac address. Using 12:23:34:45:56:67");
-		senderMac = "12:23:34:45:56:67";
+		mOwnMac = "12:23:34:45:56:67";
 	}
 
 
@@ -109,7 +108,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	memcpy(mEth_hdr.ether_dhost,(u_char *)ether_aton(receiverMac.c_str()),ETHER_ADDR_LEN);
 
 	//Source Mac
-	memcpy(mEth_hdr.ether_shost,(u_char *)ether_aton(senderMac.c_str()),ETHER_ADDR_LEN);
+	memcpy(mEth_hdr.ether_shost,(u_char *)ether_aton(mOwnMac.c_str()),ETHER_ADDR_LEN);
 
 	//ether type
 	mEth_hdr.ether_type = htons(ETHERTYPE_CAR);

@@ -22,6 +22,7 @@ public:
 	SendToHardwareViaMAC(string ownerModule,string ethernetDevice);
 	virtual ~SendToHardwareViaMAC();
 	void send(string* msg, int priority);
+	string mOwnMac;
 private:
 	LoggingUtility* mLogger;
 
