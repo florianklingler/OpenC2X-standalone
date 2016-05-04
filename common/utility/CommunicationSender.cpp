@@ -22,13 +22,13 @@ void CommunicationSender::send(string envelope, string message) {
 	s_sendmore(*mPublisher, envelope);
 	s_send(*mPublisher, message);
 
-	mLogger->logInfo(envelope + " sent");
+	mLogger->logDebug(envelope + " sent");
 }
 
 void CommunicationSender::sendToHw(string message) {
 	s_send(*mPublisher, message);
 
-	mLogger->logInfo("sent to HW");
+	mLogger->logDebug("sent to HW");
 }
 
 void CommunicationSender::sendData(string envelope, string message) {
