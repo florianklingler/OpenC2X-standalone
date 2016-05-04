@@ -23,6 +23,8 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
 	mSenderToServices = new CommunicationSender(module, "5555");
 
+	mLogger = new LoggingUtility(module);
+
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
 		mChannelProber = new ChannelProber(mConfig.ethernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
@@ -81,6 +83,8 @@ DCC::~DCC() {
 	if(!mConfig.simulateChannelLoad) {
 		delete mChannelProber;
 	}
+
+	delete mLogger;
 }
 
 void DCC::init() {
@@ -136,14 +140,14 @@ void DCC::receiveFromCa() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
-		cout << "received new CAM (packet " << data->id() << ") -> enqueue to BE" << endl;
+		mLogger->logInfo("received new CAM " + to_string(data->id()) + " -> enqueue to BE");
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		mBucket[ac]->flushQueue(nowTime);
 		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
-			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
+			mLogger->logInfo("Queue "+ to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
 			sendQueuedPackets(ac);
 		}
 	}
@@ -159,14 +163,14 @@ void DCC::receiveFromDen() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
-		cout << "received new DENM (packet " << data->id() << ") -> enqueue to VI" << endl;
+		mLogger->logInfo("received new DENM " + to_string(data->id()) + " -> enqueue to VI");
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		mBucket[ac]->flushQueue(nowTime);
 		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
-			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << endl;
+			mLogger->logInfo("Queue "+ to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
 			sendQueuedPackets(ac);
 		}
 	}
@@ -176,13 +180,13 @@ void DCC::receiveFromHw() {
 	pair<string,string> receivedData;		//MAC Sender, serialized DATA
 	string* serializedData = &receivedData.second;
 	dataPackage::DATA data;
-	cout << "starting receiving via Hardware" << endl;
+	mLogger->logInfo("start receiving via Hardware");
 	while (1) {
 		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
 		data.ParseFromString(*serializedData);	//deserialize DATA
 
 		//processing...
-		cout << "forward message from HW to services" << endl;
+		mLogger->logInfo("forward message from HW to services");
 		switch(data.type()) {								//send serialized DATA to corresponding module
 			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", *serializedData);	break;
 			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
@@ -280,16 +284,16 @@ void DCC::setCurrentState(int state) {
 	//print current state
 	switch (mCurrentStateId) {
 	case STATE_UNDEF:
-		cout << "Current state: Undefined" << endl;
+		mLogger->logInfo("Current state: Undefined");
 		break;
 	case STATE_RELAXED:
-		cout << "Current state: Relaxed" << endl;
+		mLogger->logInfo("Current state: Relaxed");
 		break;
 	case STATE_ACTIVE1:
-		cout << "Current state: Active1" << endl;
+		mLogger->logInfo("Current state: Active1");
 		break;
 	case STATE_RESTRICTED:
-		cout << "Current state: Restricted" << endl;
+		mLogger->logInfo("Current state: Restricted");
 		break;
 	default: break;
 	}
@@ -305,7 +309,7 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
 	if (ac == Channels::AC_BE) {
-		cout << "Added token -> available tokens: " << mBucket[ac]->availableTokens << endl;
+		mLogger->logInfo("Added token for queue " + to_string(ac) + " -> available tokens: " + to_string(mBucket[ac]->availableTokens));
 	}
 	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
@@ -329,14 +333,14 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
 			mSenderToHw->send(&byteMessage,ac);
-			cout << "Send data (packet " << data->id() << ") to HW" << endl;
-			cout << "Remaining tokens: " << mBucket[ac]->availableTokens << endl;
-			cout << "Queue length: " << mBucket[ac]->getQueuedPackets() << "\n" << endl;
+			mLogger->logInfo("Send data (packet " + to_string(data->id()) + ") to HW");
+			mLogger->logInfo("Remaining tokens for queue " + to_string(ac) + ": "+ to_string(mBucket[ac]->availableTokens));
+			mLogger->logInfo("Queue " + to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
 			delete data;
 		}
 		else {														//message expired
 			mBucket[ac]->increment();								//undo decrement in dequeue because message expired and token is still valid (nothing was sent)
-			cerr << "--sendQueuedPackets: message (packet " << data->id() << ") expired" << endl;
+			mLogger->logInfo("message (packet " + to_string(data->id()) + ") expired");
 			delete data;
 		}
 	}

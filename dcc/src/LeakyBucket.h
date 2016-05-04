@@ -1,3 +1,6 @@
+#define ELPP_THREAD_SAFE
+#define ELPP_NO_DEFAULT_LOG_FILE
+
 #ifndef LEAKYBUCKET_H_
 #define LEAKYBUCKET_H_
 
@@ -5,10 +8,13 @@
 #include <list>
 #include <mutex>
 #include <iostream>
+#include <utility/LoggingUtility.h>
 
 
 //LeakyBucket consists of a bucket for tokens, i.e. send-permits, and a queue for packets that need to be sent
 template<typename T> class LeakyBucket {
+private:
+	LoggingUtility* mLogger;
 public:
 	size_t maxBucketSize;		//max. number of tokens
 	size_t availableTokens;		//available number of tokens = send-permits
@@ -21,6 +27,7 @@ public:
 		this->maxBucketSize = bucketSize;
 		availableTokens = 0;
 		this->queueSize = queueSize;
+		mLogger = new LoggingUtility("Dcc");
 	}
 
 	~LeakyBucket() {
@@ -31,6 +38,7 @@ public:
 			delete msg;
 			queue.erase(it++);
 		}
+		delete mLogger;
 	}
 
 	//number of available tokens
@@ -127,7 +135,7 @@ public:
 			T* msg = p.second;
 
 			if(validUntil < t || eraseAll) {
-				std::cout << "--flushQueue: message " << msg->id() << " expired" << std::endl;
+				mLogger->logInfo("flushQueue: message " + to_string(msg->id()) + " expired");
 				delete msg;
 				queue.erase(it++);
 			} else {

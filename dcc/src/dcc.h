@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
+#include <utility/LoggingUtility.h>
 #include <buffers/build/data.pb.h>
 #include "SendToHardwareViaMAC.h"
 #include "ReceiveFromHardwareViaMAC.h"
@@ -50,6 +51,8 @@ private:
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationSender* mSenderToServices;
+
+	LoggingUtility* mLogger;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;

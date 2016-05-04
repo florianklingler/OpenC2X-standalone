@@ -13,15 +13,13 @@ ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule) {
 	//has root?
 	if (getuid() != 0){
 		mLogger->logInfo("Program needs root privileges");
-		cout << "Program needs root privileges";
 		exit(1);
 	}
 
 	//PACKET SOCKET, receives ALL incoming packages in whole (with all headers)
 	mSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (mSocket == -1){
-		mLogger->logInfo("socket creation failed");
-		perror("socket() failed");
+		mLogger->logPError("socket creation failed");
 		exit(1);
 	}
 }
@@ -42,8 +40,7 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 		//receive package, blocking
 		mBytes = read(mSocket, mPacket, sizeof(mPacket));
 		if (mBytes == -1){
-			mLogger->logInfo("reading from Socket failed");
-			perror("read() failed");
+			mLogger->logPError("reading from Socket failed");
 			exit(1);
 		}
 
