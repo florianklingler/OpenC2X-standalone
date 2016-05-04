@@ -15,6 +15,7 @@ public:
 	string timeString();
 	void logStats(std::string messageType, long id, int64_t delay);
 	void logInfo(std::string message);
+	void logDebug(std::string message);
 	void logPError(std::string message);
 	void logError(std::string message);
 

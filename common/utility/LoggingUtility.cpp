@@ -11,7 +11,7 @@ LoggingUtility::LoggingUtility(string moduleName) {
 	Configurations confStatistics("../config/statistics.conf");	//statistics logger for stats
 
 	confDefault.setRemainingToDefault();
-	confDefault.setGlobally(ConfigurationType::Format, mModuleName + ", %datetime{%h:%m:%s,%g} \t %msg");
+	confDefault.setGlobally(ConfigurationType::Format, mModuleName + ", %datetime{%h:%m:%s,%g} \t %level \t %msg \t\t");
 	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/log_" + mModuleName + "_" + timeString() + ".log");
 
 	confStatistics.setRemainingToDefault();
@@ -46,12 +46,16 @@ void LoggingUtility::logInfo(string message) {
 	CLOG(INFO, ("default_" + mModuleName).c_str()) << message;
 }
 
+void LoggingUtility::logDebug(string message) {
+	CLOG(DEBUG, ("default_" + mModuleName).c_str()) << message;
+}
+
 void LoggingUtility::logError(string message){
-	CLOG(ERROR,("default_" + mModuleName).c_str()) << "ERROR: " << message;
+	CLOG(ERROR, ("default_" + mModuleName).c_str()) << message;
 }
 
 void LoggingUtility::logPError(string message){
-	CPLOG(ERROR,("default_" + mModuleName).c_str()) << "ERROR: " << message;
+	CPLOG(ERROR, ("default_" + mModuleName).c_str()) << message;
 }
 
 

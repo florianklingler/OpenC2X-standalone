@@ -71,7 +71,7 @@ void DenService::receive() {
 		serializedData = data.content();		//serialized DENM
 		logDelay(serializedData);
 
-		cout << "forward incoming DENM " << data.id() << " to LDM" << endl;
+		mLogger->logInfo("forward incoming DENM " + to_string(data.id()) + " to LDM");
 		mSenderToLdm->send(envelope, serializedData);
 	}
 }
@@ -83,7 +83,7 @@ void DenService::receiveGpsData() {
 	while (1) {
 		serializedGps = mReceiverGps->receiveData();
 		newGps.ParseFromString(serializedGps);
-		cout << "Received GPS with latitude: " << newGps.latitude() << ", longitude: " << newGps.longitude() << endl;
+		mLogger->logDebug("Received GPS with latitude: " + to_string(newGps.latitude()) + ", longitude: " + to_string(newGps.longitude()));
 		mMutexLatestGps.lock();
 		mLatestGps = newGps;
 		mMutexLatestGps.unlock();
@@ -97,7 +97,7 @@ void DenService::receiveObd2Data() {
 	while (1) {
 		serializedObd2 = mReceiverObd2->receiveData();
 		newObd2.ParseFromString(serializedObd2);
-		cout << "Received OBD2 with speed (m/s): " << newObd2.speed() << endl;
+		mLogger->logDebug("Received OBD2 with speed (m/s): " + to_string(newObd2.speed()));
 		mMutexLatestObd2.lock();
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();
@@ -144,7 +144,7 @@ void DenService::send() {
 	denm = generateDenm();
 	data = generateData(denm);
 	data.SerializeToString(&serializedData);
-	cout << "send new DENM " << data.id() << " to DCC and LDM" << endl;
+	mLogger->logInfo("send new DENM " + to_string(data.id()) + " to DCC and LDM");
 	mSenderToDcc->send("DENM", serializedData);		//send serialized DATA to DCC
 	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
 }
@@ -189,7 +189,7 @@ dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
 	data.set_priority(dataPackage::DATA_Priority_VI);
 
 	data.set_createtime(denm.createtime());
-	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard?
+	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard? -> specify using CLI
 	data.set_content(serializedDenm);
 
 	return data;
