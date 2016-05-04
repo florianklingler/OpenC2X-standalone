@@ -33,17 +33,14 @@ class logfileReader:
         self.readNewLine()
 
     def readNewLine(self):
-        while(True):
-            line = self.f.readline()
+        line = '';
+        while(line[-3:] != "\t\t\n"):
+            line += self.f.readline()
             if(line==''): #EOF
                 self.logLine=[None,None]
-                break
-            elif(line.strip()==''): #whiteline
-                continue
-            else:
-                self.logLine = parseLog(line)
-                break
-
+                return
+        self.logLine = parseLog(line)
+        
     def peekDate(self):
         return self.logLine[0]
 
