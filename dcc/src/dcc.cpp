@@ -140,15 +140,19 @@ void DCC::receiveFromCa() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
-		mLogger->logInfo("received new CAM " + to_string(data->id()) + " -> enqueue to BE");
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		mBucket[ac]->flushQueue(nowTime);
+
+		mLogger->logInfo("");						//for readability
 		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
-			mLogger->logInfo("Queue "+ to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and enqueued CAM " + to_string(data->id()) + ", queue length: " + to_string(mBucket[ac]->getQueuedPackets()));
 			sendQueuedPackets(ac);
+		}
+		else {
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and dropped CAM " + to_string(data->id()) + ", queue full -> length: " + to_string(mBucket[ac]->getQueuedPackets()));
 		}
 	}
 }
@@ -163,15 +167,19 @@ void DCC::receiveFromDen() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
-		mLogger->logInfo("received new DENM " + to_string(data->id()) + " -> enqueue to VI");
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 		mBucket[ac]->flushQueue(nowTime);
+
+		mLogger->logInfo("");						//for readability
 		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
 		if (enqueued) {
-			mLogger->logInfo("Queue "+ to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and enqueued DENM " + to_string(data->id()) + ", queue length: " + to_string(mBucket[ac]->getQueuedPackets()));
 			sendQueuedPackets(ac);
+		}
+		else {
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and dropped DENM " + to_string(data->id()) + ", queue full -> length: " + to_string(mBucket[ac]->getQueuedPackets()));
 		}
 	}
 }
@@ -183,7 +191,7 @@ void DCC::receiveFromHw() {
 	mLogger->logInfo("start receiving via Hardware");
 	while (1) {
 		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
-		data.ParseFromString(*serializedData);	//deserialize DATA
+		data.ParseFromString(*serializedData);		//deserialize DATA
 
 		//processing...
 		mLogger->logInfo("forward message from HW to services");
@@ -308,9 +316,7 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
-	if (ac == Channels::AC_BE) {
-		mLogger->logInfo("Added token for queue " + to_string(ac) + " -> available tokens: " + to_string(mBucket[ac]->availableTokens));
-	}
+	mLogger->logInfo("AC " + to_string(ac) + ": added token -> available tokens: " + to_string(mBucket[ac]->availableTokens));
 	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
 	mMutexLastTokenAt.lock();
@@ -333,9 +339,7 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 			string byteMessage;
 			data->SerializeToString(&byteMessage);
 			mSenderToHw->send(&byteMessage,ac);
-			mLogger->logInfo("Send data (packet " + to_string(data->id()) + ") to HW");
-			mLogger->logInfo("Remaining tokens for queue " + to_string(ac) + ": "+ to_string(mBucket[ac]->availableTokens));
-			mLogger->logInfo("Queue " + to_string(ac) + " length: " + to_string(mBucket[ac]->getQueuedPackets()));
+			mLogger->logInfo("AC " + to_string(ac) + ": Sent data " + to_string(data->id()) + " to HW -> queue length: " + to_string(mBucket[ac]->getQueuedPackets()) + ", tokens: " + to_string(mBucket[ac]->availableTokens));
 			delete data;
 		}
 		else {														//message expired

@@ -203,7 +203,7 @@ void CaService::send() {
 	cam = generateCam();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
-	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM");
+	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
 	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
 	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 
