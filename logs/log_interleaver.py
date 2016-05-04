@@ -1,5 +1,8 @@
 import os
 
+interleave_last_x_files = 5
+
+
 files = []
 
 for (dirpath, dirnames, filenames) in os.walk("."):
@@ -13,13 +16,13 @@ for f in files:
         logfiles.append(f[0:-4].split('_')) #[type,module,date,time]
 
 
-#get the 5 most recend files TODO: set number of files via arg
+#get most recend files TODO: set number of files via arg
 def getTimePlusDate(logfile):
     return logfile[2]+logfile[3]
 
 logfiles.sort(key=getTimePlusDate,reverse=True)
 
-recentLogs = logfiles[:5]
+recentLogs = logfiles[:interleave_last_x_files]
 
 
 def parseLog(log):
@@ -28,8 +31,12 @@ def parseLog(log):
     
 class logfileReader:
     '''read file like its a queue'''
-    def __init__(self, logfile):        
-        self.f = open('_'.join(logfile)+".log","r")
+
+    def __init__(self, logfile):
+        fname = '_'.join(logfile)+".log"
+        if not os.path.getsize(fname) > 0: # file empty
+            return
+        self.f = open(fname,"r")
         self.readNewLine()
 
     def readNewLine(self):
@@ -40,7 +47,7 @@ class logfileReader:
                 self.logLine=[None,None]
                 return
         self.logLine = parseLog(line)
-        
+
     def peekDate(self):
         return self.logLine[0]
 
@@ -54,7 +61,11 @@ class logfileReader:
 logReaders = []
 
 for logFile in recentLogs:
-    logReaders.append(logfileReader(logFile))
+    lr = logfileReader(logFile)
+    if hasattr(lr,'f'): #file opened => not empty
+        logReaders.append(lr)
+
+
 
 outLog = open("log_All_"+recentLogs[0][2]+".interLog","w")
 
