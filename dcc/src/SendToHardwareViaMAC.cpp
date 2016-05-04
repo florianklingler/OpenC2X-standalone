@@ -39,8 +39,8 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	   ++mac;
 	}
 	if (!(i == 12 && (s == 5 || s == 0))){
-		mLogger->logError("could not get a real sender Mac address. Using 12::23:34:45:56:67");
-		senderMac = "12::23:34:45:56:67";
+		mLogger->logError("could not get a real sender Mac address. Using 12:23:34:45:56:67");
+		senderMac = "12:23:34:45:56:67";
 	}
 
 
@@ -140,7 +140,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	memcpy(payload,msg->c_str(),msg->size());
 
 	//send Packet
-	mLogger->logInfo(string("sending CAR Packet on Interface ")+mIfr.ifr_name + "\n");
+	mLogger->logInfo(string("sending CAR Packet on Interface ")+mIfr.ifr_name);
 
 	int send_to_socket = -1;
 	switch(priority){
