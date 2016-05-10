@@ -165,10 +165,8 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
 		sendCam = true;
 	}
-	mMutexLatestGps.unlock();
 
 	//|current position - last CAM position| > 5 m
-	mMutexLatestGps.lock();
 	double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	if(distance > 5.0) {
 		mLogger->logInfo("distance: " + to_string(distance));
