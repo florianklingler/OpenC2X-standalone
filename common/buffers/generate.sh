@@ -1,5 +1,5 @@
 #!/bin/sh
-mkdir build
+mkdir -p build
 protoc --proto_path=./ --cpp_out=build/ cam.proto 
 
 protoc --proto_path=./ --cpp_out=build/ denm.proto
