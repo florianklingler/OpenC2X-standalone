@@ -125,7 +125,6 @@ SendToHardwareViaMAC::~SendToHardwareViaMAC() {
 }
 
 void SendToHardwareViaMAC::send(string* msg, int priority){
-	//TODO: currently priority is set in the init function and this value is ignored
 
 	unsigned int packetsize = sizeof(struct ether_header) + msg->size();
 	unsigned char packet[packetsize];
