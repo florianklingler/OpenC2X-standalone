@@ -113,6 +113,8 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	//ether type
 	mEth_hdr.ether_type = htons(ETHERTYPE_CAR);
 
+	//transform own Mac to fit the format of MACs incomming from the network to easier compare them
+	mOwnMac = ether_ntoa(ether_aton(mOwnMac.c_str()));
 
 }
 

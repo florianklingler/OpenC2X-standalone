@@ -193,14 +193,16 @@ void DCC::receiveFromHw() {
 	while (1) {
 		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
 
+
 		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages
-		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac)){
+		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac) == 0){
+			mLogger->logInfo("received own Message, discarding");
 			continue;
 		}
 
 		data.ParseFromString(*serializedData);		//deserialize DATA
 		//processing...
-		mLogger->logInfo("forward message from HW to services");
+		mLogger->logInfo("forward message from "+*senderMac +" from HW to services");
 		switch(data.type()) {								//send serialized DATA to corresponding module
 			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", *serializedData);	break;
 			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
