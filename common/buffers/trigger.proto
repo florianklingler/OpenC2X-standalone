@@ -1,0 +1,5 @@
+package triggerPackage;
+
+message TRIGGER {
+	optional string content = 1;
+}

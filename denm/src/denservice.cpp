@@ -16,6 +16,7 @@ INITIALIZE_EASYLOGGINGPP
 
 DenService::DenService() {
 	string module = "DenService";
+	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER");
 	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM");
 	mSenderToDcc = new CommunicationSender(module, "7777");
 	mSenderToLdm = new CommunicationSender(module, "9999");
@@ -32,12 +33,15 @@ DenService::~DenService() {
 	mThreadReceive->join();
 	mThreadGpsDataReceive->join();
 	mThreadObd2DataReceive->join();
+	mThreadAppTrigger->join();
 	mThreadSend->join();
 	delete mThreadReceive;
 	delete mThreadGpsDataReceive;
 	delete mThreadObd2DataReceive;
+	delete mThreadAppTrigger;
 	delete mThreadSend;
 
+	delete mReceiverFromApp;
 	delete mReceiverFromDcc;
 	delete mSenderToDcc;
 	delete mSenderToLdm;
@@ -52,8 +56,8 @@ void DenService::init() {
 	mThreadReceive = new boost::thread(&DenService::receive, this);
 	mThreadGpsDataReceive = new boost::thread(&DenService::receiveGpsData, this);
 	mThreadObd2DataReceive = new boost::thread(&DenService::receiveObd2Data, this);
-
-	mThreadSend = new boost::thread(&DenService::triggerDenm, this);
+	mThreadAppTrigger = new boost::thread(&DenService::triggerAppDenm, this);
+//	mThreadSend = new boost::thread(&DenService::triggerPeriodicDenm, this);
 }
 
 //receive DENM from DCC and forward to LDM
@@ -117,11 +121,27 @@ void DenService::logDelay(string serializedDenm) {
 }
 
 //trigger sending to LDM and DCC every 100 to 1000ms to simulate road safety application
-void DenService::triggerDenm() {
-	while (1) {
-		int randomSleep = rand() % 900 + 101;
-		microSleep(randomSleep*1000);
-		send();
+//void DenService::triggerPeriodicDenm() {
+//	while (1) {
+//		int randomSleep = rand() % 900 + 101;
+//		microSleep(randomSleep*1000);
+//		send();
+//	}
+//}
+
+//trigger generation/send of DENM by external application
+void DenService::triggerAppDenm() {
+	string envelope;
+	string serializedTrigger;
+	triggerPackage::TRIGGER trigger;
+
+	while(1) {
+		pair<string, string> received = mReceiverFromApp->receive();
+		envelope = received.first;
+		serializedTrigger = received.second;
+		trigger.ParseFromString(serializedTrigger);
+
+		send(trigger);
 	}
 }
 
@@ -136,12 +156,12 @@ void DenService::microSleep(double microSeconds) {
 }
 
 //generate DENM and send to LDM and DCC
-void DenService::send() {
+void DenService::send(triggerPackage::TRIGGER trigger) {
 	string serializedData;
 	denmPackage::DENM denm;
 	dataPackage::DATA data;
 
-	denm = generateDenm();
+	denm = generateDenm(trigger);
 	data = generateData(denm);
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("send new DENM " + to_string(data.id()) + " to DCC and LDM");
@@ -150,12 +170,13 @@ void DenService::send() {
 }
 
 //generate new DENM with increasing ID and current timestamp
-denmPackage::DENM DenService::generateDenm() {
+denmPackage::DENM DenService::generateDenm(triggerPackage::TRIGGER trigger) {
 	denmPackage::DENM denm;
 
 	//create DENM
 	denm.set_id(mIdCounter++);
-	denm.set_content("DENM from DEN service");
+//	denm.set_content("DENM from DEN service");
+	denm.set_content(trigger.content());
 	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	mMutexLatestGps.lock();
