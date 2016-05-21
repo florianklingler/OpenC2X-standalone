@@ -33,7 +33,7 @@ void DenmApp::triggerDenm(string content) {
 
 
 
-int main(int argc, char ** argv) {
+int main() {
 	DenmApp denmApp;
 
 	cout << "Welcome to denmApp!" << endl;
@@ -45,9 +45,9 @@ int main(int argc, char ** argv) {
 		if(*charLine) add_history(charLine);
 		string line(charLine);					//convert to string for further use
 		free(charLine);
-		if (line.compare("exit") == 0) return EXIT_SUCCESS;	//TODO: fix
+		if (line.compare("exit") == 0) return EXIT_SUCCESS;	//FIXME: exit whole program
 
-		denmApp.triggerDenm(line);
+		denmApp.triggerDenm(line);				//TODO: configure once, then (re-)send on enter?
 	}
 
 	return EXIT_SUCCESS;
