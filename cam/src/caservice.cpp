@@ -31,6 +31,9 @@ CaService::CaService(CaServiceConfig &config) {
 
 	mIdCounter = 0;
 
+	mGpsValid = false;	//initially no data is available => not valid
+	mObd2Valid = false;
+
 	if (mConfig.mGenerateMsgs) {
 		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
 		mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
@@ -159,27 +162,39 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 
 	//|current heading (towards North) - last CAM heading| > 4 deg
 	mMutexLatestGps.lock();
-	double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-	double deltaHeading = abs(currentHeading - mLastSentCam.heading());
-	if(deltaHeading > 4.0) {
-		mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
-		sendCam = true;
+	if (currentTime - mLatestGps.time() > (int64_t)mConfig.mMaxGpsAge * 1000*1000*1000) {	//GPS data too old
+		mGpsValid = false;
 	}
+	else {
+		mGpsValid = true;
+		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
+		if(deltaHeading > 4.0) {
+			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
+			sendCam = true;
+		}
 
-	//|current position - last CAM position| > 5 m
-	double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-	if(distance > 5.0) {
-		mLogger->logInfo("distance: " + to_string(distance));
-		sendCam = true;
+		//|current position - last CAM position| > 5 m
+		double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+		if(distance > 5.0) {
+			mLogger->logInfo("distance: " + to_string(distance));
+			sendCam = true;
+		}
 	}
 	mMutexLatestGps.unlock();
 
 	//|current speed - last CAM speed| > 1 m/s
 	mMutexLatestObd2.lock();
-	double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
-	if(deltaSpeed > 1.0) {
-		mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
-		sendCam = true;
+	if (currentTime - mLatestObd2.time() > (int64_t)mConfig.mMaxObd2Age * 1000*1000*1000) {	//OBD2 data too old
+		mObd2Valid = false;
+	}
+	else {
+		mObd2Valid = true;
+		double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
+		if(deltaSpeed > 1.0) {
+			mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
+			sendCam = true;
+		}
 	}
 	mMutexLatestObd2.unlock();
 
@@ -218,8 +233,8 @@ camPackage::CAM CaService::generateCam() {
 	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 
 	mMutexLatestGps.lock();
-	if(mLatestGps.has_time()) {		//only add gps if valid data is available
-		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);	//data needs to be copied to a new buffer because new gps data can be received before sending
+	if(mGpsValid) {														//only add gps if valid data is available
+		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
 		cam.set_allocated_gps(gps);
 
 		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
@@ -228,7 +243,7 @@ camPackage::CAM CaService::generateCam() {
 	mMutexLatestGps.unlock();
 
 	mMutexLatestObd2.lock();
-	if(mLatestObd2.has_time()) {									//only add obd2 if valid data is available
+	if(mObd2Valid) {													//only add obd2 if valid data is available
 		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
 		cam.set_allocated_obd2(obd2);
 		//TODO: delete obd2, gps?

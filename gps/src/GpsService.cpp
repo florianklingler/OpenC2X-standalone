@@ -110,6 +110,7 @@ void GpsService::receiveData() {
 		if (mGpsData.fix.time == mLastTime) {			//if no time progressed since last GPS, skip this iteration
 			continue;
 		}
+		//TODO: check validity of data, eg. altitude
 		mLastTime = mGpsData.fix.time;
 
 		gpsPackage::GPS buffer = gpsDataToBuffer(&mGpsData);

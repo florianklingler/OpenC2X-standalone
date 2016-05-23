@@ -1,4 +1,6 @@
 <cam>
 	<generateMsgs>true</generateMsgs>
 	<expirationTime>1</expirationTime> <!-- in seconds ! -->
+	<maxGpsAge>10</maxGpsAge> <!-- in seconds ! -->
+	<maxObd2Age>10</maxObd2Age> <!-- in seconds ! -->
 </cam>
