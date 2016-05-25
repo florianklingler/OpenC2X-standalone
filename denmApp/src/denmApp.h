@@ -1,7 +1,9 @@
 #ifndef DENMAPP_H_
 #define DENMAPP_H_
 
-#include <utility/LoggingUtility.h>
+#include <string>
+#include <stdio.h>
+#include <unistd.h>
 #include <utility/CommunicationSender.h>
 #include <buffers/build/trigger.pb.h>
 
@@ -13,9 +15,7 @@ public:
 	void triggerDenm(string content);
 
 private:
-	LoggingUtility* mLogger;
 	CommunicationSender* mSenderToDenm;
-
 };
 
 #endif

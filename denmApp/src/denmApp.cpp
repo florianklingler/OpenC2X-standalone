@@ -2,22 +2,16 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "denmApp.h"
-#include <string>
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
 DenmApp::DenmApp() {
-	mLogger = new LoggingUtility("DenmApp");
 	mSenderToDenm = new CommunicationSender("DenmApp", "1111");
 }
 
 DenmApp::~DenmApp() {
-	delete mLogger;
 	delete mSenderToDenm;
 }
 
@@ -33,22 +27,20 @@ void DenmApp::triggerDenm(string content) {
 
 
 
-int main() {
+int main(int argc, const char* argv[]) {
 	DenmApp denmApp;
 
-	cout << "Welcome to denmApp!" << endl;
+	usleep(200*1000);	//FIXME: zmq seems to need some time for setup => doesn't send without sleep
 
-	while(1) {
-		cout << "Enter content of DENM:" << endl;
-		char * charLine = readline("> ");		//read line
-		if(!charLine) break;
-		if(*charLine) add_history(charLine);
-		string line(charLine);					//convert to string for further use
-		free(charLine);
-		if (line.compare("exit") == 0) return EXIT_SUCCESS;	//FIXME: exit whole program
-
-		denmApp.triggerDenm(line);				//TODO: configure once, then (re-)send on enter?
+	if (argc >= 1) {
+		string content(argv[1]);
+		denmApp.triggerDenm(content);
+	}
+	else {
+		cout << "Missing arguments" << endl;
 	}
 
-	return EXIT_SUCCESS;
+	exit(0);			//FIXME: CommunicationSender doesn't terminate => program doesn't quit without exit
+
+	return 0;
 }
