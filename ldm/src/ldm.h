@@ -9,15 +9,19 @@
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/gps.pb.h>
 #include <google/protobuf/text_format.h>
+#include <string>
 
 class LDM {
 public:
 	LDM();
 	~LDM();
-	void init();
 
-	void receiveFromCa();
+	void insert(string sqlCommand);
+	list<gpsPackage::GPS> gpsSelect(string sqlCommand);
 	void insertCam(camPackage::CAM cam);
+
+	void init();
+	void receiveFromCa();
 	void receiveFromDen();
 
 private:
