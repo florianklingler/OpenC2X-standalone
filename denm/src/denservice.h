@@ -9,6 +9,7 @@
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
+#include <buffers/build/trigger.pb.h>
 #include <mutex>
 
 class DenService {
@@ -19,9 +20,10 @@ public:
 	void init();
 	void receive();
 	void logDelay(string byteMessage);
-	void triggerDenm();
-	void send();
-	denmPackage::DENM generateDenm();
+	void triggerPeriodicDenm();
+	void triggerAppDenm();
+	void send(triggerPackage::TRIGGER trigger);
+	denmPackage::DENM generateDenm(triggerPackage::TRIGGER trigger);
 	dataPackage::DATA generateData(denmPackage::DENM denm);
 	void receiveGpsData();
 	void receiveObd2Data();
@@ -29,6 +31,7 @@ public:
 private:
 	void microSleep(double us_sleep); // in us
 
+	CommunicationReceiver* mReceiverFromApp;
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;
@@ -39,6 +42,7 @@ private:
 	boost::thread* mThreadReceive;
 	boost::thread* mThreadGpsDataReceive;
 	boost::thread* mThreadObd2DataReceive;
+	boost::thread* mThreadAppTrigger;
 	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;

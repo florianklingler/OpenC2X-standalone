@@ -16,6 +16,8 @@
 struct CaServiceConfig {
 	bool mGenerateMsgs;
 	int mExpirationTime;
+	int mMaxGpsAge;
+	int mMaxObd2Age;
 
 	void loadConfigXML(const string &filename) {
 		boost::property_tree::ptree pt;
@@ -23,6 +25,8 @@ struct CaServiceConfig {
 
 		mGenerateMsgs = pt.get("cam.generateMsgs", true);
 		mExpirationTime = pt.get("cam.expirationTime", 1);
+		mMaxGpsAge = pt.get("cam.maxGpsAge", 10);
+		mMaxObd2Age = pt.get("cam.maxObd2Age", 10);
 	}
 };
 
@@ -65,9 +69,11 @@ private:
 	double mCamTriggerInterval;
 
 	gpsPackage::GPS mLatestGps;
+	bool mGpsValid;		//true if GPS was received and it's not too old
 	mutex mMutexLatestGps;
 
 	obd2Package::OBD2 mLatestObd2;
+	bool mObd2Valid;
 	mutex mMutexLatestObd2;
 
 	camPackage::CAM mLastSentCam;

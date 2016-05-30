@@ -9,3 +9,5 @@ protoc --proto_path=./ --cpp_out=build/ data.proto
 protoc --proto_path=./ --cpp_out=build/ gps.proto 
 
 protoc --proto_path=./ --cpp_out=build/ obd2.proto 
+
+protoc --proto_path=./ --cpp_out=build/ trigger.proto 

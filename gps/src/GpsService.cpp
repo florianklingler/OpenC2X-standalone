@@ -104,7 +104,10 @@ void GpsService::receiveData() {
 		if (getGpsData(&mGpsData) != 0) {				//if gpsd error, skip this iteration
 			continue;
 		}
-		if (mGpsData.fix.time != mGpsData.fix.time) {	//??
+		if (mGpsData.fix.time != mGpsData.fix.time) {	//skip if time is NaN
+			continue;
+		}
+		if (mGpsData.fix.latitude != mGpsData.fix.latitude || mGpsData.fix.longitude != mGpsData.fix.longitude || mGpsData.fix.altitude != mGpsData.fix.altitude) {	//skip if invalid position (NaN)
 			continue;
 		}
 		if (mGpsData.fix.time == mLastTime) {			//if no time progressed since last GPS, skip this iteration
