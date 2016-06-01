@@ -57,6 +57,12 @@ void LDM::init() {
 //	for (list<camPackage::CAM>::iterator it = camList.begin(); it != camList.end(); ++it) {
 //		printCam(*it);
 //	}
+
+	//test DENM
+//	list<denmPackage::DENM> denmList = denmSelect("");
+//	for (list<denmPackage::DENM>::iterator it = denmList.begin(); it != denmList.end(); ++it) {
+//		printDenm(*it);
+//	}
 }
 
 
@@ -184,6 +190,52 @@ list<camPackage::CAM> LDM::camSelect(string condition) {
 	return result;
 }
 
+//executes specified SELECT with specified condition (eg. WHERE) on DENM table and returns result rows as list of DENMs
+list<denmPackage::DENM> LDM::denmSelect(string condition) {
+	list<denmPackage::DENM> result;
+	result.clear();
+	sqlite3_stmt *stmt;
+	string sqlCommand = "SELECT * from DENM " + condition;
+	char* errmsg = 0;
+
+	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+			denmPackage::DENM denm;
+
+			//set attributes retrieved from result columns
+			denm.set_id(sqlite3_column_int(stmt, 1));
+			denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
+			denm.set_createtime(sqlite3_column_int64(stmt, 3));
+
+			//add GPS if available
+			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
+			if (gpsRowId > 0) {
+				list<gpsPackage::GPS> gpsList = gpsSelect("WHERE key=" + to_string(gpsRowId));
+				gpsPackage::GPS* gps = new gpsPackage::GPS(gpsList.front());
+				denm.set_allocated_gps(gps);
+			}
+
+			//add OBD2 if available
+			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
+			if (obd2RowId > 0) {
+				list<obd2Package::OBD2> obd2List = obd2Select("WHERE key=" + to_string(obd2RowId));
+				obd2Package::OBD2* obd2 = new obd2Package::OBD2(obd2List.front());
+				denm.set_allocated_obd2(obd2);
+			}
+
+			result.push_back(denm);	//add to result
+		}
+		sqlite3_finalize(stmt);
+	}
+	else {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	return result;
+}
+
 //inserts CAM into DB
 void LDM::insertCam(camPackage::CAM cam) {
 	stringstream sSql;
@@ -220,6 +272,46 @@ void LDM::insertCam(camPackage::CAM cam) {
 	}
 	else {
 		sSql << "INSERT INTO CAM (id, content, createTime) VALUES (" << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
+	}
+	insert(sSql.str());
+}
+
+//inserts DENM into DB
+void LDM::insertDenm(denmPackage::DENM denm) {
+	stringstream sSql;
+	int64_t gpsRowId = -1;
+	int64_t obd2RowId = -1;
+
+	//insert GPS if available
+	if (denm.has_gps()) {
+		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << denm.gps().latitude() << ", " << denm.gps().longitude() << ", " << denm.gps().altitude() << ", " << denm.gps().epx() << ", " << denm.gps().epy() << ", " << denm.gps().time() << ", " << denm.gps().online() << ", " << denm.gps().satellites() << " );";
+		insert(sSql.str());
+		sSql.str("");
+		sSql.clear();
+		gpsRowId = sqlite3_last_insert_rowid(mDb);
+	}
+
+	//insert OBD2 if available
+	if (denm.has_obd2()) {
+		sSql << "INSERT INTO OBD2 (time, speed, rpm) VALUES (" << denm.obd2().time() << ", " << denm.obd2().speed() << ", " << denm.obd2().rpm() << " );";
+		insert(sSql.str());
+		sSql.str("");
+		sSql.clear();
+		obd2RowId = sqlite3_last_insert_rowid(mDb);
+	}
+
+	//insert CAM with foreign keys to reference GPS, OBD2
+	if (gpsRowId > 0 && obd2RowId > 0) {
+		sSql << "INSERT INTO DENM (id, content, createTime, gps, obd2) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
+	}
+	else if (gpsRowId > 0) {
+		sSql << "INSERT INTO DENM (id, content, createTime, gps) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << " );";
+	}
+	else if (obd2RowId > 0) {
+		sSql << "INSERT INTO DENM (id, content, createTime, obd2) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << obd2RowId << " );";
+	}
+	else {
+		sSql << "INSERT INTO DENM (id, content, createTime) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
 	}
 	insert(sSql.str());
 }
@@ -269,6 +361,19 @@ void LDM::printCam(camPackage::CAM cam) {
 	mLogger->logInfo(stream.str());
 }
 
+void LDM::printDenm(denmPackage::DENM denm) {
+	stringstream stream;
+	stream << "DENM - " << readableTime(denm.createtime()) << ", id: " << denm.id() << ", content: " << denm.content();
+	if (denm.has_gps()) {
+
+		stream << "\n\tGPS - " << readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
+	}
+	if (denm.has_obd2()) {
+		stream << "\n\tOBD2 - " << readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
+	}
+	mLogger->logInfo(stream.str());
+}
+
 
 //////////LDM functions
 
@@ -281,12 +386,9 @@ void LDM::receiveFromCa() {
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();	//receive
 		serializedCam = received.second;
-
-		//print CAM
 		cam.ParseFromString(serializedCam);
-		google::protobuf::TextFormat::PrintToString(cam, &textMessage);
-		mLogger->logInfo("received CAM:\n" + textMessage);
 
+		printCam(cam);
 		insertCam(cam);
 	}
 }
@@ -300,13 +402,10 @@ void LDM::receiveFromDen() {
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();//receive
 		serializedDenm = received.second;
-
-		//print DENM
 		denm.ParseFromString(serializedDenm);
-		google::protobuf::TextFormat::PrintToString(denm, &textMessage);
-		mLogger->logInfo("received DENM:\n" + textMessage);
 
-//		insertDenm(denm);
+		printDenm(denm);
+		insertDenm(denm);
 	}
 }
 

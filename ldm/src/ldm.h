@@ -23,15 +23,15 @@ public:
 	list<gpsPackage::GPS> gpsSelect(string condition);
 	list<obd2Package::OBD2> obd2Select(string condition);
 	list<camPackage::CAM> camSelect(string condition);
-	list<denmPackage::DENM> denmSelect(string condition);	//TODO: implement
+	list<denmPackage::DENM> denmSelect(string condition);
 	void insertCam(camPackage::CAM cam);
-	void insertDenm(denmPackage::DENM denm);	//TODO: implement
+	void insertDenm(denmPackage::DENM denm);
 
 	string readableTime(int64_t nanoTime);
 	void printGps(gpsPackage::GPS gps);
 	void printObd2(obd2Package::OBD2 obd2);
 	void printCam(camPackage::CAM cam);
-	void printDenm(denmPackage::DENM denm);		//TODO: implement
+	void printDenm(denmPackage::DENM denm);
 
 	void receiveFromCa();
 	void receiveFromDen();
