@@ -10,6 +10,7 @@
 #include <buffers/build/denm.pb.h>
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
+#include <buffers/build/dccInfo.pb.h>
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>
@@ -20,11 +21,14 @@ public:
 	~LDM();
 	void init();
 
-	void insert(string sqlCommand);
+	//TODO: auto generate table if not existing
+
 	list<gpsPackage::GPS> gpsSelect(string condition);
 	list<obd2Package::OBD2> obd2Select(string condition);
 	list<camPackage::CAM> camSelect(string condition);
 	list<denmPackage::DENM> denmSelect(string condition);
+	//TODO: select network info (dcc)
+	void insert(string sqlCommand);
 	void insertCam(camPackage::CAM cam);
 	void insertDenm(denmPackage::DENM denm);
 
@@ -37,14 +41,17 @@ public:
 	void receiveFromCa();
 	void receiveFromDen();
 	void receiveRequest();
+	void receiveFromDcc();	//TODO: same for CAM triggering (why was triggered?)
 
 private:
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
+	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationServer* mServer;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
+	boost::thread* mThreadReceiveFromDcc;
 	boost::thread* mThreadServer;
 
 	LoggingUtility* mLogger;
