@@ -1,1 +1,0 @@
-ssh -L 18080:localhost:18080 gericom1 -N

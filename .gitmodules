@@ -1,3 +1,0 @@
-[submodule "ldmWebApplication/crow"]
-	path = ldmWebApplication/crow
-	url = https://github.com/ipkn/crow.git
