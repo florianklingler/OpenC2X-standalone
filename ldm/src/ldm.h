@@ -3,6 +3,7 @@
 
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
+#include <utility/CommunicationServer.h>
 #include <utility/LoggingUtility.h>
 #include <sqlite3.h>
 #include <buffers/build/cam.pb.h>
@@ -35,13 +36,16 @@ public:
 
 	void receiveFromCa();
 	void receiveFromDen();
+	void receiveRequest();
 
 private:
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
+	CommunicationServer* mServer;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
+	boost::thread* mThreadServer;
 
 	LoggingUtility* mLogger;
 

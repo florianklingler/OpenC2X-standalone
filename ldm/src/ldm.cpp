@@ -12,6 +12,7 @@ INITIALIZE_EASYLOGGINGPP
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
+	mServer = new CommunicationServer("Ldm", "6789");
 	mLogger = new LoggingUtility("LDM");
 
 	//open SQLite database
@@ -27,8 +28,10 @@ LDM::LDM() {
 LDM::~LDM() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
+	mThreadServer->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
+	delete mThreadServer;
 
 	delete mReceiverFromCa;
 	delete mReceiverFromDen;
@@ -39,6 +42,7 @@ LDM::~LDM() {
 void LDM::init() {
 	mThreadReceiveFromCa = new boost::thread(&LDM::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&LDM::receiveFromDen, this);
+	mThreadServer = new boost::thread(&LDM::receiveRequest, this);
 
 	//test GPS
 //	list<gpsPackage::GPS> gpsList = gpsSelect("");
@@ -376,6 +380,16 @@ void LDM::printDenm(denmPackage::DENM denm) {
 
 
 //////////LDM functions
+
+void LDM::receiveRequest() {
+	cout << "waiting for request" << endl;
+	while(1) {
+		string request = mServer->receiveRequest();
+		cout << "Request:" << request << endl;
+		sleep(1);
+		mServer->sendReply(request);
+	}
+}
 
 void LDM::receiveFromCa() {
 	string serializedCam;	//serialized CAM
