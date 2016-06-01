@@ -12,6 +12,7 @@ INITIALIZE_EASYLOGGINGPP
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
+	mReceiverFromDcc = new CommunicationReceiver("Ldm", "1234", "DCC");
 	mLogger = new LoggingUtility("LDM");
 
 	//open SQLite database
@@ -39,45 +40,11 @@ LDM::~LDM() {
 void LDM::init() {
 	mThreadReceiveFromCa = new boost::thread(&LDM::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&LDM::receiveFromDen, this);
-
-	//test GPS
-//	list<gpsPackage::GPS> gpsList = gpsSelect("");
-//	for (list<gpsPackage::GPS>::iterator it = gpsList.begin(); it != gpsList.end(); ++it) {
-//		printGps(*it);
-//	}
-
-	//test OBD2
-//	list<obd2Package::OBD2> obd2List = obd2Select("");
-//	for (list<obd2Package::OBD2>::iterator it = obd2List.begin(); it != obd2List.end(); ++it) {
-//		printObd2(*it);
-//	}
-
-	//test CAM
-//	list<camPackage::CAM> camList = camSelect("");
-//	for (list<camPackage::CAM>::iterator it = camList.begin(); it != camList.end(); ++it) {
-//		printCam(*it);
-//	}
-
-	//test DENM
-//	list<denmPackage::DENM> denmList = denmSelect("");
-//	for (list<denmPackage::DENM>::iterator it = denmList.begin(); it != denmList.end(); ++it) {
-//		printDenm(*it);
-//	}
+	mThreadReceiveFromDcc = new boost::thread(&LDM::receiveFromDcc, this);
 }
 
 
 //////////SQLite functions
-
-//executes specified insert
-void LDM::insert(string sqlCommand) {
-	char* errmsg = 0;
-
-	if (sqlite3_exec(mDb, sqlCommand.c_str(), NULL, 0, &errmsg) != SQLITE_OK) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
-}
 
 //executes SELECT with specified condition (eg. WHERE) on GPS table and returns result rows as list of GPS data
 list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
@@ -236,6 +203,17 @@ list<denmPackage::DENM> LDM::denmSelect(string condition) {
 	return result;
 }
 
+//executes specified insert
+void LDM::insert(string sqlCommand) {
+	char* errmsg = 0;
+
+	if (sqlite3_exec(mDb, sqlCommand.c_str(), NULL, 0, &errmsg) != SQLITE_OK) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+}
+
 //inserts CAM into DB
 void LDM::insertCam(camPackage::CAM cam) {
 	stringstream sSql;
@@ -379,8 +357,6 @@ void LDM::printDenm(denmPackage::DENM denm) {
 
 void LDM::receiveFromCa() {
 	string serializedCam;	//serialized CAM
-	string textMessage;		//text string (human readable)
-
 	camPackage::CAM cam;
 
 	while (1) {
@@ -395,8 +371,6 @@ void LDM::receiveFromCa() {
 
 void LDM::receiveFromDen() {
 	string serializedDenm;		//serialized DENM
-	string textMessage;		//text string (human readable)
-
 	denmPackage::DENM denm;
 
 	while (1) {
@@ -406,6 +380,22 @@ void LDM::receiveFromDen() {
 
 		printDenm(denm);
 		insertDenm(denm);
+	}
+}
+
+void LDM::receiveFromDcc() {
+	string serializedDccInfo;
+	infoPackage::DccInfo dccInfo;
+
+	while (1) {
+		pair<string, string> received = mReceiverFromDcc->receive();
+		serializedDccInfo = received.second;
+		dccInfo.ParseFromString(serializedDccInfo);
+
+		stringstream sSql;
+		sSql << "INSERT INTO DCC (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
+		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << " );";
+		insert(sSql.str());
 	}
 }
 

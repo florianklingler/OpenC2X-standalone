@@ -22,6 +22,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mSenderToHw = new SendToHardwareViaMAC(module,mConfig.ethernetDevice);
 	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
 	mSenderToServices = new CommunicationSender(module, "5555");
+	mSenderToLdm = new CommunicationSender(module, "1234");
 
 	mLogger = new LoggingUtility(module);
 
@@ -34,6 +35,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
 
+	mChannelLoad = 0;
 	mChannelLoadInTimeUp.reset(mConfig.NDL_timeUp / mConfig.DCC_measure_interval_Tm);		//1
 	mChannelLoadInTimeDown.reset(mConfig.NDL_timeDown / mConfig.DCC_measure_interval_Tm);	//5
 	initStates(mConfig.NDL_numActiveState);
@@ -96,6 +98,7 @@ void DCC::init() {
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
+	mThreadSendToLdm = new boost::thread(&DCC::sendToLdm, this);
 
 	//start timers
 	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
@@ -211,6 +214,61 @@ void DCC::receiveFromHw() {
 	}
 }
 
+//periodically sends network info to LDM
+void DCC::sendToLdm() {
+	infoPackage::DccInfo dccInfo;
+	string serializedDccInfo;
+
+	while (1) {
+		sleep(1);	//TODO: use deadline timer with configurable interval
+
+		for (Channels::t_access_category ac : mAccessCategories) {	//send for each AC
+			dccInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+
+			//set state
+			if (mCurrentStateId == STATE_RELAXED) {
+				dccInfo.set_state("relaxed");
+			}
+			else if (mCurrentStateId == STATE_ACTIVE1) {
+				dccInfo.set_state("active");
+			}
+			else if (mCurrentStateId == STATE_RESTRICTED) {
+				dccInfo.set_state("restricted");
+			}
+
+			//set access category
+			switch (ac) {
+			case Channels::AC_VI:
+				dccInfo.set_accesscategory("VI");
+				break;
+			case Channels::AC_VO:
+				dccInfo.set_accesscategory("VO");
+				break;
+			case Channels::AC_BE:
+				dccInfo.set_accesscategory("BE");
+				break;
+			case Channels::AC_BK:
+				dccInfo.set_accesscategory("VI");
+				break;
+			case Channels::NO_AC:
+				dccInfo.set_accesscategory("NO");
+				break;
+			}
+
+			dccInfo.set_availabletokens(mBucket[ac]->getAvailableTokens());
+			dccInfo.set_queuedpackets(mBucket[ac]->getQueuedPackets());
+			dccInfo.set_dccmechanism(currentDcc(ac));
+			dccInfo.set_txpower(currentTxPower(ac));
+			dccInfo.set_tokeninterval(currentTokenInterval(ac));
+			dccInfo.set_datarate(currentDatarate(ac));
+			dccInfo.set_carriersense(currentCarrierSense(ac));
+
+			dccInfo.SerializeToString(&serializedDccInfo);
+			mSenderToLdm->send("DCC", serializedDccInfo);
+		}
+	}
+}
+
 //////////////////////////////////////////
 //Decentralized congestion control
 
@@ -238,15 +296,14 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 		return;
 	}
 
-	double channelLoad = 0;
 	if(mConfig.simulateChannelLoad) {
-		channelLoad = simulateChannelLoad();
+		mChannelLoad = simulateChannelLoad();
 	} else {
-		channelLoad = mChannelProber->getChannelLoad();
+		mChannelLoad = mChannelProber->getChannelLoad();
 	}
 
-	mChannelLoadInTimeUp.insert(channelLoad);	//add to RingBuffer
-	mChannelLoadInTimeDown.insert(channelLoad);
+	mChannelLoadInTimeUp.insert(mChannelLoad);	//add to RingBuffer
+	mChannelLoadInTimeDown.insert(mChannelLoad);
 
 	mTimerMeasure->expires_at(mTimerMeasure->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1s
 	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));

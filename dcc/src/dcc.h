@@ -12,6 +12,7 @@
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
 #include <buffers/build/data.pb.h>
+#include <buffers/build/dccInfo.pb.h>
 #include "SendToHardwareViaMAC.h"
 #include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
@@ -29,6 +30,7 @@ public:
 	void receiveFromCa();
 	void receiveFromDen();
 	void receiveFromHw();
+	void sendToLdm();
 
 	void initStates(int numActiveStates);
 	void setCurrentState(int state);
@@ -48,15 +50,19 @@ public:
 	double currentCarrierSense(Channels::t_access_category ac);
 
 private:
+	const Channels::t_access_category mAccessCategories[4] = {Channels::AC_VI, Channels::AC_VO, Channels::AC_BE, Channels::AC_BK};	//all used ACs
+
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationSender* mSenderToServices;
+	CommunicationSender* mSenderToLdm;
 
 	LoggingUtility* mLogger;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
 	boost::thread* mThreadReceiveFromHw;
+	boost::thread* mThreadSendToLdm;
 
 	SendToHardwareViaMAC* mSenderToHw;
 	ReceiveFromHardwareViaMAC* mReceiverFromHw;
@@ -84,6 +90,7 @@ private:
 	State* mCurrentState;
 
 	ChannelProber* mChannelProber;
+	double mChannelLoad;
 
 	mutex mMutexLastTokenAt;
 	map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
