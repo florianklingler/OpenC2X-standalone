@@ -34,21 +34,26 @@ function initMap(){
 	var map = L.map('mapContainer');
 
 	// create the tile layer with correct attribution
-	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+	var osmUrl="map/openstreetmap/{z}/{x}/{y}.png";
+	//online map 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 	//marbel chache file:///home/jonh/.local/share/marble/maps/earth/openstreetmap/{z}/{x}/{y}.png
+	
+	
 	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 12, maxZoom: 20, attribution: osmAttrib});		
+	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib});		
 
 	// start the map in South-East England
-	map.setView(new L.LatLng(51.7315, 8.739),17);
+	map.setView(new L.LatLng(51.7315, 8.739),15);
 	map.addLayer(osm);
 	
 }
 
-queryLdmBackend();
+//queryLdmBackend();
 
 $(document).ready(function(){
-
+	
+	initMap();
+	
 	var counter = 1;
 	
 	window.setInterval(function(){
