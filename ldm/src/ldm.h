@@ -22,8 +22,9 @@ public:
 	~LDM();
 	void init();
 
-	//TODO: auto generate table if not existing
+	//TODO: config: #experiment, use as db suffix
 
+	void createTables();
 	list<gpsPackage::GPS> gpsSelect(string condition);
 	list<obd2Package::OBD2> obd2Select(string condition);
 	list<camPackage::CAM> camSelect(string condition);

@@ -24,6 +24,7 @@ LDM::LDM() {
 	}
 	else {
 		mLogger->logInfo("Opened database successfully");
+		createTables();
 	}
 }
 
@@ -57,6 +58,68 @@ void LDM::init() {
 
 
 //////////SQLite functions
+
+//creates necessary tables if they don't exist already
+void LDM::createTables() {
+	char* sqlCommand;
+	char* errmsg = 0;
+
+	//create CAM table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS CAM(" \
+			"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create DENM table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS DENM(" \
+				"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create GPS table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS GPS(" \
+				"key INTEGER PRIMARY KEY, latitude REAL, longitude REAL, altitude REAL, epx REAL, epy REAL, time INTEGER, online INTEGER, satellites INTEGER);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create OBD2 table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS OBD2(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, speed REAL, rpm INTEGER);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create DccInfo table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS DccInfo(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create CamInfo table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS CamInfo(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, tirggerReason TEXT, delta REAL);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+}
 
 //executes SELECT with specified condition (eg. WHERE) on GPS table and returns result rows as list of GPS data
 list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
