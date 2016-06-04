@@ -3,29 +3,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link type="text/css" rel="stylesheet" href="stylesheet.css"/>
+		<!-- libaries -->        
         <link rel="stylesheet" href="lib/leaflet/leaflet.css">
-        
-        
+        <link rel="stylesheet" href="lib/jquery-ui-1.11.4/jquery-ui.css">
         <script src="lib/jquery-2.2.4.js"></script>
+		<script src="lib/jquery-ui-1.11.4/jquery-ui.js"></script>
         <script src="lib/leaflet/leaflet.js"></script>
         
+        <!-- own stuff -->
+        <link type="text/css" rel="stylesheet" href="stylesheet.css"/>
     	<script src="scrips/main.js"></script>
         
         <title>New Web Project</title>
     </head>
     
     <body>
-        <div id="mapContainer">
+    	<div class="container" id="mapWrapper">
+	        <div id="mapContainer">
+	        </div>
         </div>
-        <div id="car"> 
+        <div id="car" class="container"> 
         	<h4> Self</h4>
         	<table cellspacing="0" cellpadding="4px" id="car_data">
 
         	</table>
     	</div>
     	
-        <div id="dcc"> 
+        <div id="dcc" class="container"> 
         	<h4> dcc</h4>
         	<table cellspacing="0" cellpadding="4px" id="dcc_data">
 
