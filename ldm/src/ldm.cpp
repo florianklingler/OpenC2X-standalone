@@ -12,7 +12,8 @@ INITIALIZE_EASYLOGGINGPP
 LDM::LDM() {
 	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
-	mReceiverFromDcc = new CommunicationReceiver("Ldm", "1234", "DCC");
+	mReceiverDccInfo = new CommunicationReceiver("Ldm", "1234", "dccInfo");
+	mReceiverCamInfo = new CommunicationReceiver("Ldm", "8888", "camInfo");
 	mServer = new CommunicationServer("Ldm", "6789");
 	mLogger = new LoggingUtility("LDM");
 
@@ -29,13 +30,19 @@ LDM::LDM() {
 LDM::~LDM() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
+	mThreadReceiveDccInfo->join();
+	mThreadReceiveCamInfo->join();
 	mThreadServer->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
+	delete mThreadReceiveDccInfo;
+	delete mThreadReceiveCamInfo;
 	delete mThreadServer;
 
 	delete mReceiverFromCa;
 	delete mReceiverFromDen;
+	delete mReceiverDccInfo;
+	delete mReceiverCamInfo;
 
 	sqlite3_close(mDb);
 }
@@ -43,7 +50,8 @@ LDM::~LDM() {
 void LDM::init() {
 	mThreadReceiveFromCa = new boost::thread(&LDM::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&LDM::receiveFromDen, this);
-	mThreadReceiveFromDcc = new boost::thread(&LDM::receiveFromDcc, this);
+	mThreadReceiveDccInfo = new boost::thread(&LDM::receiveDccInfo, this);
+	mThreadReceiveCamInfo = new boost::thread(&LDM::receiveCamInfo, this);
 	mThreadServer = new boost::thread(&LDM::receiveRequest, this);
 }
 
@@ -397,19 +405,39 @@ void LDM::receiveFromDen() {
 	}
 }
 
-void LDM::receiveFromDcc() {
+void LDM::receiveDccInfo() {
 	string serializedDccInfo;
 	infoPackage::DccInfo dccInfo;
 
 	while (1) {
-		pair<string, string> received = mReceiverFromDcc->receive();
+		pair<string, string> received = mReceiverDccInfo->receive();
 		serializedDccInfo = received.second;
 		dccInfo.ParseFromString(serializedDccInfo);
 
 		stringstream sSql;
-		sSql << "INSERT INTO DCC (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
+		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
 		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << " );";
 		insert(sSql.str());
+
+		mLogger->logDebug("received dccInfo");
+	}
+}
+
+void LDM::receiveCamInfo() {
+	string serializedCamInfo;
+	infoPackage::CamInfo camInfo;
+
+	while (1) {
+		pair<string, string> received = mReceiverCamInfo->receive();
+		serializedCamInfo = received.second;
+		camInfo.ParseFromString(serializedCamInfo);
+
+		stringstream sSql;
+		sSql << "INSERT INTO CamInfo (time, triggerReason, delta) ";
+		sSql << "VALUES (" << camInfo.time() << ", '" << camInfo.triggerreason() << "', " << camInfo.delta() << " );";
+		insert(sSql.str());
+
+		mLogger->logDebug("received camInfo");
 	}
 }
 

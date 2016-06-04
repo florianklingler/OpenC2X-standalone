@@ -46,6 +46,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
 	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));	//1000
+	mTimerDccInfo = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.dccInfoInterval));
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//create and map the timers for the four ACs
 		mTimerAddToken.insert(make_pair(accessCategory, new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(accessCategory)*1000.00))));
@@ -68,12 +69,15 @@ DCC::~DCC() {
 	delete mReceiverFromHw;
 	delete mSenderToHw;
 	delete mSenderToServices;
+	delete mSenderToLdm;
 
 	//stop and delete timers
 	mTimerMeasure->cancel();
 	mTimerStateUpdate->cancel();
+	mTimerDccInfo->cancel();
 	delete mTimerMeasure;
 	delete mTimerStateUpdate;
+	delete mTimerDccInfo;
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
 		mTimerAddToken[accessCategory]->cancel();
@@ -98,11 +102,11 @@ void DCC::init() {
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
-	mThreadSendToLdm = new boost::thread(&DCC::sendToLdm, this);
 
 	//start timers
 	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
 	mTimerStateUpdate->async_wait(mStrand.wrap(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error)));
+	mTimerDccInfo->async_wait(mStrand.wrap(boost::bind(&DCC::sendDccInfo, this, boost::asio::placeholders::error)));
 
 	for (Channels::t_access_category accessCategory : mAccessCategories) {	//for each AC
 		mTimerAddToken[accessCategory]->async_wait(mStrand.wrap(boost::bind(&DCC::addToken, this, boost::asio::placeholders::error, accessCategory)));	//start timer
@@ -214,59 +218,59 @@ void DCC::receiveFromHw() {
 	}
 }
 
-//periodically sends network info to LDM
-void DCC::sendToLdm() {
+//periodically sends network info to LDM in form of four protobuf packets (one for each AC)
+void DCC::sendDccInfo(const boost::system::error_code& ec) {
 	infoPackage::DccInfo dccInfo;
 	string serializedDccInfo;
 
-	while (1) {
-		sleep(1);	//TODO: use deadline timer with configurable interval
+	for (Channels::t_access_category ac : mAccessCategories) {	//send for each AC
+		dccInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		dccInfo.set_channelload(mChannelLoad);
 
-		for (Channels::t_access_category ac : mAccessCategories) {	//send for each AC
-			dccInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
-
-			//set state
-			if (mCurrentStateId == STATE_RELAXED) {
-				dccInfo.set_state("relaxed");
-			}
-			else if (mCurrentStateId == STATE_ACTIVE1) {
-				dccInfo.set_state("active");
-			}
-			else if (mCurrentStateId == STATE_RESTRICTED) {
-				dccInfo.set_state("restricted");
-			}
-
-			//set access category
-			switch (ac) {
-			case Channels::AC_VI:
-				dccInfo.set_accesscategory("VI");
-				break;
-			case Channels::AC_VO:
-				dccInfo.set_accesscategory("VO");
-				break;
-			case Channels::AC_BE:
-				dccInfo.set_accesscategory("BE");
-				break;
-			case Channels::AC_BK:
-				dccInfo.set_accesscategory("VI");
-				break;
-			case Channels::NO_AC:
-				dccInfo.set_accesscategory("NO");
-				break;
-			}
-
-			dccInfo.set_availabletokens(mBucket[ac]->getAvailableTokens());
-			dccInfo.set_queuedpackets(mBucket[ac]->getQueuedPackets());
-			dccInfo.set_dccmechanism(currentDcc(ac));
-			dccInfo.set_txpower(currentTxPower(ac));
-			dccInfo.set_tokeninterval(currentTokenInterval(ac));
-			dccInfo.set_datarate(currentDatarate(ac));
-			dccInfo.set_carriersense(currentCarrierSense(ac));
-
-			dccInfo.SerializeToString(&serializedDccInfo);
-			mSenderToLdm->send("DCC", serializedDccInfo);
+		//set state
+		if (mCurrentStateId == STATE_RELAXED) {
+			dccInfo.set_state("relaxed");
 		}
+		else if (mCurrentStateId == STATE_ACTIVE1) {
+			dccInfo.set_state("active");
+		}
+		else if (mCurrentStateId == STATE_RESTRICTED) {
+			dccInfo.set_state("restricted");
+		}
+
+		//set access category
+		switch (ac) {
+		case Channels::AC_VI:
+			dccInfo.set_accesscategory("VI");
+			break;
+		case Channels::AC_VO:
+			dccInfo.set_accesscategory("VO");
+			break;
+		case Channels::AC_BE:
+			dccInfo.set_accesscategory("BE");
+			break;
+		case Channels::AC_BK:
+			dccInfo.set_accesscategory("VI");
+			break;
+		case Channels::NO_AC:
+			dccInfo.set_accesscategory("NO");
+			break;
+		}
+
+		dccInfo.set_availabletokens(mBucket[ac]->getAvailableTokens());
+		dccInfo.set_queuedpackets(mBucket[ac]->getQueuedPackets());
+		dccInfo.set_dccmechanism(currentDcc(ac));
+		dccInfo.set_txpower(currentTxPower(ac));
+		dccInfo.set_tokeninterval(currentTokenInterval(ac));
+		dccInfo.set_datarate(currentDatarate(ac));
+		dccInfo.set_carriersense(currentCarrierSense(ac));
+
+		dccInfo.SerializeToString(&serializedDccInfo);
+		mSenderToLdm->send("dccInfo", serializedDccInfo);
 	}
+
+	mTimerDccInfo->expires_at(mTimerDccInfo->expires_at() + boost::posix_time::milliseconds(mConfig.dccInfoInterval));	//1s
+	mTimerDccInfo->async_wait(mStrand.wrap(boost::bind(&DCC::sendDccInfo, this, boost::asio::placeholders::error)));
 }
 
 //////////////////////////////////////////

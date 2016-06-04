@@ -11,6 +11,7 @@
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
 #include <buffers/build/dccInfo.pb.h>
+#include <buffers/build/camInfo.pb.h>
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>
@@ -27,7 +28,7 @@ public:
 	list<obd2Package::OBD2> obd2Select(string condition);
 	list<camPackage::CAM> camSelect(string condition);
 	list<denmPackage::DENM> denmSelect(string condition);
-	//TODO: select network info (dcc)
+	//TODO: select dcc/camInfo
 	void insert(string sqlCommand);
 	void insertCam(camPackage::CAM cam);
 	void insertDenm(denmPackage::DENM denm);
@@ -41,17 +42,20 @@ public:
 	void receiveFromCa();
 	void receiveFromDen();
 	void receiveRequest();
-	void receiveFromDcc();	//TODO: same for CAM triggering (why was triggered?)
+	void receiveDccInfo();
+	void receiveCamInfo();
 
 private:
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
-	CommunicationReceiver* mReceiverFromDcc;
+	CommunicationReceiver* mReceiverDccInfo;
+	CommunicationReceiver* mReceiverCamInfo;
 	CommunicationServer* mServer;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
-	boost::thread* mThreadReceiveFromDcc;
+	boost::thread* mThreadReceiveDccInfo;
+	boost::thread* mThreadReceiveCamInfo;
 	boost::thread* mThreadServer;
 
 	LoggingUtility* mLogger;

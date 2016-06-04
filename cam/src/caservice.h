@@ -8,6 +8,7 @@
 #include <buffers/build/cam.pb.h>
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
+#include <buffers/build/camInfo.pb.h>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -37,6 +38,7 @@ public:
 
 	void receive();
 	void logDelay(string byteMessage);
+	void sendCamInfo(string triggerReason, double delta);
 	void send();
 	void triggerCam(const boost::system::error_code &ec);
 	camPackage::CAM generateCam();
