@@ -46,6 +46,15 @@ function initMap(){
 	map.setView(new L.LatLng(51.7315, 8.739),15);
 	map.addLayer(osm);
 	
+	var pos =[51.7315, 8.739];
+	var marker = L.marker([51.7315, 8.739]).addTo(map);
+	
+	window.setInterval(function(){
+		pos[1]+=0.0001;
+		marker.setLatLng(pos);
+		
+	},1000);
+	
 }
 
 //queryLdmBackend();
@@ -66,4 +75,8 @@ $(document).ready(function(){
 			JSONtoTable(JSON.stringify(obj))
 		);
 	},1000);
+	
+	$(function() {
+    	$( ".container" ).draggable().resizable();
+  	});
 });
