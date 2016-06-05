@@ -10,12 +10,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 LDM::LDM() {
-	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
-	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
-	mReceiverDccInfo = new CommunicationReceiver("Ldm", "1234", "dccInfo");
-	mReceiverCamInfo = new CommunicationReceiver("Ldm", "8888", "camInfo");
-	mServer = new CommunicationServer("Ldm", "6789");
-	mLogger = new LoggingUtility("LDM");
+	string moduleName = "Ldm";
+	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM");
+	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM");
+	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo");
+	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo");
+	mServer = new CommunicationServer(moduleName, "6789");
+	mLogger = new LoggingUtility(moduleName);
 
 	//open SQLite database
 	if(sqlite3_open("../db/ldm.db", &mDb)) {
@@ -431,12 +432,14 @@ void LDM::printDenm(denmPackage::DENM denm) {
 //////////LDM functions
 
 void LDM::receiveRequest() {
-	cout << "waiting for request" << endl;
+	string request, reply;
+	mLogger->logDebug("waiting for request");
 	while(1) {
-		string request = mServer->receiveRequest();
-		cout << "Request:" << request << endl;
+		request = mServer->receiveRequest();
+		//TODO: process request
 		sleep(1);
-		mServer->sendReply(request);
+		reply = request;
+		mServer->sendReply(reply);
 	}
 }
 

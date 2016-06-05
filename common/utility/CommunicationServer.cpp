@@ -7,7 +7,7 @@ CommunicationServer::CommunicationServer(string ownerModule, string portOut) {
 	mServer = new zmq::socket_t(*mContext, ZMQ_REP);
 	mServer->bind(("tcp://*:" + portOut).c_str());
 
-	//mLogger = new LoggingUtility(mOwnerModule);
+	mLogger = new LoggingUtility(mOwnerModule);
 }
 
 CommunicationServer::~CommunicationServer() {
@@ -15,21 +15,21 @@ CommunicationServer::~CommunicationServer() {
 	mServer->close();
 	delete mContext;
 	delete mServer;
-	//delete mLogger;
+	delete mLogger;
 }
 
 
 string CommunicationServer::receiveRequest() {
 	string request = s_recv(*mServer);
 
-	//mLogger->logDebug("received from HW");
+	mLogger->logDebug("received request: " + request);
 
 	return request;
 }
 
 void CommunicationServer::sendReply(string reply) {
-	//s_sendmore(*mReplyer, envelope);
+	//s_sendmore(*mReplyer, envelope);	//TODO: do we need an envelope here?
 	s_send(*mServer, reply);
 
-	//mLogger->logDebug(envelope + " sent");
+	mLogger->logDebug("sent reply: " + reply);
 }

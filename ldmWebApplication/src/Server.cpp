@@ -1,9 +1,3 @@
-/*
- * Server.cpp
- *
- *  Created on: May 25, 2016
- *      Author: root
- */
 #define ELPP_THREAD_SAFE
 #define ELPP_NO_DEFAULT_LOG_FILE
 
@@ -13,19 +7,25 @@
 INITIALIZE_EASYLOGGINGPP
 
 Server::Server() {
-	mClientLdm = new CommunicationClient("WebApplication", "6789");
-	mClientLdm->init();
+	string moduleName = "WebApplication";
+	mClientLdm = new CommunicationClient(moduleName, "6789");
+	mLogger = new LoggingUtility(moduleName);
 }
 
 Server::~Server() {
 	delete mClientLdm;
+	delete mLogger;
 }
 
-void Server::request() {
+void Server::requestData() {
+	string request, reply;
 	int i = 0;
 	while(1) {
-		std::cout << "Send request" << std::endl;
-		mClientLdm->sendRequest(to_string(i));
+		request = to_string(i);
+		reply = mClientLdm->sendRequest(request, 2500, 3);
+		if (reply != "") {
+			//TODO: process reply
+		}
 		sleep(1);
 		i++;
 	}
@@ -54,5 +54,5 @@ void Server::request() {
 int main(){
 	Server serv;
 //	serv.run();
-	serv.request();
+	serv.requestData();
 }

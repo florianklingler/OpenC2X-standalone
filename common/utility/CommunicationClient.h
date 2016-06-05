@@ -12,7 +12,7 @@ class CommunicationClient {
 public:
 	CommunicationClient(string ownerModule, string portOut);
 	~CommunicationClient();
-	void sendRequest(string request);
+	string sendRequest(string request, int timeout, int retries);
 	void init();
 
 private:
@@ -22,7 +22,7 @@ private:
 	zmq::context_t* mContext;
 	zmq::socket_t* mClient;
 
-	//LoggingUtility* mLogger;
+	LoggingUtility* mLogger;
 };
 
 #endif
