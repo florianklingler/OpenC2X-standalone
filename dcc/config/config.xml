@@ -2,6 +2,7 @@
 	<simulateChannelLoad>false</simulateChannelLoad>
 	<ethernetDevice>enp0s3</ethernetDevice> <!--get via console: "ip link show" -->
 	<ignoreOwnMessages>true</ignoreOwnMessages>
+	<dccInfoInterval>1000</dccInfoInterval> <!--in ms-->
 
 	<bucketSize_AC_VI>25</bucketSize_AC_VI>
 	<bucketSize_AC_VO>25</bucketSize_AC_VO>

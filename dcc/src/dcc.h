@@ -30,7 +30,7 @@ public:
 	void receiveFromCa();
 	void receiveFromDen();
 	void receiveFromHw();
-	void sendToLdm();
+	void sendDccInfo(const boost::system::error_code& ec);
 
 	void initStates(int numActiveStates);
 	void setCurrentState(int state);
@@ -62,7 +62,6 @@ private:
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;
 	boost::thread* mThreadReceiveFromHw;
-	boost::thread* mThreadSendToLdm;
 
 	SendToHardwareViaMAC* mSenderToHw;
 	ReceiveFromHardwareViaMAC* mReceiverFromHw;
@@ -71,6 +70,7 @@ private:
 	boost::asio::io_service::strand mStrand;
 	boost::asio::deadline_timer* mTimerMeasure;
 	boost::asio::deadline_timer* mTimerStateUpdate;
+	boost::asio::deadline_timer* mTimerDccInfo;
 
 	map<Channels::t_access_category, boost::asio::deadline_timer*> mTimerAddToken;	//timers for all four ACs
 

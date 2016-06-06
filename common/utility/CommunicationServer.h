@@ -21,7 +21,7 @@ private:
 	zmq::context_t* mContext;
 	zmq::socket_t* mServer;
 
-	//LoggingUtility* mLogger;
+	LoggingUtility* mLogger;
 };
 
 #endif

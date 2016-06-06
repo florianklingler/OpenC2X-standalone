@@ -10,11 +10,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 LDM::LDM() {
-	mReceiverFromCa = new CommunicationReceiver("Ldm", "8888", "CAM");
-	mReceiverFromDen = new CommunicationReceiver("Ldm", "9999", "DENM");
-	mReceiverFromDcc = new CommunicationReceiver("Ldm", "1234", "DCC");
-	mServer = new CommunicationServer("Ldm", "6789");
-	mLogger = new LoggingUtility("LDM");
+	string moduleName = "Ldm";
+	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM");
+	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM");
+	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo");
+	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo");
+	mServer = new CommunicationServer(moduleName, "6789");
+	mLogger = new LoggingUtility(moduleName);
 
 	//open SQLite database
 	if(sqlite3_open("../db/ldm.db", &mDb)) {
@@ -23,19 +25,26 @@ LDM::LDM() {
 	}
 	else {
 		mLogger->logInfo("Opened database successfully");
+		createTables();
 	}
 }
 
 LDM::~LDM() {
 	mThreadReceiveFromCa->join();
 	mThreadReceiveFromDen->join();
+	mThreadReceiveDccInfo->join();
+	mThreadReceiveCamInfo->join();
 	mThreadServer->join();
 	delete mThreadReceiveFromCa;
 	delete mThreadReceiveFromDen;
+	delete mThreadReceiveDccInfo;
+	delete mThreadReceiveCamInfo;
 	delete mThreadServer;
 
 	delete mReceiverFromCa;
 	delete mReceiverFromDen;
+	delete mReceiverDccInfo;
+	delete mReceiverCamInfo;
 
 	sqlite3_close(mDb);
 }
@@ -43,12 +52,75 @@ LDM::~LDM() {
 void LDM::init() {
 	mThreadReceiveFromCa = new boost::thread(&LDM::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&LDM::receiveFromDen, this);
-	mThreadReceiveFromDcc = new boost::thread(&LDM::receiveFromDcc, this);
+	mThreadReceiveDccInfo = new boost::thread(&LDM::receiveDccInfo, this);
+	mThreadReceiveCamInfo = new boost::thread(&LDM::receiveCamInfo, this);
 	mThreadServer = new boost::thread(&LDM::receiveRequest, this);
 }
 
 
 //////////SQLite functions
+
+//creates necessary tables if they don't exist already
+void LDM::createTables() {
+	char* sqlCommand;
+	char* errmsg = 0;
+
+	//create CAM table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS CAM(" \
+			"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create DENM table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS DENM(" \
+				"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create GPS table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS GPS(" \
+				"key INTEGER PRIMARY KEY, latitude REAL, longitude REAL, altitude REAL, epx REAL, epy REAL, time INTEGER, online INTEGER, satellites INTEGER);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create OBD2 table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS OBD2(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, speed REAL, rpm INTEGER);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create DccInfo table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS DccInfo(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//create CamInfo table
+	sqlCommand = "CREATE TABLE IF NOT EXISTS CamInfo(" \
+				"key INTEGER PRIMARY KEY, time INTEGER, tirggerReason TEXT, delta REAL);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+}
 
 //executes SELECT with specified condition (eg. WHERE) on GPS table and returns result rows as list of GPS data
 list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
@@ -360,12 +432,14 @@ void LDM::printDenm(denmPackage::DENM denm) {
 //////////LDM functions
 
 void LDM::receiveRequest() {
-	cout << "waiting for request" << endl;
+	string request, reply;
+	mLogger->logDebug("waiting for request");
 	while(1) {
-		string request = mServer->receiveRequest();
-		cout << "Request:" << request << endl;
+		request = mServer->receiveRequest();
+		//TODO: process request
 		sleep(1);
-		mServer->sendReply(request);
+		reply = request;
+		mServer->sendReply(reply);
 	}
 }
 
@@ -397,19 +471,39 @@ void LDM::receiveFromDen() {
 	}
 }
 
-void LDM::receiveFromDcc() {
+void LDM::receiveDccInfo() {
 	string serializedDccInfo;
 	infoPackage::DccInfo dccInfo;
 
 	while (1) {
-		pair<string, string> received = mReceiverFromDcc->receive();
+		pair<string, string> received = mReceiverDccInfo->receive();
 		serializedDccInfo = received.second;
 		dccInfo.ParseFromString(serializedDccInfo);
 
 		stringstream sSql;
-		sSql << "INSERT INTO DCC (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
+		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
 		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << " );";
 		insert(sSql.str());
+
+		mLogger->logDebug("received dccInfo");
+	}
+}
+
+void LDM::receiveCamInfo() {
+	string serializedCamInfo;
+	infoPackage::CamInfo camInfo;
+
+	while (1) {
+		pair<string, string> received = mReceiverCamInfo->receive();
+		serializedCamInfo = received.second;
+		camInfo.ParseFromString(serializedCamInfo);
+
+		stringstream sSql;
+		sSql << "INSERT INTO CamInfo (time, triggerReason, delta) ";
+		sSql << "VALUES (" << camInfo.time() << ", '" << camInfo.triggerreason() << "', " << camInfo.delta() << " );";
+		insert(sSql.str());
+
+		mLogger->logDebug("received camInfo");
 	}
 }
 

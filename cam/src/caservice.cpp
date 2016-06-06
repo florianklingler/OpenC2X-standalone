@@ -113,6 +113,19 @@ void CaService::receiveObd2Data() {
 	}
 }
 
+//sends info about triggering to LDM
+void CaService::sendCamInfo(string triggerReason, double delta) {
+	infoPackage::CamInfo camInfo;
+	string serializedCamInfo;
+
+	camInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	camInfo.set_triggerreason(triggerReason);
+	camInfo.set_delta(delta);
+
+	camInfo.SerializeToString(&serializedCamInfo);
+	mSenderToLdm->send("camInfo", serializedCamInfo);
+}
+
 //log delay of received CAM
 void CaService::logDelay(string serializedCam) {
 	camPackage::CAM cam;
@@ -156,6 +169,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t deltaTime = currentTime - mLastSentCam.createtime();
 	if(deltaTime >= 1*1000*1000*1000) {
+		sendCamInfo("time", deltaTime);
 		mLogger->logInfo("deltaTime: " + to_string(deltaTime));
 		sendCam = true;
 	}
@@ -170,6 +184,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
 		if(deltaHeading > 4.0) {
+			sendCamInfo("heading", deltaHeading);
 			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
 			sendCam = true;
 		}
@@ -177,6 +192,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		//|current position - last CAM position| > 5 m
 		double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 		if(distance > 5.0) {
+			sendCamInfo("distance", distance);
 			mLogger->logInfo("distance: " + to_string(distance));
 			sendCam = true;
 		}
@@ -192,6 +208,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		mObd2Valid = true;
 		double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
 		if(deltaSpeed > 1.0) {
+			sendCamInfo("speed", deltaSpeed);
 			mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
 			sendCam = true;
 		}
