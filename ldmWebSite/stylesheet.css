@@ -45,6 +45,7 @@ tr {
 td {
 	background : white;
 	margin-bottom:1em;
+	padding: 4px; 
 }
 tr td:first-child {
     border-radius:  8px 0px 0px 8px;
