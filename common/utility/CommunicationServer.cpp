@@ -19,12 +19,13 @@ CommunicationServer::~CommunicationServer() {
 }
 
 
-string CommunicationServer::receiveRequest() {
+pair<string, string> CommunicationServer::receiveRequest() {
+	string envelope = s_recv(*mServer);
 	string request = s_recv(*mServer);
 
-	mLogger->logDebug("received request: " + request);
+	mLogger->logDebug("received request: " + envelope + ", " + request);
 
-	return request;
+	return make_pair(envelope, request);
 }
 
 void CommunicationServer::sendReply(string reply) {

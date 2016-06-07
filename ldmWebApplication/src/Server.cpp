@@ -22,7 +22,7 @@ void Server::requestData() {
 	int i = 0;
 	while(1) {
 		request = to_string(i);
-		reply = mClientLdm->sendRequest(request, 2500, 3);
+		reply = mClientLdm->sendRequest("envelope", request, 2500, 3);
 		if (reply != "") {
 			//TODO: process reply
 		}

@@ -12,7 +12,7 @@ class CommunicationClient {
 public:
 	CommunicationClient(string ownerModule, string portOut);
 	~CommunicationClient();
-	string sendRequest(string request, int timeout, int retries);
+	string sendRequest(string envelope, string request, int timeout, int retries);
 	void init();
 
 private:

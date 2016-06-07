@@ -13,7 +13,7 @@ public:
 	CommunicationServer(string ownerModule, string portOut);
 	~CommunicationServer();
 	void sendReply(string reply);
-	string receiveRequest();
+	pair<string, string> receiveRequest();
 
 private:
 	string mOwnerModule;

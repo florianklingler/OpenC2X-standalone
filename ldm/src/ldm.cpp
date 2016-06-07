@@ -432,10 +432,12 @@ void LDM::printDenm(denmPackage::DENM denm) {
 //////////LDM functions
 
 void LDM::receiveRequest() {
-	string request, reply;
+	string envelope, request, reply;
 	mLogger->logDebug("waiting for request");
 	while(1) {
-		request = mServer->receiveRequest();
+		pair<string, string> received = mServer->receiveRequest();
+		envelope = received.first;	//specifies table
+		request = received.second;	//specifies condition
 		//TODO: process request
 		sleep(1);
 		reply = request;

@@ -29,12 +29,13 @@ void CommunicationClient::init() {
 
 
 //timeout in ms (>1000)
-string CommunicationClient::sendRequest(string request, int timeout, int retries) {
+string CommunicationClient::sendRequest(string envelope, string request, int timeout, int retries) {
 	init();
     int retries_left = retries;
     while (retries_left) {
+    	s_sendmore(*mClient, envelope);
         s_send (*mClient, request);
-        mLogger->logDebug("sent request to ldm: " + request);
+        mLogger->logDebug("sent request to ldm: " + envelope + ", " + request);
 
         bool expect_reply = true;
         while (expect_reply) {
@@ -59,6 +60,7 @@ string CommunicationClient::sendRequest(string request, int timeout, int retries
                 delete mClient;
                 init();
                 //  Send request again, on new socket
+                s_sendmore(*mClient, envelope);
                 s_send (*mClient, request);
 			}
 		}
