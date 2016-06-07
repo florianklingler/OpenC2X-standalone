@@ -122,10 +122,10 @@ void LDM::createTables() {
 	}
 }
 
-//executes SELECT with specified condition (eg. WHERE) on GPS table and returns result rows as list of GPS data
-list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
-	list<gpsPackage::GPS> result;
-	result.clear();
+//executes SELECT with specified condition (eg. WHERE) on GPS table and returns result
+dataPackage::LdmData LDM::gpsSelect(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_GPS);
 	sqlite3_stmt *stmt;
 	string sqlCommand = "SELECT * from GPS " + condition;
 	char* errmsg = 0;
@@ -144,7 +144,10 @@ list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
 			gps.set_online(sqlite3_column_int64(stmt, 7));
 			gps.set_satellites(sqlite3_column_int(stmt, 8));
 
-			result.push_back(gps);	//add to result
+			//add to result
+			string serializedGps;
+			gps.SerializeToString(&serializedGps);
+			result.add_data(serializedGps);
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -157,10 +160,10 @@ list<gpsPackage::GPS> LDM::gpsSelect(string condition) {
 	return result;
 }
 
-//executes specified SELECT with specified condition (eg. WHERE) on OBD2 table and returns result rows as list of OBD2 data
-list<obd2Package::OBD2> LDM::obd2Select(string condition) {
-	list<obd2Package::OBD2> result;
-	result.clear();
+//executes specified SELECT with specified condition (eg. WHERE) on OBD2 table and returns result
+dataPackage::LdmData LDM::obd2Select(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_OBD2);
 	sqlite3_stmt *stmt;
 	string sqlCommand = "SELECT * from OBD2 " + condition;
 	char* errmsg = 0;
@@ -174,7 +177,10 @@ list<obd2Package::OBD2> LDM::obd2Select(string condition) {
 			obd2.set_speed(sqlite3_column_double(stmt, 2));
 			obd2.set_rpm(sqlite3_column_int(stmt, 3));
 
-			result.push_back(obd2);	//add to result
+			//add to result
+			string serializedObd2;
+			obd2.SerializeToString(&serializedObd2);
+			result.add_data(serializedObd2);
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -187,10 +193,10 @@ list<obd2Package::OBD2> LDM::obd2Select(string condition) {
 	return result;
 }
 
-//executes specified SELECT with specified condition (eg. WHERE) on CAM table and returns result rows as list of CAMs
-list<camPackage::CAM> LDM::camSelect(string condition) {
-	list<camPackage::CAM> result;
-	result.clear();
+//executes specified SELECT with specified condition (eg. WHERE) on CAM table and returns result
+dataPackage::LdmData LDM::camSelect(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_CAM);
 	sqlite3_stmt *stmt;
 	string sqlCommand = "SELECT * from CAM " + condition;
 	char* errmsg = 0;
@@ -207,20 +213,25 @@ list<camPackage::CAM> LDM::camSelect(string condition) {
 			//add GPS if available
 			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
 			if (gpsRowId > 0) {
-				list<gpsPackage::GPS> gpsList = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS* gps = new gpsPackage::GPS(gpsList.front());
-				cam.set_allocated_gps(gps);
+				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
+				gpsPackage::GPS gps;
+				gps.ParseFromString(ldmData.data(0));
+				cam.set_allocated_gps(&gps);
 			}
 
 			//add OBD2 if available
 			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
 			if (obd2RowId > 0) {
-				list<obd2Package::OBD2> obd2List = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2* obd2 = new obd2Package::OBD2(obd2List.front());
-				cam.set_allocated_obd2(obd2);
+				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
+				obd2Package::OBD2 obd2;
+				obd2.ParseFromString(ldmData.data(0));
+				cam.set_allocated_obd2(&obd2);
 			}
 
-			result.push_back(cam);	//add to result
+			//add result
+			string serializedCam;
+			cam.SerializeToString(&serializedCam);
+			result.add_data(serializedCam);
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -233,10 +244,10 @@ list<camPackage::CAM> LDM::camSelect(string condition) {
 	return result;
 }
 
-//executes specified SELECT with specified condition (eg. WHERE) on DENM table and returns result rows as list of DENMs
-list<denmPackage::DENM> LDM::denmSelect(string condition) {
-	list<denmPackage::DENM> result;
-	result.clear();
+//executes specified SELECT with specified condition (eg. WHERE) on DENM table and returns result
+dataPackage::LdmData LDM::denmSelect(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_DENM);
 	sqlite3_stmt *stmt;
 	string sqlCommand = "SELECT * from DENM " + condition;
 	char* errmsg = 0;
@@ -253,20 +264,99 @@ list<denmPackage::DENM> LDM::denmSelect(string condition) {
 			//add GPS if available
 			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
 			if (gpsRowId > 0) {
-				list<gpsPackage::GPS> gpsList = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS* gps = new gpsPackage::GPS(gpsList.front());
-				denm.set_allocated_gps(gps);
+				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
+				gpsPackage::GPS gps;
+				gps.ParseFromString(ldmData.data(0));
+				denm.set_allocated_gps(&gps);
 			}
 
 			//add OBD2 if available
 			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
 			if (obd2RowId > 0) {
-				list<obd2Package::OBD2> obd2List = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2* obd2 = new obd2Package::OBD2(obd2List.front());
-				denm.set_allocated_obd2(obd2);
+				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
+				obd2Package::OBD2 obd2;
+				obd2.ParseFromString(ldmData.data(0));
+				denm.set_allocated_obd2(&obd2);
 			}
 
-			result.push_back(denm);	//add to result
+			//add result
+			string serializedDenm;
+			denm.SerializeToString(&serializedDenm);
+			result.add_data(serializedDenm);
+		}
+		sqlite3_finalize(stmt);
+	}
+	else {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	return result;
+}
+
+//executes specified SELECT with specified condition (eg. WHERE) on dccInfo table and returns result
+dataPackage::LdmData LDM::dccInfoSelect(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_dccInfo);
+	sqlite3_stmt *stmt;
+	string sqlCommand = "SELECT * from DccInfo " + condition;
+	char* errmsg = 0;
+
+	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+			infoPackage::DccInfo dccInfo;
+
+			//set attributes retrieved from result columns
+			dccInfo.set_time(sqlite3_column_int64(stmt, 1));
+			dccInfo.set_channelload(sqlite3_column_double(stmt, 2));
+			dccInfo.set_state(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+			dccInfo.set_accesscategory(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4))));
+			dccInfo.set_availabletokens(sqlite3_column_int(stmt, 5));
+			dccInfo.set_queuedpackets(sqlite3_column_int(stmt, 6));
+			dccInfo.set_dccmechanism(sqlite3_column_int(stmt, 7));
+			dccInfo.set_txpower(sqlite3_column_double(stmt, 8));
+			dccInfo.set_tokeninterval(sqlite3_column_double(stmt, 9));
+			dccInfo.set_datarate(sqlite3_column_double(stmt, 10));
+			dccInfo.set_carriersense(sqlite3_column_double(stmt, 11));
+
+			//add to result
+			string serializedDccInfo;
+			dccInfo.SerializeToString(&serializedDccInfo);
+			result.add_data(serializedDccInfo);
+		}
+		sqlite3_finalize(stmt);
+	}
+	else {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	return result;
+}
+
+//executes specified SELECT with specified condition (eg. WHERE) on camInfo table and returns result
+dataPackage::LdmData LDM::camInfoSelect(string condition) {
+	dataPackage::LdmData result;
+	result.set_type(dataPackage::LdmData_Type_camInfo);
+	sqlite3_stmt *stmt;
+	string sqlCommand = "SELECT * from CamInfo " + condition;
+	char* errmsg = 0;
+
+	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+			infoPackage::CamInfo camInfo;
+
+			//set attributes retrieved from result columns
+			camInfo.set_time(sqlite3_column_int64(stmt, 1));
+			camInfo.set_triggerreason(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
+			camInfo.set_delta(sqlite3_column_double(stmt, 3));
+
+			//add to result
+			string serializedCamInfo;
+			camInfo.SerializeToString(&serializedCamInfo);
+			result.add_data(serializedCamInfo);
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -438,10 +528,37 @@ void LDM::receiveRequest() {
 		pair<string, string> received = mServer->receiveRequest();
 		envelope = received.first;	//specifies table
 		request = received.second;	//specifies condition
-		//TODO: process request
-		sleep(1);
-		reply = request;
+
+		if (envelope.compare("CAM") == 0) {
+			dataPackage::LdmData cams = camSelect(request);
+			cams.SerializeToString(&reply);
+		}
+		else if (envelope.compare("DENM") == 0) {
+			dataPackage::LdmData denms = denmSelect(request);
+			denms.SerializeToString(&reply);
+		}
+		else if (envelope.compare("GPS") == 0) {
+			dataPackage::LdmData gpss = gpsSelect(request);
+			gpss.SerializeToString(&reply);
+		}
+		else if (envelope.compare("OBD2") == 0) {
+			dataPackage::LdmData obd2s = obd2Select(request);
+			obd2s.SerializeToString(&reply);
+		}
+		else if (envelope.compare("dccInfo") == 0) {
+			dataPackage::LdmData dccInfos = dccInfoSelect(request);
+			dccInfos.SerializeToString(&reply);
+		}
+		else if (envelope.compare("camInfo") == 0) {
+			dataPackage::LdmData camInfos = camInfoSelect(request);
+			camInfos.SerializeToString(&reply);
+		}
+		else {
+			reply = request;
+		}
+
 		mServer->sendReply(reply);
+		sleep(1);	//FIXME: zmq_error too many open files without sleep
 	}
 }
 

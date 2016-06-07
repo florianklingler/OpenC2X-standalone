@@ -12,6 +12,7 @@
 #include <buffers/build/obd2.pb.h>
 #include <buffers/build/dccInfo.pb.h>
 #include <buffers/build/camInfo.pb.h>
+#include <buffers/build/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>
@@ -25,11 +26,13 @@ public:
 	//TODO: config: #experiment, use as db suffix
 
 	void createTables();
-	list<gpsPackage::GPS> gpsSelect(string condition);
-	list<obd2Package::OBD2> obd2Select(string condition);
-	list<camPackage::CAM> camSelect(string condition);
-	list<denmPackage::DENM> denmSelect(string condition);
-	//TODO: select dcc/camInfo
+	dataPackage::LdmData gpsSelect(string condition);
+	dataPackage::LdmData obd2Select(string condition);
+	dataPackage::LdmData camSelect(string condition);
+	dataPackage::LdmData denmSelect(string condition);
+	dataPackage::LdmData dccInfoSelect(string condition);
+	dataPackage::LdmData camInfoSelect(string condition);
+
 	void insert(string sqlCommand);
 	void insertCam(camPackage::CAM cam);
 	void insertDenm(denmPackage::DENM denm);

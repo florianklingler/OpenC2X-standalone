@@ -1,0 +1,14 @@
+package dataPackage;
+
+message LdmData {
+	enum Type {
+		CAM = 1;
+		DENM = 2;
+		GPS = 3;
+		OBD2 = 4;
+		dccInfo = 5;
+		camInfo = 6;
+	}
+	required Type type = 1;
+	repeated bytes data = 2;
+}
