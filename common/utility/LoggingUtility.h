@@ -4,15 +4,12 @@
 #include <string>
 #include <utility/easylogging++.h>
 
-using namespace std;
-using namespace el;
-
 class LoggingUtility {
 public:
-	LoggingUtility(string moduleName);
+	LoggingUtility(std::string moduleName);
 	virtual ~LoggingUtility();
 
-	string timeString();
+	std::string timeString();
 	void logStats(std::string message);
 	void logInfo(std::string message);
 	void logDebug(std::string message);
@@ -20,7 +17,7 @@ public:
 	void logError(std::string message);
 
 private:
-	string mModuleName;
+	std::string mModuleName;
 };
 
 #endif /* UTILITY_LOGGINGUTILITY_H_ */

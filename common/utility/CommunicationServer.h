@@ -6,17 +6,15 @@
 #include <utility/zhelpers.hpp>
 #include <utility/LoggingUtility.h>
 
-using namespace std;
-
 class CommunicationServer {
 public:
-	CommunicationServer(string ownerModule, string portOut);
+	CommunicationServer(std::string ownerModule, std::string portOut);
 	~CommunicationServer();
-	void sendReply(string reply);
-	pair<string, string> receiveRequest();
+	void sendReply(std::string reply);
+	std::pair<std::string, std::string> receiveRequest();
 
 private:
-	string mOwnerModule;
+	std::string mOwnerModule;
 
 	zmq::context_t* mContext;
 	zmq::socket_t* mServer;
