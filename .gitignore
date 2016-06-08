@@ -16,3 +16,4 @@
 #stuff
 **/.settings/language.settings.xml
 .directory
+*.db
