@@ -19,24 +19,14 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-struct LdmConfig {
-	int mExpNo;	//number of experiment, suffix for DB-name
-
-	void loadConfigXML(const std::string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
-		mExpNo = pt.get("ldm.expNo", 1);
-	}
-};
-
 class LDM {
 public:
-	LDM(LdmConfig &config);
+	LDM();
 	~LDM();
 	void init();
 
 	void createTables();
+	//TODO: only return latest cam/denm per station Id
 	dataPackage::LdmData gpsSelect(std::string condition);
 	dataPackage::LdmData obd2Select(std::string condition);
 	dataPackage::LdmData camSelect(std::string condition);
@@ -61,8 +51,6 @@ public:
 	void receiveCamInfo();
 
 private:
-	LdmConfig mConfig;
-
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverDccInfo;

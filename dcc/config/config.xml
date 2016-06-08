@@ -1,6 +1,5 @@
 <dcc>
 	<simulateChannelLoad>false</simulateChannelLoad>
-	<ethernetDevice>enp0s3</ethernetDevice> <!--get via console: "ip link show" -->
 	<ignoreOwnMessages>true</ignoreOwnMessages>
 	<dccInfoInterval>1000</dccInfoInterval> <!--in ms-->
 

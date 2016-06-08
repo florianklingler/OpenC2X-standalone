@@ -22,7 +22,12 @@ var JSONtoTable = function(jsonString){
 
 
 function queryLdmBackend(){
-	$.post("http://localhost:1188/add_json",JSON.stringify({a:2,b:3}),function(data,status,xhr){
+	$.post("http://localhost:1188/add_json",JSON.stringify({a:2,b:3}),
+			
+			
+			
+			
+			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);
 	});
@@ -40,20 +45,27 @@ function initMap(){
 	
 	
 	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib});		
+	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
 
-	// start the map in South-East England
+	// start the map in Paderborn
 	map.setView(new L.LatLng(51.7315, 8.739),15);
 	map.addLayer(osm);
 	
 	var pos =[51.7315, 8.739];
 	var marker = L.marker([51.7315, 8.739]).addTo(map);
+	var myIcon = L.icon({
+	    iconUrl: 'image/marker/marker-icon-red.png',
+	});
+	
+	var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
 	
 	window.setInterval(function(){
 		pos[1]+=0.0001;
 		marker.setLatLng(pos);
-		
-	},1000);
+		marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
+		map.invalidateSize();
+		map.setView(pos);
+	},300);
 	
 }
 
@@ -76,7 +88,11 @@ $(document).ready(function(){
 		);
 	},1000);
 	
+	
+	
 	$(function() {
     	$( ".container" ).draggable().resizable();
   	});
+
+
 });
