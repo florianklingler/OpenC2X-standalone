@@ -22,7 +22,7 @@
 struct LdmConfig {
 	int mExpNo;	//number of experiment, suffix for DB-name
 
-	void loadConfigXML(const string &filename) {
+	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
