@@ -3,6 +3,7 @@
 
 struct GlobalConfig {
 	int mExpNo;		//number of experiment
+	std::string mEthernetDevice;
 	std::string mMac;
 
 	void loadConfigXML(const std::string &filename) {
@@ -10,10 +11,10 @@ struct GlobalConfig {
 		read_xml(filename, pt);
 
 		mExpNo = pt.get("global.expNo", 1);
-		std::string ethernetDevice = pt.get("global.ethernetDevice", "notDefined");
+		mEthernetDevice = pt.get("global.ethernetDevice", "notDefined");
 
 		//get MAC Address
-		std::string file = std::string("/sys/class/net/")+ ethernetDevice + "/address";
+		std::string file = std::string("/sys/class/net/")+ mEthernetDevice + "/address";
 		std::ifstream infile(file);
 		getline(infile, mMac);
 

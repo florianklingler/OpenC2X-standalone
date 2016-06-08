@@ -8,6 +8,7 @@
 #include <mutex>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <config/config.h>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -80,6 +81,7 @@ private:
 
 	std::map<Channels::t_access_category, LeakyBucket<dataPackage::DATA>*> mBucket;	//LeakyBuckets for all four ACs
 
+	GlobalConfig mGlobalConfig;
 	DccConfig mConfig;
 
 	States states;			//map of all states
