@@ -9,7 +9,8 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-LDM::LDM() {
+LDM::LDM(LdmConfig &config) {
+	mConfig = config;
 	string moduleName = "Ldm";
 	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM");
@@ -19,7 +20,7 @@ LDM::LDM() {
 	mLogger = new LoggingUtility(moduleName);
 
 	//open SQLite database
-	if(sqlite3_open("../db/ldm.db", &mDb)) {
+	if(sqlite3_open(("../db/ldm-" + to_string(mConfig.mExpNo) + ".db").c_str(), &mDb)) {
 		mLogger->logError("Cannot open database");
 		sqlite3_close(mDb);
 	}
@@ -105,7 +106,7 @@ void LDM::createTables() {
 
 	//create DccInfo table
 	sqlCommand = "CREATE TABLE IF NOT EXISTS DccInfo(" \
-				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL);";
+				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL, flushReqPackets INTEGER, flushNotReqPackets INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -319,6 +320,8 @@ dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 			dccInfo.set_tokeninterval(sqlite3_column_double(stmt, 9));
 			dccInfo.set_datarate(sqlite3_column_double(stmt, 10));
 			dccInfo.set_carriersense(sqlite3_column_double(stmt, 11));
+			dccInfo.set_flushreqpackets(sqlite3_column_int(stmt, 12));
+			dccInfo.set_flushnotreqpackets(sqlite3_column_int(stmt, 13));
 
 			//add to result
 			string serializedDccInfo;
@@ -600,8 +603,8 @@ void LDM::receiveDccInfo() {
 		dccInfo.ParseFromString(serializedDccInfo);
 
 		stringstream sSql;
-		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense) ";
-		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << " );";
+		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense, flushReqPackets, flushNotReqPackets) ";
+		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << ", " << dccInfo.flushreqpackets() << ", " << dccInfo.flushnotreqpackets() << " );";
 		insert(sSql.str());
 
 		mLogger->logDebug("received dccInfo");
@@ -627,7 +630,15 @@ void LDM::receiveCamInfo() {
 }
 
 int main() {
-	LDM ldm;
+	LdmConfig config;
+	try {
+		config.loadConfigXML("../config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		return EXIT_FAILURE;
+	}
+	LDM ldm(config);
 	ldm.init();
 
 	return EXIT_SUCCESS;
