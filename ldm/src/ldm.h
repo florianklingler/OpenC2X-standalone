@@ -16,10 +16,23 @@
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
+struct LdmConfig {
+	int mExpNo;	//number of experiment, suffix for DB-name
+
+	void loadConfigXML(const string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mExpNo = pt.get("ldm.expNo", 1);
+	}
+};
 
 class LDM {
 public:
-	LDM();
+	LDM(LdmConfig &config);
 	~LDM();
 	void init();
 
@@ -50,6 +63,8 @@ public:
 	void receiveCamInfo();
 
 private:
+	LdmConfig mConfig;
+
 	CommunicationReceiver* mReceiverFromDen;
 	CommunicationReceiver* mReceiverFromCa;
 	CommunicationReceiver* mReceiverDccInfo;

@@ -264,6 +264,7 @@ void DCC::sendDccInfo(const boost::system::error_code& ec) {
 		dccInfo.set_tokeninterval(currentTokenInterval(ac));
 		dccInfo.set_datarate(currentDatarate(ac));
 		dccInfo.set_carriersense(currentCarrierSense(ac));
+		//TODO: get and set flushReqPackets and flushNotReqPackets
 
 		dccInfo.SerializeToString(&serializedDccInfo);
 		mSenderToLdm->send("dccInfo", serializedDccInfo);

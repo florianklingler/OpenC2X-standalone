@@ -14,4 +14,6 @@ message DccInfo {
 	optional double tokenInterval = 9;
 	optional double datarate = 10;
 	optional double carrierSense = 11;
+	optional int32 flushReqPackets = 12;
+	optional int32 flushNotReqPackets = 13;
 }
