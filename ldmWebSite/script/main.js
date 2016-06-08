@@ -22,7 +22,7 @@ var JSONtoTable = function(jsonString){
 
 
 function queryLdmBackend(){
-	$.post("http://localhost:1188/add_json",JSON.stringify({a:2,b:3}),
+	$.post("http://localhost:1188/add_json",JSON.stringify({type:"CAM", condition:""}),
 			
 			
 			
@@ -69,7 +69,7 @@ function initMap(){
 	
 }
 
-//queryLdmBackend();
+queryLdmBackend();
 
 $(document).ready(function(){
 	

@@ -15,33 +15,21 @@
 
 class Server {
 public:
-	static Server* getInstance();
-
-	std::string requestCAMs();
-	std::string requestDENMs();
-	std::string requestGPSs();
-	std::string requestOBD2s();
-	std::string requestDCCINFOs();
-	std::string requestCAMINFOs();
-
-private:
-	static Server* _instance;
 
 	Server();
 	virtual ~Server();
 
+	std::string requestCAMs(std::string condition);
+	std::string requestDENMs(std::string condition);
+	std::string requestGPSs(std::string condition);
+	std::string requestOBD2s(std::string condition);
+	std::string requestDCCINFOs(std::string condition);
+	std::string requestCAMINFOs(std::string condition);
+
+private:
+
 	CommunicationClient* mClientLdm;
 
 	LoggingUtility* mLogger;
-
-	class CGuard {
-		public:
-		   ~CGuard() {
-			  if( NULL != Server::_instance ) {
-				 delete Server::_instance;
-				 Server::_instance = NULL;
-			  }
-		   }
-	};
 };
 #endif /* SERVER_H_ */
