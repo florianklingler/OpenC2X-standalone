@@ -46,7 +46,7 @@ string CommunicationClient::sendRequest(string envelope, string request, int tim
             if (items[0].revents & ZMQ_POLLIN) {
                 //  We got a reply from the server, return it to requester
                 std::string reply = s_recv (*mClient);
-                mLogger->logDebug("ldm replied: " + reply);
+                mLogger->logDebug("ldm replied");
 				retries_left = 0;
 				expect_reply = false;
 				return reply;
