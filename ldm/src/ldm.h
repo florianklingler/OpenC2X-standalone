@@ -36,21 +36,19 @@ public:
 	~LDM();
 	void init();
 
-	//TODO: config: #experiment, use as db suffix
-
 	void createTables();
-	dataPackage::LdmData gpsSelect(string condition);
-	dataPackage::LdmData obd2Select(string condition);
-	dataPackage::LdmData camSelect(string condition);
-	dataPackage::LdmData denmSelect(string condition);
-	dataPackage::LdmData dccInfoSelect(string condition);
-	dataPackage::LdmData camInfoSelect(string condition);
+	dataPackage::LdmData gpsSelect(std::string condition);
+	dataPackage::LdmData obd2Select(std::string condition);
+	dataPackage::LdmData camSelect(std::string condition);
+	dataPackage::LdmData denmSelect(std::string condition);
+	dataPackage::LdmData dccInfoSelect(std::string condition);
+	dataPackage::LdmData camInfoSelect(std::string condition);
 
-	void insert(string sqlCommand);
+	void insert(std::string sqlCommand);
 	void insertCam(camPackage::CAM cam);
 	void insertDenm(denmPackage::DENM denm);
 
-	string readableTime(int64_t nanoTime);
+	std::string readableTime(int64_t nanoTime);
 	void printGps(gpsPackage::GPS gps);
 	void printObd2(obd2Package::OBD2 obd2);
 	void printCam(camPackage::CAM cam);
