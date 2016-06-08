@@ -12,7 +12,7 @@ public:
 	DenmApp();
 	~DenmApp();
 
-	void triggerDenm(string content);
+	void triggerDenm(std::string content);
 
 private:
 	CommunicationSender* mSenderToDenm;

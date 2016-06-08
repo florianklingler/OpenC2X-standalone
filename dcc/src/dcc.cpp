@@ -15,11 +15,18 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 DCC::DCC(DccConfig &config) : mStrand(mIoService) {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+
 	string module = "Dcc";
 	mConfig = config;
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaMAC(module,mConfig.ethernetDevice);
+	mSenderToHw = new SendToHardwareViaMAC(module,mGlobalConfig.mEthernetDevice);
 	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
 	mSenderToServices = new CommunicationSender(module, "5555");
 	mSenderToLdm = new CommunicationSender(module, "1234");
@@ -28,7 +35,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber(mConfig.ethernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
+		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
 	}
 
 	mRandNumberGen = default_random_engine(0);

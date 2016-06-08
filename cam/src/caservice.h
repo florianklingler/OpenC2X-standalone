@@ -2,6 +2,7 @@
 #define CASERVICE_H_
 
 #include <boost/thread.hpp>
+#include <config/config.h>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
@@ -20,7 +21,7 @@ struct CaServiceConfig {
 	int mMaxGpsAge;
 	int mMaxObd2Age;
 
-	void loadConfigXML(const string &filename) {
+	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
@@ -37,8 +38,8 @@ public:
 	~CaService();
 
 	void receive();
-	void logDelay(string byteMessage);
-	void sendCamInfo(string triggerReason, double delta);
+	void logDelay(std::string byteMessage);
+	void sendCamInfo(std::string triggerReason, double delta);
 	void send();
 	void triggerCam(const boost::system::error_code &ec);
 	camPackage::CAM generateCam();
@@ -49,6 +50,7 @@ public:
 	double getDistance(double lat1, double lon1, double lat2, double lon2);
 
 private:
+	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
 
 	CommunicationReceiver* mReceiverFromDcc;
@@ -72,11 +74,11 @@ private:
 
 	gpsPackage::GPS mLatestGps;
 	bool mGpsValid;		//true if GPS was received and it's not too old
-	mutex mMutexLatestGps;
+	std::mutex mMutexLatestGps;
 
 	obd2Package::OBD2 mLatestObd2;
 	bool mObd2Valid;
-	mutex mMutexLatestObd2;
+	std::mutex mMutexLatestObd2;
 
 	camPackage::CAM mLastSentCam;
 };

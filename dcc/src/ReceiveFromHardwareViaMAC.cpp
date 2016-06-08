@@ -1,11 +1,6 @@
-/*
- * ReceiveFromHardwareViaMAC.cpp
- *
- *  Created on: Apr 20, 2016
- *      Author: root
- */
-
 #include "ReceiveFromHardwareViaMAC.h"
+
+using namespace std;
 
 ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule) {
 	mLogger = new LoggingUtility(ownerModule);
@@ -72,9 +67,3 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 		return make_pair(senderMac,msg);
 	}
 }
-
-
-
-
-
-

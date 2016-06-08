@@ -1,10 +1,3 @@
-/*
- * ReceiveFromHardwareViaMAC.h
- *
- *  Created on: Apr 20, 2016
- *      Author: root
- */
-
 #ifndef RECEIVEFROMHARDWAREVIAMAC_H_
 #define RECEIVEFROMHARDWAREVIAMAC_H_
 
@@ -18,15 +11,12 @@
 // (struct in_addr or inet_ntoa())
 #include <net/ethernet.h> // Ethernet Header Structure
 
-
-using namespace std;
-
 class ReceiveFromHardwareViaMAC {
 public:
-	ReceiveFromHardwareViaMAC(string ownerModule);
+	ReceiveFromHardwareViaMAC(std::string ownerModule);
 	virtual ~ReceiveFromHardwareViaMAC();
 	void init();
-	pair<string,string> receive();
+	std::pair<std::string,std::string> receive();
 
 private:
 	LoggingUtility* mLogger;

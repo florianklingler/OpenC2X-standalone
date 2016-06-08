@@ -15,6 +15,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 CaService::CaService(CaServiceConfig &config) {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+
 	mConfig = config;
 	mLogger = new LoggingUtility("CaService");
 
@@ -68,7 +75,7 @@ CaService::~CaService() {
 //receive CAM from DCC and forward to LDM
 void CaService::receive() {
 	string envelope;		//envelope
-	string serializedData;		//byte string (serialized)
+	string serializedData;	//byte string (serialized)
 	dataPackage::DATA data;
 
 	while (1) {
@@ -245,6 +252,7 @@ camPackage::CAM CaService::generateCam() {
 	camPackage::CAM cam;
 
 	//create CAM
+	cam.set_stationid(mGlobalConfig.mMac);
 	cam.set_id(mIdCounter++);
 	cam.set_content("CAM from CA service");
 	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));

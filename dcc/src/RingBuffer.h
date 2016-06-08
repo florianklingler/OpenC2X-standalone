@@ -6,13 +6,11 @@
 #include <cstdlib>
 #include <algorithm>
 
-using namespace std;
-
 template<typename T> class RingBuffer {
 public:
 	size_t maxSize;
-	list<T> entries;
-	typename list<T>::iterator nextInsert;
+	std::list<T> entries;
+	typename std::list<T>::iterator nextInsert;
 
 	RingBuffer(size_t maxSize = 0) :
 		maxSize(0) {
