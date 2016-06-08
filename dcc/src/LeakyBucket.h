@@ -135,7 +135,7 @@ public:
 			T* msg = p.second;
 
 			if(validUntil < t || eraseAll) {
-				mLogger->logInfo("flushQueue: message " + to_string(msg->id()) + " expired");
+				mLogger->logInfo("flushQueue: message " + std::to_string(msg->id()) + " expired");
 				delete msg;
 				queue.erase(it++);
 			} else {

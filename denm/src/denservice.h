@@ -19,7 +19,7 @@ public:
 
 	void init();
 	void receive();
-	void logDelay(string byteMessage);
+	void logDelay(std::string byteMessage);
 	void triggerPeriodicDenm();
 	void triggerAppDenm();
 	void send(triggerPackage::TRIGGER trigger);
@@ -50,10 +50,10 @@ private:
 	long mIdCounter;
 
 	gpsPackage::GPS mLatestGps;
-	mutex mMutexLatestGps;
+	std::mutex mMutexLatestGps;
 
 	obd2Package::OBD2 mLatestObd2;
-	mutex mMutexLatestObd2;
+	std::mutex mMutexLatestObd2;
 };
 
 #endif

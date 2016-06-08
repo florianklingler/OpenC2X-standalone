@@ -12,7 +12,7 @@
 struct GpsConfig {
 	bool mSimulateData;
 
-	void loadConfigXML(const string &filename) {
+	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
@@ -20,7 +20,7 @@ struct GpsConfig {
 	}
 };
 
-typedef struct pair<double, double> position;
+typedef struct std::pair<double, double> position;
 
 class GpsService {
 public:
@@ -50,9 +50,9 @@ private:
 	LoggingUtility* mLogger;
 
 	//for simulation only
-	default_random_engine mRandNumberGen;
-	bernoulli_distribution mBernoulli;
-	uniform_real_distribution<double> mUniform;
+	std::default_random_engine mRandNumberGen;
+	std::bernoulli_distribution mBernoulli;
+	std::uniform_real_distribution<double> mUniform;
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
