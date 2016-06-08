@@ -1,5 +1,7 @@
 #include <utility/CommunicationSender.h>
 
+using namespace std;
+
 CommunicationSender::CommunicationSender(string ownerModule, string portOut) {
 	mOwnerModule = ownerModule;
 

@@ -12,11 +12,12 @@
 #include <buffers/build/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 
+
 class Server {
 public:
 	Server();
 	virtual ~Server();
-//	void run();
+	void run();
 	void requestData();
 
 private:
@@ -24,5 +25,4 @@ private:
 
 	LoggingUtility* mLogger;
 };
-
 #endif /* SERVER_H_ */
