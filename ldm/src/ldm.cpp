@@ -4,13 +4,21 @@
 #include "ldm.h"
 #include <unistd.h>
 #include <iostream>
+#include <config/config.h>
 
 using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-LDM::LDM(LdmConfig &config) {
-	mConfig = config;
+LDM::LDM() {
+	GlobalConfig config;
+	try {
+		config.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+
 	string moduleName = "Ldm";
 	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM");
 	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM");
@@ -20,7 +28,7 @@ LDM::LDM(LdmConfig &config) {
 	mLogger = new LoggingUtility(moduleName);
 
 	//open SQLite database
-	if(sqlite3_open(("../db/ldm-" + to_string(mConfig.mExpNo) + ".db").c_str(), &mDb)) {
+	if(sqlite3_open(("../db/ldm-" + to_string(config.mExpNo) + ".db").c_str(), &mDb)) {
 		mLogger->logError("Cannot open database");
 		sqlite3_close(mDb);
 	}
@@ -68,7 +76,7 @@ void LDM::createTables() {
 
 	//create CAM table
 	sqlCommand = "CREATE TABLE IF NOT EXISTS CAM(" \
-			"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
 			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -78,7 +86,7 @@ void LDM::createTables() {
 
 	//create DENM table
 	sqlCommand = "CREATE TABLE IF NOT EXISTS DENM(" \
-				"key INTEGER PRIMARY KEY, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+				"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
 				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -115,7 +123,7 @@ void LDM::createTables() {
 
 	//create CamInfo table
 	sqlCommand = "CREATE TABLE IF NOT EXISTS CamInfo(" \
-				"key INTEGER PRIMARY KEY, time INTEGER, tirggerReason TEXT, delta REAL);";
+				"key INTEGER PRIMARY KEY, time INTEGER, triggerReason TEXT, delta REAL);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -207,12 +215,13 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 			camPackage::CAM cam;
 
 			//set attributes retrieved from result columns
-			cam.set_id(sqlite3_column_int(stmt, 1));
-			cam.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
-			cam.set_createtime(sqlite3_column_int64(stmt, 3));
+			cam.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
+			cam.set_id(sqlite3_column_int(stmt, 2));
+			cam.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+			cam.set_createtime(sqlite3_column_int64(stmt, 4));
 
 			//add GPS if available
-			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
+			int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
 			if (gpsRowId > 0) {
 				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
 				gpsPackage::GPS* gps = new gpsPackage::GPS();
@@ -221,7 +230,7 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 			}
 
 			//add OBD2 if available
-			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
+			int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
 			if (obd2RowId > 0) {
 				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
 				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
@@ -258,12 +267,13 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 			denmPackage::DENM denm;
 
 			//set attributes retrieved from result columns
-			denm.set_id(sqlite3_column_int(stmt, 1));
-			denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
-			denm.set_createtime(sqlite3_column_int64(stmt, 3));
+			denm.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
+			denm.set_id(sqlite3_column_int(stmt, 2));
+			denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+			denm.set_createtime(sqlite3_column_int64(stmt, 4));
 
 			//add GPS if available
-			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
+			int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
 			if (gpsRowId > 0) {
 				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
 				gpsPackage::GPS* gps = new gpsPackage::GPS();
@@ -272,7 +282,7 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 			}
 
 			//add OBD2 if available
-			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
+			int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
 			if (obd2RowId > 0) {
 				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
 				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
@@ -409,16 +419,16 @@ void LDM::insertCam(camPackage::CAM cam) {
 
 	//insert CAM with foreign keys to reference GPS, OBD2
 	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (id, content, createTime, gps, obd2) VALUES (" << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
 	}
 	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO CAM (id, content, createTime, gps) VALUES (" << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << " );";
 	}
 	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (id, content, createTime, obd2) VALUES (" << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << " );";
 	}
 	else {
-		sSql << "INSERT INTO CAM (id, content, createTime) VALUES (" << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
 	}
 	insert(sSql.str());
 }
@@ -449,16 +459,16 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 
 	//insert CAM with foreign keys to reference GPS, OBD2
 	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO DENM (id, content, createTime, gps, obd2) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO DENM (stationId, id, content, createTime, gps, obd2) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
 	}
 	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO DENM (id, content, createTime, gps) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << " );";
+		sSql << "INSERT INTO DENM (stationId, id, content, createTime, gps) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << " );";
 	}
 	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO DENM (id, content, createTime, obd2) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO DENM (stationId, id, content, createTime, obd2) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << obd2RowId << " );";
 	}
 	else {
-		sSql << "INSERT INTO DENM (id, content, createTime) VALUES (" << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
+		sSql << "INSERT INTO DENM (stationId, id, content, createTime) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
 	}
 	insert(sSql.str());
 }
@@ -497,7 +507,7 @@ void LDM::printObd2(obd2Package::OBD2 obd2) {
 
 void LDM::printCam(camPackage::CAM cam) {
 	stringstream stream;
-	stream << "CAM - " << readableTime(cam.createtime()) << ", id: " << cam.id() << ", content: " << cam.content();
+	stream << "CAM - " << readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
 	if (cam.has_gps()) {
 
 		stream << "\n\tGPS - " << readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
@@ -510,7 +520,7 @@ void LDM::printCam(camPackage::CAM cam) {
 
 void LDM::printDenm(denmPackage::DENM denm) {
 	stringstream stream;
-	stream << "DENM - " << readableTime(denm.createtime()) << ", id: " << denm.id() << ", content: " << denm.content();
+	stream << "DENM - " << readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
 	if (denm.has_gps()) {
 
 		stream << "\n\tGPS - " << readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
@@ -629,15 +639,7 @@ void LDM::receiveCamInfo() {
 }
 
 int main() {
-	LdmConfig config;
-	try {
-		config.loadConfigXML("../config/config.xml");
-	}
-	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
-		return EXIT_FAILURE;
-	}
-	LDM ldm(config);
+	LDM ldm;
 	ldm.init();
 
 	return EXIT_SUCCESS;

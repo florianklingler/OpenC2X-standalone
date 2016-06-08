@@ -2,6 +2,7 @@
 #define CASERVICE_H_
 
 #include <boost/thread.hpp>
+#include <config/config.h>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <buffers/build/data.pb.h>
@@ -49,6 +50,7 @@ public:
 	double getDistance(double lat1, double lon1, double lat2, double lon2);
 
 private:
+	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
 
 	CommunicationReceiver* mReceiverFromDcc;

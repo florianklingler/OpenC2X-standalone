@@ -2,6 +2,7 @@
 #define DENSERVICE_H_
 
 #include <boost/thread.hpp>
+#include <config/config.h>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -31,6 +32,8 @@ public:
 private:
 	void microSleep(double us_sleep); // in us
 
+	GlobalConfig mGlobalConfig;
+
 	CommunicationReceiver* mReceiverFromApp;
 	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
@@ -43,7 +46,6 @@ private:
 	boost::thread* mThreadGpsDataReceive;
 	boost::thread* mThreadObd2DataReceive;
 	boost::thread* mThreadAppTrigger;
-	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;
 
