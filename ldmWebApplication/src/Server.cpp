@@ -214,26 +214,28 @@ std::string Server::requestCAMINFOs() {
 }
 
 int main(){
-	Server* server = Server::getInstance();
-	std::string cams = server->requestCAMs();
-	std::cout << cams << std::endl;
-//	crow::SimpleApp app;
-//
-//	CROW_ROUTE(app, "/add_json")
-//	.methods("POST"_method)
-//	([](const crow::request& req){
-//
-//		auto x = crow::json::load(req.body);
-//		if (!x)
-//			return crow::response(400);
-//	    int sum = x["a"].i()+x["b"].i();
-//	    std::ostringstream os;
-//	    os << sum;
-//	    return crow::response{os.str()};
-////		Server* server = Server::getInstance();
-////		std::string cams = server->requestCAMs();
-////		std::cout << cams << std::endl;
-////		return crow::response{cams};
-//	});
-//	app.port(1880).run();
+//	Server* server = Server::getInstance();
+//	std::string cams = server->requestCAMs();
+//	std::cout << cams << std::endl;
+	crow::SimpleApp app;
+
+	CROW_ROUTE(app, "/add_json")
+	.methods("POST"_method)
+	([](const crow::request& req){
+
+		auto x = crow::json::load(req.body);
+		if (!x)
+			return crow::response(400);
+	    int sum = x["a"].i()+x["b"].i();
+	    std::ostringstream os;
+	    auto resp = crow::response{os.str()};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+	    os << sum;
+	    return resp;
+//		Server* server = Server::getInstance();
+//		std::string cams = server->requestCAMs();
+//		std::cout << cams << std::endl;
+//		return crow::response{cams};
+	});
+	app.port(1188).run();
 }
