@@ -215,18 +215,18 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
 			if (gpsRowId > 0) {
 				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS gps;
-				gps.ParseFromString(ldmData.data(0));
-				cam.set_allocated_gps(&gps);
+				gpsPackage::GPS* gps = new gpsPackage::GPS();
+				gps->ParseFromString(ldmData.data(0));
+				cam.set_allocated_gps(gps);
 			}
 
 			//add OBD2 if available
 			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
 			if (obd2RowId > 0) {
 				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2 obd2;
-				obd2.ParseFromString(ldmData.data(0));
-				cam.set_allocated_obd2(&obd2);
+				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
+				obd2->ParseFromString(ldmData.data(0));
+				cam.set_allocated_obd2(obd2);
 			}
 
 			//add result
@@ -266,18 +266,18 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 			int64_t gpsRowId = sqlite3_column_int64(stmt, 4);
 			if (gpsRowId > 0) {
 				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS gps;
-				gps.ParseFromString(ldmData.data(0));
-				denm.set_allocated_gps(&gps);
+				gpsPackage::GPS* gps = new gpsPackage::GPS();
+				gps->ParseFromString(ldmData.data(0));
+				denm.set_allocated_gps(gps);
 			}
 
 			//add OBD2 if available
 			int64_t obd2RowId = sqlite3_column_int64(stmt, 5);
 			if (obd2RowId > 0) {
 				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2 obd2;
-				obd2.ParseFromString(ldmData.data(0));
-				denm.set_allocated_obd2(&obd2);
+				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
+				obd2->ParseFromString(ldmData.data(0));
+				denm.set_allocated_obd2(obd2);
 			}
 
 			//add result
@@ -561,7 +561,6 @@ void LDM::receiveRequest() {
 		}
 
 		mServer->sendReply(reply);
-		sleep(1);	//FIXME: zmq_error too many open files without sleep
 	}
 }
 
