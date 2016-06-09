@@ -31,8 +31,7 @@ pair<string, string> CommunicationServer::receiveRequest() {
 }
 
 void CommunicationServer::sendReply(string reply) {
-	//s_sendmore(*mReplyer, envelope);	//TODO: do we need an envelope here?
 	s_send(*mServer, reply);
 
-	mLogger->logDebug("sent reply: " + reply);
+	mLogger->logDebug("sent reply");
 }

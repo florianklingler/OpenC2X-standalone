@@ -19,12 +19,12 @@ public:
 	Server();
 	virtual ~Server();
 
-	std::string requestCAMs(std::string condition);
-	std::string requestDENMs(std::string condition);
-	std::string requestGPSs(std::string condition);
-	std::string requestOBD2s(std::string condition);
-	std::string requestDCCINFOs(std::string condition);
-	std::string requestCAMINFOs(std::string condition);
+	std::string requestCam(std::string condition);
+	std::string requestDenm(std::string condition);
+	std::string requestGps(std::string condition);
+	std::string requestObd2(std::string condition);
+	std::string requestDccInfo(std::string condition);
+	std::string requestCamInfo(std::string condition);
 
 private:
 

@@ -4,6 +4,8 @@
 #include "Server.h"
 #include "pbjson.hpp"
 #include "crow_all.h"
+#include <utility/CommunicationSender.h>
+#include <buffers/build/trigger.pb.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -19,12 +21,12 @@ Server::~Server() {
 }
 
 //requests all CAMs from LDM
-std::string Server::requestCAMs(std::string condition) {
+std::string Server::requestCam(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all CAMs from LDM
-	reply = mClientLdm->sendRequest("CAM", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("CAM", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -50,12 +52,12 @@ std::string Server::requestCAMs(std::string condition) {
 }
 
 //requests all DENMs from LDM
-std::string Server::requestDENMs(std::string condition) {
+std::string Server::requestDenm(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all DENMs from LDM
-	reply = mClientLdm->sendRequest("DENM", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("DENM", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -81,12 +83,12 @@ std::string Server::requestDENMs(std::string condition) {
 }
 
 //requests all GPSs from LDM
-std::string Server::requestGPSs(std::string condition) {
+std::string Server::requestGps(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all GPSs from LDM
-	reply = mClientLdm->sendRequest("GPS", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("GPS", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -112,12 +114,12 @@ std::string Server::requestGPSs(std::string condition) {
 }
 
 //requests all OBD2s from LDM
-std::string Server::requestOBD2s(std::string condition) {
+std::string Server::requestObd2(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all OBD2s from LDM
-	reply = mClientLdm->sendRequest("OBD2", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("OBD2", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -143,12 +145,12 @@ std::string Server::requestOBD2s(std::string condition) {
 }
 
 //requests all DCCINFOs from LDM
-std::string Server::requestDCCINFOs(std::string condition) {
+std::string Server::requestDccInfo(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;;
 	//get all dccInfos from LDM
-	reply = mClientLdm->sendRequest("dccInfo", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("dccInfo", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -174,12 +176,12 @@ std::string Server::requestDCCINFOs(std::string condition) {
 }
 
 //requests all CAMINFOs from LDM
-std::string Server::requestCAMINFOs(std::string condition) {
+std::string Server::requestCamInfo(std::string condition) {
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all camInfos from LDM
-	reply = mClientLdm->sendRequest("camInfo", condition, 2500, 3);
+	reply = mClientLdm->sendRequest("camInfo", condition, 100, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -207,48 +209,172 @@ std::string Server::requestCAMINFOs(std::string condition) {
 int main(){
 	crow::SimpleApp app;
 
-	CROW_ROUTE(app, "/add_json")
+	//ldm requests
+	Server* server = new Server();
+	//CAM
+	CROW_ROUTE(app, "/request_cam")
 	.methods("POST"_method)
-	([](const crow::request& req){
+	([server](const crow::request& req){
 
 		auto request = crow::json::load(req.body);
 		if (!request)
 			return crow::response(400);
-		Server* server = new Server();
-		std::string type = "";
 		std::string condition = "";
 		std::string reply = "";
 
-		if(request.has("type")) {
-			type = request["type"].s();
-		}
 		if(request.has("condition")) {
 			condition = request["condition"].s();
 		}
 
-		if(type == "CAM") {
-			reply = server->requestCAMs(condition);
+		reply = server->requestCam(condition);
+
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//DENM
+	CROW_ROUTE(app, "/request_denm")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string condition = "";
+		std::string reply = "";
+
+		if(request.has("condition")) {
+			condition = request["condition"].s();
 		}
-		if(type == "DENM") {
-			reply = server->requestDENMs(condition);
+
+		reply = server->requestDenm(condition);
+
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//GPS
+	CROW_ROUTE(app, "/request_gps")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string condition = "";
+		std::string reply = "";
+
+		if(request.has("condition")) {
+			condition = request["condition"].s();
 		}
-		if(type == "GPS") {
-			reply = server->requestGPSs(condition);
+
+		reply = server->requestGps(condition);
+
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//OBD2
+	CROW_ROUTE(app, "/request_obd2")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string condition = "";
+		std::string reply = "";
+
+		if(request.has("condition")) {
+			condition = request["condition"].s();
 		}
-		if(type == "OBD2") {
-			reply = server->requestOBD2s(condition);
-		}
-		if(type == "dccInfo") {
-			reply = server->requestDCCINFOs(condition);
-		}
-		if(type == "camInfo") {
-			reply = server->requestCAMINFOs(condition);
-		}
+
+		reply = server->requestObd2(condition);
 
 		std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
 		return resp;
 	});
-	app.port(1188).run();
+
+	//DccInfo
+	CROW_ROUTE(app, "/request_dccinfo")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string condition = "";
+		std::string reply = "";
+
+		if(request.has("condition")) {
+			condition = request["condition"].s();
+		}
+
+		reply = server->requestDccInfo(condition);
+
+		std::cout << "Response: " << reply << std::endl;
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//CamInfo
+	CROW_ROUTE(app, "/request_caminfo")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string condition = "";
+		std::string reply = "";
+
+		if(request.has("condition")) {
+			condition = request["condition"].s();
+		}
+
+		reply = server->requestCamInfo(condition);
+
+		std::cout << "Response: " << reply << std::endl;
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//denm triggering
+	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111");
+	CROW_ROUTE(app, "/trigger_denm")
+	.methods("POST"_method)
+	([senderToDenm](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		triggerPackage::TRIGGER trigger;
+		std::string serializedTrigger;
+		std::string content = "";
+
+		if(request.has("content")) {
+			content = request["content"].s();
+		}
+
+		trigger.set_content(content);
+		trigger.SerializeToString(&serializedTrigger);
+
+		senderToDenm->send("TRIGGER", serializedTrigger);
+
+	    auto resp = crow::response{"Triggered DENM"};
+	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	app.port(1188).multithreaded().run();
+
+	delete server;
+	delete senderToDenm;
 }
