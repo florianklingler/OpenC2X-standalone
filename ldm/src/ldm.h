@@ -19,6 +19,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+//TODO: add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
 class LDM {
 public:
 	LDM();
@@ -26,8 +27,8 @@ public:
 	void init();
 
 	void createTables();
-	//TODO: only return latest cam/denm per station Id
-	dataPackage::LdmData gpsSelect(std::string condition);
+
+	dataPackage::LdmData gpsSelect(std::string condition);	//TODO: only return latest GPS? useful?
 	dataPackage::LdmData obd2Select(std::string condition);
 	dataPackage::LdmData camSelect(std::string condition);
 	dataPackage::LdmData denmSelect(std::string condition);

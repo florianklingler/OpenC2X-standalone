@@ -21,8 +21,16 @@ var JSONtoTable = function(jsonString){
 };
 
 
+function myMac(){
+	$.get("http://localhost:1188/my_mac",
+			function(data,status,xhr){
+		console.log("data: "+data);
+		console.log("status: "+status);
+	});
+}
+
 function requestCam(){
-	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
 			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);
@@ -30,7 +38,7 @@ function requestCam(){
 }
 
 function requestDenm(){
-	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:"latest"}),
 			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);
@@ -54,7 +62,7 @@ function requestObd2(){
 }
 
 function requestDccInfo(){
-	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
 			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);
@@ -62,7 +70,7 @@ function requestDccInfo(){
 }
 
 function requestCamInfo(){
-	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:"latest"}),
 			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);
@@ -76,6 +84,8 @@ function triggerDenm(){
 		console.log("status: "+status);
 	});
 }
+
+
 
 
 function initMap(){

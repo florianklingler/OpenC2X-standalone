@@ -1,6 +1,7 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 
+#include <config/config.h>
 #include <utility/CommunicationClient.h>
 #include <utility/LoggingUtility.h>
 #include <buffers/build/cam.pb.h>
@@ -26,7 +27,10 @@ public:
 	std::string requestDccInfo(std::string condition);
 	std::string requestCamInfo(std::string condition);
 
+	std::string myMac();
+
 private:
+	GlobalConfig mConfig;
 
 	CommunicationClient* mClientLdm;
 

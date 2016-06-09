@@ -131,6 +131,7 @@ void LDM::createTables() {
 	}
 }
 
+
 //executes SELECT with specified condition (eg. WHERE) on GPS table and returns result
 dataPackage::LdmData LDM::gpsSelect(string condition) {
 	dataPackage::LdmData result;
@@ -207,7 +208,15 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_CAM);
 	sqlite3_stmt *stmt;
-	string sqlCommand = "SELECT * from CAM " + condition;
+	string sqlCommand;
+	if (condition == "latest") {	//only get the most recent CAM for each stationId
+		//sql from http://stackoverflow.com/questions/1313120/retrieving-the-last-record-in-each-group; have to use createTime instead of id because id isn't necessarily unique and growing
+		sqlCommand = "SELECT cam1.* from CAM cam1 LEFT JOIN CAM cam2 ON (cam1.stationId = cam2.stationId AND cam1.createTime < cam2.createTime) WHERE cam2.createTime IS NULL";
+	}
+	else {
+		sqlCommand = "SELECT * from CAM " + condition;
+	}
+
 	char* errmsg = 0;
 
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
@@ -259,7 +268,13 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_DENM);
 	sqlite3_stmt *stmt;
-	string sqlCommand = "SELECT * from DENM " + condition;
+	string sqlCommand;
+	if (condition == "latest") {	//only get the latest DENM for each stationId
+		sqlCommand = "SELECT denm1.* from DENM denm1 LEFT JOIN DENM denm2 ON (denm1.stationId = denm2.stationId AND denm1.createTime < denm2.createTime) WHERE denm2.createTime IS NULL";
+	}
+	else {
+		sqlCommand = "SELECT * from DENM " + condition;
+	}
 	char* errmsg = 0;
 
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
@@ -311,7 +326,13 @@ dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_dccInfo);
 	sqlite3_stmt *stmt;
-	string sqlCommand = "SELECT * from DccInfo " + condition;
+	string sqlCommand;
+	if (condition == "latest") {	//only get the latest dccInfo for each AC
+		sqlCommand = "SELECT dccInfo1.* from DccInfo dccInfo1 LEFT JOIN DccInfo dccInfo2 ON (dccInfo1.AC = dccInfo2.AC AND dccInfo1.time < dccInfo2.time) WHERE dccInfo2.time IS NULL";
+	}
+	else {
+		sqlCommand = "SELECT * from DccInfo " + condition;
+	}
 	char* errmsg = 0;
 
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
@@ -354,7 +375,13 @@ dataPackage::LdmData LDM::camInfoSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_camInfo);
 	sqlite3_stmt *stmt;
-	string sqlCommand = "SELECT * from CamInfo " + condition;
+	string sqlCommand;
+	if (condition == "latest") {	//only get the latest camInfo
+		sqlCommand = "SELECT * from CamInfo ORDER BY key DESC LIMIT 1";
+	}
+	else {
+		sqlCommand = "SELECT * from CamInfo " + condition;
+	}
 	char* errmsg = 0;
 
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {

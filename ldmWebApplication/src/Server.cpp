@@ -10,6 +10,13 @@
 INITIALIZE_EASYLOGGINGPP
 
 Server::Server() {
+	try {
+		mConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		std::cerr << "Error while loading config.xml: " << e.what() << std::endl;
+	}
+
 	std::string moduleName = "WebApplication";
 	mClientLdm = new CommunicationClient(moduleName, "6789");
 	mLogger = new LoggingUtility(moduleName);
@@ -206,6 +213,12 @@ std::string Server::requestCamInfo(std::string condition) {
 	return "";
 }
 
+//returns own mac address from global config
+std::string Server::myMac() {
+	return "{\"myMac\":\"" + mConfig.mMac + "\"}";
+}
+
+
 int main(){
 	crow::SimpleApp app;
 
@@ -370,6 +383,15 @@ int main(){
 
 	    auto resp = crow::response{"Triggered DENM"};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		return resp;
+	});
+
+	//gets own mac
+	CROW_ROUTE(app, "/my_mac")
+	.methods("GET"_method)
+	([server](){
+		auto resp = crow::response{server->myMac()};
+		resp.add_header("Access-Control-Allow-Origin","*");
 		return resp;
 	});
 

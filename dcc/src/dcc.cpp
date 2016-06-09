@@ -257,7 +257,7 @@ void DCC::sendDccInfo(const boost::system::error_code& ec) {
 			dccInfo.set_accesscategory("BE");
 			break;
 		case Channels::AC_BK:
-			dccInfo.set_accesscategory("VI");
+			dccInfo.set_accesscategory("BK");
 			break;
 		case Channels::NO_AC:
 			dccInfo.set_accesscategory("NO");
