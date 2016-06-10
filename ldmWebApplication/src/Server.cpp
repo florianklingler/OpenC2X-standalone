@@ -33,7 +33,7 @@ std::string Server::requestCam(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all CAMs from LDM
-	reply = mClientLdm->sendRequest("CAM", condition, 100, 1);
+	reply = mClientLdm->sendRequest("CAM", condition, 1000, 1);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 

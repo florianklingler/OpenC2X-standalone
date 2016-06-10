@@ -21,69 +21,6 @@ var JSONtoTable = function(jsonString){
 };
 
 
-function myMac(){
-	$.get("http://localhost:1188/my_mac",
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestCam(){
-	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestDenm(){
-	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestGps(){
-	$.post("http://localhost:1188/request_gps",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestObd2(){
-	$.post("http://localhost:1188/request_obd2",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestDccInfo(){
-	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestCamInfo(){
-	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function triggerDenm(){
-	$.post("http://localhost:1188/trigger_denm",JSON.stringify({content: "triggered by GUI"}),	
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
 
 
 
@@ -111,15 +48,20 @@ function initMap(){
 	    iconUrl: 'image/marker/marker-icon-red.png',
 	});
 	
-	var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
+	//var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
 	
 	window.setInterval(function(){
-		pos[1]+=0.0001;
-		marker.setLatLng(pos);
-		marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
+//		requestCam(function(cam) {
+//			if(cam.gps){
+//				pos[0] = cam.gps.latitude;
+//				pos[1] = cam.gps.longitude;
+//			}
+//			marker.setLatLng(pos);
+//		})
+		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
 		map.invalidateSize();
 		map.setView(pos);
-	},300);
+	},1000);
 	
 }
 
