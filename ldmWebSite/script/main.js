@@ -1,28 +1,31 @@
 
-
 /**
- * 
- * @param {String} jsonString
- * @returm {String} html table body filles with values from json obj
+ *updateFunction is repeatedly called to provide data for this div. 
+ * should take a callback which shall be called with the retrived data 
  */
-var JSONtoTable = function(jsonString){
-	/** @type {JSON} */
-	var jsonObj = JSON.parse(jsonString); 
-	var str = ""; //"<table>";
+function Container(name,updateFunction,updateInterval){
+	updateInterval = updateInterval || 1000;
+	this.id = name;
+	var htmlstr = 
+		'<div id="'+name+'" class="container dataContainer"> '+
+        	'<h4>'+name+'</h4>'+
+        	'<table id="'+name+'_data">'+
+				'<tr><td>loading</td><td>Data</td></tr>'+
+        	'</table>'+
+    	'</div>';
+	$("body").append(htmlstr);
+	$("#"+name).draggable().resizable();
+	this.dataTable = $("#"+name+"_data");
+	this.setTable = function(data){
+		$("#"+this.id+"_data").html(objectToTable(data));
+	}.bind(this);
 	
-	for (name in jsonObj){
-		str += "<tr>";
-		str += "<td>"+name+"</td>";
-		str += "<td>"+jsonObj[name]+"</td>";
-		str += "</tr>";
-	}
-	//str += "</table>";
-	return str;
-};
+	window.setInterval(function(){updateFunction(this.setTable);}.bind(this),1000);
+}
 
-
-
-
+function camUpdate(callback){
+	requestCam(callback);
+}
 
 
 function initMap(){
@@ -35,7 +38,7 @@ function initMap(){
 	//marbel chache file:///home/jonh/.local/share/marble/maps/earth/openstreetmap/{z}/{x}/{y}.png
 	
 	
-	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+	var osmAttrib='Map data cr <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
 
 	// start the map in Paderborn
@@ -63,6 +66,8 @@ function initMap(){
 		map.setView(pos);
 	},1000);
 	
+
+	
 }
 
 $(document).ready(function(){
@@ -76,11 +81,11 @@ $(document).ready(function(){
 		$("#car_data").html(
 			JSONtoTable(JSON.stringify(obj))
 		);
-		var obj = {status:"running", queued:(counter*93)%77,state:(counter%2 == 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100};
+		obj = {status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100};
 		$("#dcc_data").html(
 			JSONtoTable(JSON.stringify(obj))
 		);
-	},1000);
+	},10000);
 	
 	
 	

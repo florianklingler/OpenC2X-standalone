@@ -44,14 +44,13 @@ function loadLayout(){
 		$("#"+id).width(config.width)
 		
 	})
-	
 }
-	
-//var offset= $("#car").offset();
-//console.log(offset);
-//$("#car").offset({ top: 329, left: 615 });
 
-$("#car").height();
-$("#car").height(100);
-$("#car").width();
-$("#car").width(100);
+
+function lockLayout(){
+	$(".container").draggable("disable").resizable("disable");
+}
+
+function unlockLayout(){
+	$(".container").draggable("enable").resizable("enable");
+}

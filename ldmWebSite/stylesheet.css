@@ -13,23 +13,23 @@
 	padding : 10px;
 }
 
-
-#car {
-	background: lightgreen;
-	border: 2px solid green;
+.container.dataContainer{
+	background: lightgray;
+	border: 2px solid black;
 	border-radius: 10px;
 	padding:10px;
 	margin: 10px;
 	display: inline-block;
 }
 
+#car {
+	background: lightgreen;
+	border-color: green;
+}
+
 #dcc {
 	background: #ffcccc;
-	border: 2px solid red;
-	border-radius: 10px;
-	padding:10px;
-	margin: 10px;
-	display: inline-block;
+	border-color:red;
 }
 
 table {
