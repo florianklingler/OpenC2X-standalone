@@ -1,11 +1,15 @@
+containers = [];
 
 /**
- *updateFunction is repeatedly called to provide data for this div. 
- * should take a callback which shall be called with the retrived data 
+ *updateFunction is repeatedly called to provide data for this div. should take a callback which shall be called with the retrived data 
+ * @param updateFunction fn(callback)
  */
-function Container(name,updateFunction,updateInterval){
-	updateInterval = updateInterval || 1000;
+function Container(name,updateFunction,color,updateInterval){
+	this.updateInterval = updateInterval || 1000;
+	var color = color || "#555555";
 	this.id = name;
+	this.updateFunction = updateFunction;
+	this.intervalID = -1;
 	var htmlstr = 
 		'<div id="'+name+'" class="container dataContainer"> '+
         	'<h4>'+name+'</h4>'+
@@ -14,13 +18,27 @@ function Container(name,updateFunction,updateInterval){
         	'</table>'+
     	'</div>';
 	$("body").append(htmlstr);
-	$("#"+name).draggable().resizable();
+	var div = $("#"+name).draggable().resizable();
+	div.css("border-color",color);
+	div.css("background",increase_brightness(color, 70));
 	this.dataTable = $("#"+name+"_data");
 	this.setTable = function(data){
 		$("#"+this.id+"_data").html(objectToTable(data));
 	}.bind(this);
 	
-	window.setInterval(function(){updateFunction(this.setTable);}.bind(this),1000);
+	this.enableUpdate = function(){
+		if (this.intervalID === -1){
+			this.intervalID=window.setInterval(
+				function(){this.updateFunction(this.setTable);}.bind(this),
+				this.updateInterval
+			);
+		}
+	}.bind(this);
+	this.enableUpdate();
+	this.disableUpdate = function(){
+		window.clearInterval(this.intervalID);
+		this.intervalID=-1;
+	}.bind(this);
 }
 
 function camUpdate(callback){
@@ -76,22 +94,18 @@ $(document).ready(function(){
 	
 	var counter = 1;
 	
-	window.setInterval(function(){
-		var obj = {speed:counter,rpm:counter++ * 36,driver:"alive"};
-		$("#car_data").html(
-			JSONtoTable(JSON.stringify(obj))
-		);
-		obj = {status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100};
-		$("#dcc_data").html(
-			JSONtoTable(JSON.stringify(obj))
-		);
-	},10000);
+	var carContainer = new Container("car", function(callback) {
+		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
+	},color="#ff2222");
 	
-	
-	
-	$(function() {
-    	$( ".container" ).draggable().resizable();
-  	});
-
+	var dccContainer = new Container("dcc", function(callback) {
+		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
+	},color="#22ff22");
 
 });
+
+function createCamDiv(){
+	cam = new Container("Cam", function(callback) {
+		requestCam(callback);
+	},color= "#2222ff");
+}

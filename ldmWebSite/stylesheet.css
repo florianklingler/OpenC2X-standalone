@@ -22,16 +22,6 @@
 	display: inline-block;
 }
 
-#car {
-	background: lightgreen;
-	border-color: green;
-}
-
-#dcc {
-	background: #ffcccc;
-	border-color:red;
-}
-
 table {
 	border-collapse:separate; 
 	border-spacing:0 0.5em;
