@@ -12,7 +12,8 @@ function Container(name,updateFunction,color,updateInterval){
 	this.intervalID = -1;
 	var htmlstr = 
 		'<div id="'+name+'" class="container dataContainer"> '+
-        	'<h4>'+name+'</h4>'+
+        	'<h4 style="display:inline-block">'+name+'</h4>'+
+        	'<div style="background:green" class="updateButton"></div>'+
         	'<table id="'+name+'_data">'+
 				'<tr><td>loading</td><td>Data</td></tr>'+
         	'</table>'+
@@ -26,19 +27,32 @@ function Container(name,updateFunction,color,updateInterval){
 		$("#"+this.id+"_data").html(objectToTable(data));
 	}.bind(this);
 	
+	this.updateButton = div.children(".updateButton");
 	this.enableUpdate = function(){
 		if (this.intervalID === -1){
 			this.intervalID=window.setInterval(
 				function(){this.updateFunction(this.setTable);}.bind(this),
 				this.updateInterval
 			);
+			this.updateButton.css("background","green");
 		}
 	}.bind(this);
 	this.enableUpdate();
+	
 	this.disableUpdate = function(){
 		window.clearInterval(this.intervalID);
 		this.intervalID=-1;
+		this.updateButton.css("background","red");
 	}.bind(this);
+	
+	this.toggleUpdate= function(){
+		if (this.intervalID ===-1){
+			this.enableUpdate();
+		} else {
+			this.disableUpdate();
+		}
+	}.bind(this);
+	this.updateButton.click(this.toggleUpdate);
 }
 
 function camUpdate(callback){
@@ -85,7 +99,7 @@ function initMap(){
 	},1000);
 	
 
-	
+	$("#mapWrapper").draggable().resizable();
 }
 
 $(document).ready(function(){
@@ -101,7 +115,8 @@ $(document).ready(function(){
 	var dccContainer = new Container("dcc", function(callback) {
 		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
 	},color="#22ff22");
-
+	
+	lockLayout();
 });
 
 function createCamDiv(){
