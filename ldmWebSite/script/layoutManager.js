@@ -1,6 +1,7 @@
 //each container class div needs and unique id
 
 containers = [];
+layoutLocked = true;
 
 /**
  * saves to current layout to localstorage on client side
@@ -54,6 +55,15 @@ function lockLayout(){
 
 function unlockLayout(){
 	$(".container").draggable("enable").resizable("enable");
+}
+
+function toggleLayoutLock(){
+	if(layoutLocked){
+		unlockLayout();
+	} else {
+		lockLayout();
+	}
+	layoutLocked = !layoutLocked;
 }
 
 function createCamContainer(){

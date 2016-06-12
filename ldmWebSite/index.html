@@ -16,14 +16,32 @@
         <script src="script/webAppQuerys.js"></script>
     	<script src="script/main.js"></script>
         
-        <title>New Web Project</title>
+        <title>Monitor</title>
     </head>
     
     <body>
-    	<div class="container" id="mapWrapper">
+		<!-- The overlay -->
+		<div id="myNav" class="overlay">
+			<!-- Button to close the overlay navigation -->
+			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+			<!-- Overlay content -->
+			<div class="overlay-content">
+				 <span onclick="toggleLayoutLock()">toggle Layout Lock</span>
+				 <span onclick="saveLayout()">save Layout</span>
+				 <span onclick="loadLayout()">load Layout</span>
+				 <span onclick="createCamContainer()">create Cam</span>
+				 <span onclick="createCamInfoContainer()">create Cam Info</span>
+			</div>
+		</div>
+		
+		<!-- Use any element to open/show the overlay navigation menu -->
+		<button id="menuButton" onclick="openNav()">open Menu</button>
+	   	<div class="container" id="mapWrapper">
 	        <div id="mapContainer">
 	        </div>
-        </div>
-		<!--  data containers are going to be added here at runtime -->
+		</div>
+	 
+	<!--  data containers are going to be added here at runtime -->
+		
 	</body>
 </html>

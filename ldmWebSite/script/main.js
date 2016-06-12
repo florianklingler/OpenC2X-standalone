@@ -115,7 +115,14 @@ $(document).ready(function(){
 		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
 	},color="#22ff22");
 	
-	lockLayout();
 });
 
+/* Open when someone clicks on the span element */
+function openNav() {
+    document.getElementById("myNav").style.width = "50%";
+}
 
+/* Close when someone clicks on the "x" symbol inside the overlay */
+function closeNav() {
+    document.getElementById("myNav").style.width = "0%";
+}
