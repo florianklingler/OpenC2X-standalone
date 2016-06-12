@@ -1,5 +1,7 @@
 //each container class div needs and unique id
 
+containers = [];
+
 /**
  * saves to current layout to localstorage on client side
  */
@@ -46,7 +48,6 @@ function loadLayout(){
 	})
 }
 
-
 function lockLayout(){
 	$(".container").draggable("disable").resizable("disable");
 }
@@ -54,3 +55,16 @@ function lockLayout(){
 function unlockLayout(){
 	$(".container").draggable("enable").resizable("enable");
 }
+
+function createCamContainer(){
+	containers.push(new Container("Cam", function(callback) {
+		requestCam(callback);
+	},color= "#0000ff"));
+}
+
+function createCamInfoContainer(){
+	containers.push(new Container("CamInfo", function(callback) {
+		requestCamInfo(callback);
+	}, color="#5555ff"));
+}
+

@@ -43,7 +43,7 @@ function objectToTable(obj){
 		if (name == "gps" | name == "obd2"){
 			str += "<td><table>" + objectToTable(obj[name]) + "</table></td>";
 		} else {
-			if (name.includes("time") | name.includes("Time")){//.includes is case sensitive
+			if (name.includes("time") | name.includes("Time") | name.includes("delta")){//.includes is case sensitive
 				str += "<td>";
 				var date = new Date(Number(String(obj[name]).slice(0,-6)));//need to cut last 6 values cause Date() is not that precise
 				str += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+":"+date.getMilliseconds();

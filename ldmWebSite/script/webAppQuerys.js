@@ -13,9 +13,16 @@ function myMac(){
  */
 function requestCam(callback){
 	var post = $.post("http://localhost:1188/request_cam",JSON.stringify({condition:""}),
-			function(data,status){
+			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
+		callback(data.msgs[data.msgs.length-1]);
+	},"json");
+}
+
+function requestCamInfo(callback){
+	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:""}),
+			function(data){
 		callback(data.msgs[data.msgs.length-1]);
 	},"json");
 }
@@ -46,14 +53,6 @@ function requestObd2(){
 
 function requestDccInfo(){
 	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestCamInfo(){
-	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:"latest"}),
 			function(data,status,xhr){
 		console.log("data: "+data);
 		console.log("status: "+status);

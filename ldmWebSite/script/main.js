@@ -1,4 +1,3 @@
-containers = [];
 
 /**
  *updateFunction is repeatedly called to provide data for this div. should take a callback which shall be called with the retrived data 
@@ -119,8 +118,4 @@ $(document).ready(function(){
 	lockLayout();
 });
 
-function createCamDiv(){
-	cam = new Container("Cam", function(callback) {
-		requestCam(callback);
-	},color= "#2222ff");
-}
+
