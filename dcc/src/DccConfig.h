@@ -186,6 +186,9 @@ struct DccConfig {
 	double DCC_measure_interval_Tm;
 	double NDL_minDccSampling;
 
+	// Stats related to flushing outdated packets in hardware queues
+	double DCC_collect_pkt_flush_stats;
+
 
 	//Configuration of STATEs
 	size_t NDL_numActiveState;
@@ -244,6 +247,9 @@ struct DccConfig {
 		NDL_timeUp = pt.get("dcc.NDL_timeUp", 1.00);
 		NDL_timeDown = pt.get("dcc.NDL_timeDown", 5.00);
 		DCC_measure_interval_Tm = pt.get("dcc.DCC_measure_interval_Tm", 1.00);
+
+		DCC_collect_pkt_flush_stats = pt.get("dcc.DCC_collect_pkt_flush_stats", 1.00);
+
 		NDL_minDccSampling = pt.get("dcc.NDL_minDccSampling", 1.00);
 
 

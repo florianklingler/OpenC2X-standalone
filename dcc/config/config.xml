@@ -65,5 +65,6 @@
 	<NDL_timeDown>5.00</NDL_timeDown>
 	
 	<DCC_measure_interval_Tm>1.00</DCC_measure_interval_Tm>
+	<DCC_collect_pkt_flush_stats>1.00</DCC_collect_pkt_flush_stats>
 	<NDL_minDccSampling>1.00</NDL_minDccSampling>
 </dcc>

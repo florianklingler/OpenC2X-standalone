@@ -15,6 +15,7 @@
 #include "SendToHardwareViaMAC.h"
 #include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
+#include "PktStatsCollector.h"
 #include <random>
 
 
@@ -84,6 +85,8 @@ private:
 	State* mCurrentState;
 
 	ChannelProber* mChannelProber;
+
+	PktStatsCollector* mPktStatsCollector;
 
 	mutex mMutexLastTokenAt;
 	map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?

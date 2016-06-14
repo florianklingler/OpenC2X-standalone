@@ -30,6 +30,8 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 		mChannelProber = new ChannelProber(mConfig.ethernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
 	}
 
+	mPktStatsCollector = new PktStatsCollector(mConfig.ethernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService);
+
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.1, 0.1);
@@ -92,6 +94,10 @@ void DCC::init() {
 	if(!mConfig.simulateChannelLoad) {
 		mChannelProber->init();
 	}
+
+	// Initialize module for collecting statistics related to flushing outdated packets in hardware queues
+	mPktStatsCollector->init();
+
 	//create and start threads
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
