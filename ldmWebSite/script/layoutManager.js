@@ -72,9 +72,20 @@ function createCamContainer(){
 	},color= "#0000ff"));
 }
 
+function createDenmContainer(){
+	containers.push(new Container("Denm", function(callback) {
+		requestDenm(callback);
+	},color= "#0000ff"));
+}
+
 function createCamInfoContainer(){
 	containers.push(new Container("CamInfo", function(callback) {
 		requestCamInfo(callback);
 	}, color="#5555ff"));
 }
 
+function createDccInfoContainer(){
+	containers.push(new Container("DccInfo", function(callback) {
+		requestDccInfo(callback);
+	}, color="#5555ff"));
+}

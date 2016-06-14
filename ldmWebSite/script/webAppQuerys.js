@@ -12,7 +12,7 @@ function myMac(){
  * @param callback(latest cam msg)
  */
 function requestCam(callback){
-	var post = $.post("http://localhost:1188/request_cam",JSON.stringify({condition:""}),
+	var post = $.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
@@ -21,42 +21,38 @@ function requestCam(callback){
 }
 
 function requestCamInfo(callback){
-	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:"latest"}),
 			function(data){
 		callback(data.msgs[data.msgs.length-1]);
 	},"json");
 }
 
-function requestDenm(){
+function requestDenm(callback){
 	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data.msgs[data.msgs.length-1]);
+	},"json");
 }
 
-function requestGps(){
+function requestGps(callback){
 	$.post("http://localhost:1188/request_gps",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data.msgs[data.msgs.length-1]);
+	},"json");
 }
 
-function requestObd2(){
+function requestObd2(callback){
 	$.post("http://localhost:1188/request_obd2",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data.msgs[data.msgs.length-1]);
+	},"json");
 }
 
-function requestDccInfo(){
+function requestDccInfo(callback){
 	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data.msgs[data.msgs.length-1]);
+	},"json");
 }
 
 function triggerDenm(){

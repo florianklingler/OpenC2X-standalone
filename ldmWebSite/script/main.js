@@ -54,9 +54,9 @@ function Container(name,updateFunction,color,updateInterval){
 	this.updateButton.click(this.toggleUpdate);
 }
 
-function camUpdate(callback){
-	requestCam(callback);
-}
+//function camUpdate(callback){
+//	requestCam(callback);
+//}
 
 
 function initMap(){
@@ -85,13 +85,13 @@ function initMap(){
 	//var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
 	
 	window.setInterval(function(){
-//		requestCam(function(cam) {
-//			if(cam.gps){
-//				pos[0] = cam.gps.latitude;
-//				pos[1] = cam.gps.longitude;
-//			}
-//			marker.setLatLng(pos);
-//		})
+		requestCam(function(cam) {
+			if(cam.gps){
+				pos[0] = cam.gps.latitude;
+				pos[1] = cam.gps.longitude;
+			}
+			marker.setLatLng(pos);
+		});
 		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
 		map.invalidateSize();
 		map.setView(pos);
