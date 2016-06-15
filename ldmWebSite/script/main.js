@@ -55,7 +55,7 @@ function Container(name,updateFunction,color,updateInterval){
 }
 
 /**
- * holds and updates cam data
+ * holds and updates most recend cam data for each station id
  */
 camData = {
 	mymac : "",
@@ -108,13 +108,12 @@ camData = {
 		} else {
 			return camData.cams.get(camData.mymac);
 		}
-	}
-	
+	},	
 };
 
 function initMap(){
 	//init map
-	var map = L.map('mapContainer');
+	map = L.map('mapContainer');
 
 	// create the tile layer with correct attribution
 	var osmUrl="map/openstreetmap/{z}/{x}/{y}.png";
@@ -126,27 +125,37 @@ function initMap(){
 	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
 
 	// start the map in Paderborn
-	map.setView(new L.LatLng(51.7315, 8.739),15);
+	viewPosition = [51.7315, 8.739];
+	map.setView(viewPosition,15);
 	map.addLayer(osm);
 	
-	var pos =[51.7315, 8.739];
-	var marker = L.marker([51.7315, 8.739]).addTo(map);
-	var myIcon = L.icon({
-	    iconUrl: 'image/marker/marker-icon-red.png',
-	});
-	
-	//var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
+	markers = [];
 	
 	window.setInterval(function(){
 		var cam = camData.getLastOwnCam();
-		if(cam && cam.gps){
-			pos[0] = cam.gps.latitude;
-			pos[1] = cam.gps.longitude;
+		if (camData.mymac != ""){//not uninitalised
+			markers.forEach(function(marker) {
+				map.removeLayer(marker);
+			})
+			var myIcon = L.icon({
+				    iconUrl: 'image/marker/marker-icon-red.png',
+				});
+			
+			camData.cams.forEach(function(cam, key) {
+				if ( key == camData.mymac){//own cam
+					if(cam.gps){
+						viewPosition = [cam.gps.latitude,cam.gps.longitude];
+						markers.push(L.marker(viewPosition).addTo(map));
+					}
+				} else {//other cams : red marker
+					if(cam.gps){
+						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: myIcon}).addTo(map));
+					}
+				}
+			})
 		}
-		marker.setLatLng(pos);
-		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
 		map.invalidateSize();
-		map.setView(pos);
+		map.setView(viewPosition);
 	},2000);
 	
 
