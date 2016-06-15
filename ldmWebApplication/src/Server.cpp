@@ -25,8 +25,8 @@ Server::Server() {
 	}
 
 	std::string moduleName = "WebApplication";
-	mClientLdm = new CommunicationClient(moduleName, "6789");
-	mLogger = new LoggingUtility(moduleName);
+	mClientLdm = new CommunicationClient(moduleName, "6789",0); //TODO: get real exp number
+	mLogger = new LoggingUtility(moduleName,0); //TODO: get real exp number
 }
 
 Server::~Server() {
@@ -380,7 +380,7 @@ int main(){
 	});
 
 	//denm triggering
-	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111");
+	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111",0); //TODO: get real exp number
 	CROW_ROUTE(app, "/trigger_denm")
 	.methods("POST"_method)
 	([senderToDenm](const crow::request& req){
