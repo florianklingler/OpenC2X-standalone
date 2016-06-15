@@ -2,8 +2,8 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include <time.h>
-#include <utility/LoggingUtility.h>
 #include <string>
+#include "LoggingUtility.h"
 
 using namespace std;
 using namespace el;

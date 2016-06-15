@@ -3,8 +3,8 @@
 
 #include <string>
 #include <zmq.hpp>
-#include <utility/zhelpers.hpp>
-#include <utility/LoggingUtility.h>
+#include "zhelpers.hpp"
+#include "LoggingUtility.h"
 
 
 class CommunicationClient {
