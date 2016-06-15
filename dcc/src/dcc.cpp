@@ -39,7 +39,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 	}
 
 	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService);
-	//FIXME: mPktStats = {};		//init stats to 0
+	mPktStats = {};		//init stats to 0
 
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
@@ -54,7 +54,8 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	initLeakyBuckets();
 
-	mTimerMeasure = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
+	mTimerMeasureChannel = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
+	mTimerMeasurePktStats = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_collect_pkt_flush_stats*1000));	//1000
 	mTimerStateUpdate = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.NDL_minDccSampling*1000));	//1000
 	mTimerDccInfo = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.dccInfoInterval));
 
@@ -82,10 +83,10 @@ DCC::~DCC() {
 	delete mSenderToLdm;
 
 	//stop and delete timers
-	mTimerMeasure->cancel();
+	mTimerMeasureChannel->cancel();
 	mTimerStateUpdate->cancel();
 	mTimerDccInfo->cancel();
-	delete mTimerMeasure;
+	delete mTimerMeasureChannel;
 	delete mTimerStateUpdate;
 	delete mTimerDccInfo;
 
@@ -118,7 +119,8 @@ void DCC::init() {
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 
 	//start timers
-	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
+	mTimerMeasureChannel->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
+	mTimerMeasurePktStats->async_wait(mStrand.wrap(boost::bind(&DCC::measurePktStats, this, boost::asio::placeholders::error)));
 	mTimerStateUpdate->async_wait(mStrand.wrap(boost::bind(&DCC::updateState, this, boost::asio::placeholders::error)));
 	mTimerDccInfo->async_wait(mStrand.wrap(boost::bind(&DCC::sendDccInfo, this, boost::asio::placeholders::error)));
 
@@ -322,8 +324,6 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 		return;
 	}
 
-	//TODO: also set mPktStats
-
 	if(mConfig.simulateChannelLoad) {
 		mChannelLoad = simulateChannelLoad();
 	} else {
@@ -333,8 +333,20 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 	mChannelLoadInTimeUp.insert(mChannelLoad);	//add to RingBuffer
 	mChannelLoadInTimeDown.insert(mChannelLoad);
 
-	mTimerMeasure->expires_at(mTimerMeasure->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1s
-	mTimerMeasure->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
+	mTimerMeasureChannel->expires_at(mTimerMeasureChannel->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_measure_interval_Tm*1000));	//1s
+	mTimerMeasureChannel->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
+}
+
+//periodically gets and sets the packet stats (about flushed packets)
+void DCC::measurePktStats(const boost::system::error_code& ec) {
+	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not measure channel
+		return;
+	}
+
+	mPktStats = mPktStatsCollector->getPktStats();
+
+	mTimerMeasurePktStats->expires_at(mTimerMeasurePktStats->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_collect_pkt_flush_stats*1000));	//1s
+	mTimerMeasurePktStats->async_wait(mStrand.wrap(boost::bind(&DCC::measurePktStats, this, boost::asio::placeholders::error)));
 }
 
 //updates state according to recent channel load measurements

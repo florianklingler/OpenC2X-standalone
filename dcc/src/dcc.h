@@ -35,6 +35,7 @@ public:
 	void setCurrentState(int state);
 	double simulateChannelLoad();
 	void measureChannel(const boost::system::error_code& ec);
+	void measurePktStats(const boost::system::error_code& ec);
 	void updateState(const boost::system::error_code& ec);
 	void initLeakyBuckets();
 	void addToken(const boost::system::error_code& ec, Channels::t_access_category ac);
@@ -67,7 +68,8 @@ private:
 
 	boost::asio::io_service mIoService;
 	boost::asio::io_service::strand mStrand;
-	boost::asio::deadline_timer* mTimerMeasure;
+	boost::asio::deadline_timer* mTimerMeasureChannel;
+	boost::asio::deadline_timer* mTimerMeasurePktStats;
 	boost::asio::deadline_timer* mTimerStateUpdate;
 	boost::asio::deadline_timer* mTimerDccInfo;
 
