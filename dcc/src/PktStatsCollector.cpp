@@ -125,61 +125,58 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 
 	if (sinfo[NL80211_FLUSH_REQ_BE]) {
 		be_flush_req = nla_get_u32(sinfo[NL80211_FLUSH_REQ_BE]);
-		if(PRINT_STATS) {
-			cout << "\tBE be_flush_req:\t\t\t" << be_flush_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tBE be_flush_req:\t\t\t" << be_flush_req << endl;
+//		}
 	}
 
 	if (sinfo[NL80211_FLUSH_NOT_REQ_BE]) {
 		be_flush_not_req = nla_get_u32(sinfo[NL80211_FLUSH_NOT_REQ_BE]);
-		if(PRINT_STATS) {
-			cout << "\tBE be_flush_not_req:\t\t\t" << be_flush_not_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tBE be_flush_not_req:\t\t\t" << be_flush_not_req << endl;
+//		}
 	}
 
 	if (sinfo[NL80211_FLUSH_REQ_BK]) {
 		bk_flush_req = nla_get_u32(sinfo[NL80211_FLUSH_REQ_BK]);
-		if(PRINT_STATS) {
-			cout << "\tBK bk_flush_req:\t\t\t" << bk_flush_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tBK bk_flush_req:\t\t\t" << bk_flush_req << endl;
+//		}
 	}
 	if (sinfo[NL80211_FLUSH_NOT_REQ_BK]) {
 		bk_flush_not_req = nla_get_u32(sinfo[NL80211_FLUSH_NOT_REQ_BK]);
-		if(PRINT_STATS) {
-			cout << "\tBK bk_flush_not_req:\t\t\t" << bk_flush_not_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tBK bk_flush_not_req:\t\t\t" << bk_flush_not_req << endl;
+//		}
 	}
 
 	if (sinfo[NL80211_FLUSH_REQ_VI]) {
 		vi_flush_req = nla_get_u32(sinfo[NL80211_FLUSH_REQ_VI]);
-		if(PRINT_STATS) {
-			cout << "\tVI vi_flush_req:\t\t\t" << vi_flush_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tVI vi_flush_req:\t\t\t" << vi_flush_req << endl;
+//		}
 	}
 	if (sinfo[NL80211_FLUSH_NOT_REQ_VI]) {
 		vi_flush_not_req = nla_get_u32(sinfo[NL80211_FLUSH_NOT_REQ_VI]);
-		if(PRINT_STATS) {
-			cout << "\tVI vi_flush_not_req:\t\t\t" << vi_flush_not_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tVI vi_flush_not_req:\t\t\t" << vi_flush_not_req << endl;
+//		}
 	}
 
 	if (sinfo[NL80211_FLUSH_REQ_VO]) {
 		vo_flush_req = nla_get_u32(sinfo[NL80211_FLUSH_REQ_VO]);
-		if(PRINT_STATS) {
-			cout << "\tVO vo_flush_req:\t\t\t" << vo_flush_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tVO vo_flush_req:\t\t\t" << vo_flush_req << endl;
+//		}
 	}
 	if (sinfo[NL80211_FLUSH_NOT_REQ_VO]) {
 		vo_flush_not_req = nla_get_u32(sinfo[NL80211_FLUSH_NOT_REQ_VO]);
-		if(PRINT_STATS) {
-			cout << "\tVO vo_flush_not_req:\t\t\t" << vo_flush_not_req << endl;
-		}
+//		if(PRINT_STATS) {
+//			cout << "\tVO vo_flush_not_req:\t\t\t" << vo_flush_not_req << endl;
+//		}
 	}
 
 	// Update statistics
-//	uint64_t busy_time_diff = busy_time - cp->mWifi->stats.busyTimeLast;
-//	uint64_t total_time_diff = total_time - cp->mWifi->stats.totalTimeLast;
-//	double load = ((100 * busy_time_diff) / total_time_diff) / 100.0;
 	mutexStats.lock();
 	cp->mWifi->stats.be_flush_not_req = be_flush_not_req;
 	cp->mWifi->stats.be_flush_req = be_flush_req;
@@ -190,7 +187,11 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->mWifi->stats.vo_flush_not_req = vo_flush_not_req;
 	cp->mWifi->stats.vo_flush_req = vo_flush_req;
 	mutexStats.unlock();
-//	cp->mLogger->logStats(to_string(channel) + "\t" + to_string(busy_time_diff) + "\t" + to_string(total_time_diff) + "\t" + to_string(load));
+	cp->mLogger->logStats(to_string(cp->mWifi->stats.be_flush_req) + "\t" + to_string(cp->mWifi->stats.be_flush_not_req)
+			+ "\t" + to_string(cp->mWifi->stats.bk_flush_req) + "\t" + to_string(cp->mWifi->stats.bk_flush_not_req)
+			+ "\t" + to_string(cp->mWifi->stats.vi_flush_req) + "\t" + to_string(cp->mWifi->stats.vi_flush_not_req)
+			+ "\t" + to_string(cp->mWifi->stats.vo_flush_req) + "\t" + to_string(cp->mWifi->stats.vo_flush_not_req)
+		);
 	return NL_SKIP;
 }
 
