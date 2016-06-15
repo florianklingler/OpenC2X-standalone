@@ -2,14 +2,14 @@
 
 using namespace std;
 
-CommunicationSender::CommunicationSender(string ownerModule, string portOut) {
+CommunicationSender::CommunicationSender(string ownerModule, string portOut, int expNo) {
 	mOwnerModule = ownerModule;
 
 	mContext = new zmq::context_t(1);
 	mPublisher = new zmq::socket_t(*mContext, ZMQ_PUB);
 	mPublisher->bind(("tcp://*:" + portOut).c_str());
 
-	mLogger = new LoggingUtility(mOwnerModule);
+	mLogger = new LoggingUtility(mOwnerModule, expNo);
 }
 
 CommunicationSender::~CommunicationSender() {

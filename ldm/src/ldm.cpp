@@ -20,12 +20,12 @@ LDM::LDM() {
 	}
 
 	string moduleName = "Ldm";
-	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM");
-	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM");
-	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo");
-	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo");
-	mServer = new CommunicationServer(moduleName, "6789");
-	mLogger = new LoggingUtility(moduleName);
+	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM", config.mExpNo);
+	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM", config.mExpNo);
+	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo", config.mExpNo);
+	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo", config.mExpNo);
+	mServer = new CommunicationServer(moduleName, "6789", config.mExpNo);
+	mLogger = new LoggingUtility(moduleName, config.mExpNo);
 
 	//open SQLite database
 	if(sqlite3_open(("../db/ldm-" + to_string(config.mExpNo) + ".db").c_str(), &mDb)) {

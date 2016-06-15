@@ -9,7 +9,7 @@
 
 class CommunicationReceiver {
 public:
-	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope);
+	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo);
 	~CommunicationReceiver();
 	std::pair<std::string, std::string> receive();
 	std::string receiveFromHw();

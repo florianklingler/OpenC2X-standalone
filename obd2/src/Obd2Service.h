@@ -9,6 +9,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
 #include <string>
+#include <config/config.h>
 
 struct Obd2Config {
 	bool mSimulateData;
@@ -38,6 +39,7 @@ public:
 
 private:
 	Obd2Config mConfig;
+	GlobalConfig mGlobalConfig;
 
 	CommunicationSender* mSender;
 	LoggingUtility* mLogger;

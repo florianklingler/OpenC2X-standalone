@@ -28,7 +28,7 @@ struct netinterface {
 
 class PktStatsCollector {
 public:
-	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io);
+	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
 	virtual ~PktStatsCollector();
 
 	void init();

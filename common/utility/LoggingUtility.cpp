@@ -3,11 +3,12 @@
 
 #include <time.h>
 #include <utility/LoggingUtility.h>
+#include <string>
 
 using namespace std;
 using namespace el;
 
-LoggingUtility::LoggingUtility(string moduleName) {
+LoggingUtility::LoggingUtility(string moduleName, int expNo) {
 	mModuleName = moduleName;
 
 	Configurations confDefault("../config/logging.conf");			//default logger for debugging
@@ -15,11 +16,11 @@ LoggingUtility::LoggingUtility(string moduleName) {
 
 	confDefault.setRemainingToDefault();
 	confDefault.setGlobally(ConfigurationType::Format, mModuleName + ", %datetime{%h:%m:%s,%g} \t %level \t %msg \t\t");
-	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/log_" + mModuleName + "_" + timeString() + ".log");
+	confDefault.setGlobally(ConfigurationType::Filename, "../../logs/" + to_string(expNo) + "_log_" + mModuleName + "_" + timeString() + ".log");
 
 	confStatistics.setRemainingToDefault();
 	confStatistics.setGlobally(ConfigurationType::Format, mModuleName + " \t %msg");
-	confStatistics.setGlobally(ConfigurationType::Filename, "../../logs/stats_" + mModuleName + "_" + timeString() + ".csv");
+	confStatistics.setGlobally(ConfigurationType::Filename, "../../logs/" + to_string(expNo) + "_stats_" + mModuleName + "_" + timeString() + ".csv");
 
 	Loggers::reconfigureLogger("default_" + mModuleName, confDefault);
 	Loggers::reconfigureLogger("statistics_" + mModuleName, confStatistics);

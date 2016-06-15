@@ -23,11 +23,11 @@ public:
 	typename std::list<std::pair<int64_t, T*> > queue;	//pair: validUntil, packet
 	size_t queueSize;
 
-	LeakyBucket(size_t bucketSize, size_t queueSize) {
+	LeakyBucket(size_t bucketSize, size_t queueSize, int expNo) {
 		this->maxBucketSize = bucketSize;
 		availableTokens = 0;
 		this->queueSize = queueSize;
-		mLogger = new LoggingUtility("Dcc");
+		mLogger = new LoggingUtility("Dcc", expNo);
 	}
 
 	~LeakyBucket() {

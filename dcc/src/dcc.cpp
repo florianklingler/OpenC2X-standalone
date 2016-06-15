@@ -24,21 +24,21 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	string module = "Dcc";
 	mConfig = config;
-	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM");
-	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM");
-	mSenderToHw = new SendToHardwareViaMAC(module,mGlobalConfig.mEthernetDevice);
-	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module);
-	mSenderToServices = new CommunicationSender(module, "5555");
-	mSenderToLdm = new CommunicationSender(module, "1234");
+	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM", mGlobalConfig.mExpNo);
+	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM", mGlobalConfig.mExpNo);
+	mSenderToHw = new SendToHardwareViaMAC(module,mGlobalConfig.mEthernetDevice, mGlobalConfig.mExpNo);
+	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module, mGlobalConfig.mExpNo);
+	mSenderToServices = new CommunicationSender(module, "5555", mGlobalConfig.mExpNo);
+	mSenderToLdm = new CommunicationSender(module, "1234", mGlobalConfig.mExpNo);
 
-	mLogger = new LoggingUtility(module);
+	mLogger = new LoggingUtility(module, mGlobalConfig.mExpNo);
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
+		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService, mGlobalConfig.mExpNo); // wlan0
 	}
 
-	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService);
+	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService, mGlobalConfig.mExpNo);
 	mPktStats = {};		//init stats to 0
 
 	mRandNumberGen = default_random_engine(0);
@@ -143,10 +143,10 @@ void DCC::initStates(int numActiveStates) {
 
 //initializes leaky buckets
 void DCC::initLeakyBuckets() {
-	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI)));
-	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO)));
-	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE)));
-	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK)));
+	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI, mGlobalConfig.mExpNo)));
+	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO, mGlobalConfig.mExpNo)));
+	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE, mGlobalConfig.mExpNo)));
+	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK, mGlobalConfig.mExpNo)));
 }
 
 

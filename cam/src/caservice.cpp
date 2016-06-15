@@ -23,14 +23,14 @@ CaService::CaService(CaServiceConfig &config) {
 	}
 
 	mConfig = config;
-	mLogger = new LoggingUtility("CaService");
+	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
 
-	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM");
-	mSenderToDcc = new CommunicationSender("CaService", "6666");
-	mSenderToLdm = new CommunicationSender("CaService", "8888");
+	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM", mGlobalConfig.mExpNo);
+	mSenderToDcc = new CommunicationSender("CaService", "6666", mGlobalConfig.mExpNo);
+	mSenderToLdm = new CommunicationSender("CaService", "8888", mGlobalConfig.mExpNo);
 
-	mReceiverGps = new CommunicationReceiver("CaService", "3333", "GPS");
-	mReceiverObd2 = new CommunicationReceiver("CaService", "2222", "OBD2");
+	mReceiverGps = new CommunicationReceiver("CaService", "3333", "GPS", mGlobalConfig.mExpNo);
+	mReceiverObd2 = new CommunicationReceiver("CaService", "2222", "OBD2", mGlobalConfig.mExpNo);
 
 	mThreadReceive = new boost::thread(&CaService::receive, this);
 	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);

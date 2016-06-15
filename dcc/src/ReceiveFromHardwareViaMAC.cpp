@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule) {
-	mLogger = new LoggingUtility(ownerModule);
+ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule, int expNo) {
+	mLogger = new LoggingUtility(ownerModule, expNo);
 
 	//has root?
 	if (getuid() != 0){

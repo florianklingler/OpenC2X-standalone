@@ -6,7 +6,7 @@
 
 class LoggingUtility {
 public:
-	LoggingUtility(std::string moduleName);
+	LoggingUtility(std::string moduleName, int expNo);
 	virtual ~LoggingUtility();
 
 	std::string timeString();

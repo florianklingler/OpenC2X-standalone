@@ -2,11 +2,11 @@
 
 using namespace std;
 
-CommunicationClient::CommunicationClient(string ownerModule, string portOut) {
+CommunicationClient::CommunicationClient(string ownerModule, string portOut, int expNo) {
 	mOwnerModule = ownerModule;
 	mPortOut = portOut;
 
-	mLogger = new LoggingUtility(mOwnerModule);
+	mLogger = new LoggingUtility(mOwnerModule, expNo);
 
 	mContext = new zmq::context_t(1);
 	mClient = NULL;
