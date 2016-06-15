@@ -74,8 +74,16 @@ void LDM::createTables() {
 	char* sqlCommand;
 	char* errmsg = 0;
 
+	//begin transaction
+	sqlCommand = (char*) "BEGIN TRANSACTION;";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
 	//create CAM table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS CAM(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
 			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
 			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
@@ -85,7 +93,7 @@ void LDM::createTables() {
 	}
 
 	//create DENM table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS DENM(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM(" \
 				"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
 				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
@@ -95,7 +103,7 @@ void LDM::createTables() {
 	}
 
 	//create GPS table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS GPS(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS GPS(" \
 				"key INTEGER PRIMARY KEY, latitude REAL, longitude REAL, altitude REAL, epx REAL, epy REAL, time INTEGER, online INTEGER, satellites INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -104,7 +112,7 @@ void LDM::createTables() {
 	}
 
 	//create OBD2 table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS OBD2(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS OBD2(" \
 				"key INTEGER PRIMARY KEY, time INTEGER, speed REAL, rpm INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -113,7 +121,7 @@ void LDM::createTables() {
 	}
 
 	//create DccInfo table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS DccInfo(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DccInfo(" \
 				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL, flushReqPackets INTEGER, flushNotReqPackets INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -122,8 +130,16 @@ void LDM::createTables() {
 	}
 
 	//create CamInfo table
-	sqlCommand = "CREATE TABLE IF NOT EXISTS CamInfo(" \
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CamInfo(" \
 				"key INTEGER PRIMARY KEY, time INTEGER, triggerReason TEXT, delta REAL);";
+	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
+	//commit transaction
+	sqlCommand = (char*) "COMMIT;";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -426,6 +442,14 @@ void LDM::insertCam(camPackage::CAM cam) {
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
 
+	//begin transaction
+	char* errmsg = 0;
+	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+
 	//insert GPS if available
 	if (cam.has_gps()) {
 		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << cam.gps().latitude() << ", " << cam.gps().longitude() << ", " << cam.gps().altitude() << ", " << cam.gps().epx() << ", " << cam.gps().epy() << ", " << cam.gps().time() << ", " << cam.gps().online() << ", " << cam.gps().satellites() << " );";
@@ -458,6 +482,13 @@ void LDM::insertCam(camPackage::CAM cam) {
 		sSql << "INSERT INTO CAM (stationId, id, content, createTime) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
 	}
 	insert(sSql.str());
+
+	//commit transaction
+	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
 }
 
 //inserts DENM into DB
@@ -465,6 +496,14 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 	stringstream sSql;
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
+
+	//begin transaction
+	char* errmsg = 0;
+	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
 
 	//insert GPS if available
 	if (denm.has_gps()) {
@@ -498,6 +537,13 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 		sSql << "INSERT INTO DENM (stationId, id, content, createTime) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
 	}
 	insert(sSql.str());
+
+	//commit transaction
+	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
 }
 
 
