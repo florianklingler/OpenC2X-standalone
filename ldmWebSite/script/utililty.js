@@ -40,7 +40,8 @@ function objectToTable(obj){
 	for (var name in obj){
 		str += "<tr>";
 		str += "<td>"+name+"</td>";
-		if (name == "gps" | name == "obd2"){
+		if (name == "gps" | name == "obd2" 
+			| name.includes("Cat0")| name.includes("Cat1")| name.includes("Cat2")| name.includes("Cat3") /*categories of dccInfo*/){
 			str += "<td><table>" + objectToTable(obj[name]) + "</table></td>";
 		} else {
 			if (name.includes("time") | name.includes("Time") | name.includes("delta")){//.includes is case sensitive

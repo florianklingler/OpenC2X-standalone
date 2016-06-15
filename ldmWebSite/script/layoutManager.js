@@ -75,7 +75,7 @@ function createCamContainer(){
 function createDenmContainer(){
 	containers.push(new Container("Denm", function(callback) {
 		requestDenm(callback);
-	},color= "#0000ff"));
+	},color= "#FFFF00"));
 }
 
 function createCamInfoContainer(){
@@ -87,5 +87,5 @@ function createCamInfoContainer(){
 function createDccInfoContainer(){
 	containers.push(new Container("DccInfo", function(callback) {
 		requestDccInfo(callback);
-	}, color="#5555ff"));
+	}, color="#FF7700"));
 }

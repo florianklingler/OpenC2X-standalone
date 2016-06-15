@@ -13,6 +13,17 @@
 #include <buffers/build/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 
+struct WebApplicationConfig {
+	int mTimeout;
+
+	void loadConfigXML(const std::string &filename) {
+		boost::property_tree::ptree pt;
+		read_xml(filename, pt);
+
+		mTimeout = pt.get("webApplication.timeout", 100);
+
+	}
+};
 
 class Server {
 public:
@@ -31,9 +42,11 @@ public:
 
 private:
 	GlobalConfig mConfig;
+	WebApplicationConfig mLocalConfig;
 
 	CommunicationClient* mClientLdm;
 
 	LoggingUtility* mLogger;
+
 };
 #endif /* SERVER_H_ */

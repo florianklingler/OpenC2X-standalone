@@ -95,7 +95,7 @@ function initMap(){
 		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
 		map.invalidateSize();
 		map.setView(pos);
-	},1000);
+	},2000);
 	
 
 	$("#mapWrapper").draggable().resizable();
@@ -107,13 +107,13 @@ $(document).ready(function(){
 	
 	var counter = 1;
 	
-	var carContainer = new Container("car", function(callback) {
-		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
-	},color="#ff2222");
-	
-	var dccContainer = new Container("dcc", function(callback) {
-		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
-	},color="#22ff22");
+//	var carContainer = new Container("car", function(callback) {
+//		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
+//	},color="#ff2222");
+//	
+//	var dccContainer = new Container("dcc", function(callback) {
+//		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
+//	},color="#22ff22");
 	
 });
 

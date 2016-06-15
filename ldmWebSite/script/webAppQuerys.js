@@ -12,7 +12,7 @@ function myMac(){
  * @param callback(latest cam msg)
  */
 function requestCam(callback){
-	var post = $.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
+	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
@@ -51,6 +51,7 @@ function requestObd2(callback){
 function requestDccInfo(callback){
 	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
 			function(data){
+		console.log(data.msgs[data.msgs.length-1]);
 		callback(data.msgs[data.msgs.length-1]);
 	},"json");
 }
