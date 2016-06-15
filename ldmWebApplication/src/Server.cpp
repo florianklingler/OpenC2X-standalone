@@ -14,7 +14,14 @@ Server::Server() {
 		mConfig.loadConfigXML("../../common/config/config.xml");
 	}
 	catch (std::exception &e) {
-		std::cerr << "Error while loading config.xml: " << e.what() << std::endl;
+		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
+	}
+
+	try {
+		mLocalConfig.loadConfigXML("../config/config.xml");
+	}
+	catch (std::exception &e) {
+		std::cerr << "Error while loading local config.xml: " << e.what() << std::endl;
 	}
 
 	std::string moduleName = "WebApplication";
@@ -33,7 +40,7 @@ std::string Server::requestCam(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all CAMs from LDM
-	reply = mClientLdm->sendRequest("CAM", condition, 100, 1);
+	reply = mClientLdm->sendRequest("CAM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -64,7 +71,7 @@ std::string Server::requestDenm(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all DENMs from LDM
-	reply = mClientLdm->sendRequest("DENM", condition, 100, 1);
+	reply = mClientLdm->sendRequest("DENM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -95,7 +102,7 @@ std::string Server::requestGps(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all GPSs from LDM
-	reply = mClientLdm->sendRequest("GPS", condition, 100, 1);
+	reply = mClientLdm->sendRequest("GPS", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -126,7 +133,7 @@ std::string Server::requestObd2(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all OBD2s from LDM
-	reply = mClientLdm->sendRequest("OBD2", condition, 100, 1);
+	reply = mClientLdm->sendRequest("OBD2", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -157,24 +164,33 @@ std::string Server::requestDccInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;;
 	//get all dccInfos from LDM
-	reply = mClientLdm->sendRequest("dccInfo", condition, 100, 1);
+	reply = mClientLdm->sendRequest("dccInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
 		//convert to JSON
-		std::string json = "{\"type\":\"dccInfo\",\"number\":" + std::to_string(ldmData.data_size()) + ",\"msgs\":[";
-		for (int i=0; i<ldmData.data_size(); i++) {
-			std::string tempJson;
-			std::string serializedDccInfo = ldmData.data(i);
-			infoPackage::DccInfo dccInfo;
-			dccInfo.ParseFromString(serializedDccInfo);
-			pbjson::pb2json(&dccInfo, tempJson);
-			if (i > 0) {
-				json += "," + tempJson;
+		std::string json = "{\"type\":\"dccInfo\",\"number\":" + std::to_string(ldmData.data_size()/4) + ",\"msgs\":[";
+		for (int i=0; i<ldmData.data_size(); i+=4) {
+			if(i > 0){//not first element
+				json += ",";
 			}
-			else {
-				json += tempJson;
+			json += "{";
+			for (int j = 0; j < 4; j++){
+				std::string tempJson;
+				std::string serializedDccInfo = ldmData.data(i+j);
+				infoPackage::DccInfo dccInfo;
+				dccInfo.ParseFromString(serializedDccInfo);
+				pbjson::pb2json(&dccInfo, tempJson);
+				if (j > 0) {
+					json += ",\"Cat"+std::to_string(j)+"\" :";
+					json +=  tempJson;
+				}
+				else {
+					json += "\"Cat"+std::to_string(j)+"\" :";
+					json += tempJson;
+				}
 			}
+			json+="}";
 		}
 		json += "]}";
 		return json;
@@ -188,7 +204,7 @@ std::string Server::requestCamInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all camInfos from LDM
-	reply = mClientLdm->sendRequest("camInfo", condition, 100, 1);
+	reply = mClientLdm->sendRequest("camInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -221,6 +237,7 @@ std::string Server::myMac() {
 
 int main(){
 	crow::SimpleApp app;
+	crow::logger::setLogLevel(crow::LogLevel::ERROR);	//ignore info logging in crow
 
 	//ldm requests
 	Server* server = new Server();
@@ -243,6 +260,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -265,6 +283,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -287,6 +306,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -307,9 +327,9 @@ int main(){
 
 		reply = server->requestObd2(condition);
 
-		std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -330,9 +350,9 @@ int main(){
 
 		reply = server->requestDccInfo(condition);
 
-		std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -353,9 +373,9 @@ int main(){
 
 		reply = server->requestCamInfo(condition);
 
-		std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -383,6 +403,7 @@ int main(){
 
 	    auto resp = crow::response{"Triggered DENM"};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -392,11 +413,11 @@ int main(){
 	([server](){
 		auto resp = crow::response{server->myMac()};
 		resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
 	app.port(1188).multithreaded().run();
-
 	delete server;
 	delete senderToDenm;
 }

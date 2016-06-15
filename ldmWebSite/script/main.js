@@ -1,96 +1,119 @@
 
+/**
+ *updateFunction is repeatedly called to provide data for this div. should take a callback which shall be called with the retrived data 
+ * @param updateFunction fn(callback)
+ */
+function Container(name,updateFunction,color,updateInterval){
+	this.updateInterval = updateInterval || 1000;
+	var color = color || "#555555";
+	this.id = name;
+	this.updateFunction = updateFunction;
+	this.intervalID = -1;
+	var htmlstr = 
+		'<div id="'+name+'" class="container dataContainer"> '+
+        	'<h4 style="display:inline-block">'+name+'</h4>'+
+        	'<div style="background:green" class="updateButton"></div>'+
+        	'<table id="'+name+'_data">'+
+				'<tr><td>loading</td><td>Data</td></tr>'+
+        	'</table>'+
+    	'</div>';
+	$("body").append(htmlstr);
+	var div = $("#"+name).draggable().resizable();
+	div.css("border-color",color);
+	div.css("background",increase_brightness(color, 70));
+	this.dataTable = $("#"+name+"_data");
+	this.setTable = function(data){
+		$("#"+this.id+"_data").html(objectToTable(data));
+	}.bind(this);
+	
+	this.updateButton = div.children(".updateButton");
+	this.enableUpdate = function(){
+		if (this.intervalID === -1){
+			this.intervalID=window.setInterval(
+				function(){this.updateFunction(this.setTable);}.bind(this),
+				this.updateInterval
+			);
+			this.updateButton.css("background","green");
+		}
+	}.bind(this);
+	this.enableUpdate();
+	
+	this.disableUpdate = function(){
+		window.clearInterval(this.intervalID);
+		this.intervalID=-1;
+		this.updateButton.css("background","red");
+	}.bind(this);
+	
+	this.toggleUpdate= function(){
+		if (this.intervalID ===-1){
+			this.enableUpdate();
+		} else {
+			this.disableUpdate();
+		}
+	}.bind(this);
+	this.updateButton.click(this.toggleUpdate);
+}
 
 /**
- * 
- * @param {String} jsonString
- * @returm {String} html table body filles with values from json obj
+ * holds and updates most recend cam data for each station id
  */
-var JSONtoTable = function(jsonString){
-	/** @type {JSON} */
-	var jsonObj = JSON.parse(jsonString); 
-	var str = ""; //"<table>";
+camData = {
+	mymac : "",
+	cams : new Map(),
+	refreshRate : 1000,
+	lastUpdate : 0,
+
+	/**
+	 * checks whether camData is inialised and initialises it if not
+	 * @returns {Boolean} is initalised
+	 */
+	init : function(){
+		if (this.mymac == ""){//is not initalised
+			requestMyMac(function(data) {
+				this.mymac = data.myMac;
+			}.bind(this));
+			return false;
+		} else {
+			return true;
+		}
+	},
+	/**
+	 * takes a response object from "webAppQuerys.js" and updates camDatas cam map
+	 * @param data
+	 */
+	digestCams : function(data){
+		if (camData.init()){ //is initalised
+			data.msgs.forEach(function(cam) {
+				if(camData.cams.get(cam.stationId)){
+					if (camData.cams.get(cam.stationId).createTime < cam.createTime){
+						camData.cams.set(cam.stationId,cam);
+					}
+				} else {
+					camData.cams.set(cam.stationId,cam);
+				}
+			})
+			
+		}
+	},
 	
-	for (name in jsonObj){
-		str += "<tr>";
-		str += "<td>"+name+"</td>";
-		str += "<td>"+jsonObj[name]+"</td>";
-		str += "</tr>";
-	}
-	//str += "</table>";
-	return str;
+	updateCams: function(){
+		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
+			requestCam(this.digestCams);
+		}
+	},
+	getLastOwnCam : function(callback){
+		camData.updateCams();
+		if(callback){
+			callback(camData.cams.get(camData.mymac));
+		} else {
+			return camData.cams.get(camData.mymac);
+		}
+	},	
 };
-
-
-function myMac(){
-	$.get("http://localhost:1188/my_mac",
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestCam(){
-	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestDenm(){
-	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestGps(){
-	$.post("http://localhost:1188/request_gps",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestObd2(){
-	$.post("http://localhost:1188/request_obd2",JSON.stringify({condition:""}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestDccInfo(){
-	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function requestCamInfo(){
-	$.post("http://localhost:1188/request_caminfo",JSON.stringify({condition:"latest"}),
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-function triggerDenm(){
-	$.post("http://localhost:1188/trigger_denm",JSON.stringify({content: "triggered by GUI"}),	
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
-}
-
-
-
 
 function initMap(){
 	//init map
-	var map = L.map('mapContainer');
+	map = L.map('mapContainer');
 
 	// create the tile layer with correct attribution
 	var osmUrl="map/openstreetmap/{z}/{x}/{y}.png";
@@ -98,29 +121,45 @@ function initMap(){
 	//marbel chache file:///home/jonh/.local/share/marble/maps/earth/openstreetmap/{z}/{x}/{y}.png
 	
 	
-	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+	var osmAttrib='Map data cr <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
 	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
 
 	// start the map in Paderborn
-	map.setView(new L.LatLng(51.7315, 8.739),15);
+	viewPosition = [51.7315, 8.739];
+	map.setView(viewPosition,15);
 	map.addLayer(osm);
 	
-	var pos =[51.7315, 8.739];
-	var marker = L.marker([51.7315, 8.739]).addTo(map);
-	var myIcon = L.icon({
-	    iconUrl: 'image/marker/marker-icon-red.png',
-	});
-	
-	var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
+	markers = [];
 	
 	window.setInterval(function(){
-		pos[1]+=0.0001;
-		marker.setLatLng(pos);
-		marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
+		var cam = camData.getLastOwnCam();
+		if (camData.mymac != ""){//not uninitalised
+			markers.forEach(function(marker) {
+				map.removeLayer(marker);
+			})
+			var myIcon = L.icon({
+				    iconUrl: 'image/marker/marker-icon-red.png',
+				});
+			
+			camData.cams.forEach(function(cam, key) {
+				if ( key == camData.mymac){//own cam
+					if(cam.gps){
+						viewPosition = [cam.gps.latitude,cam.gps.longitude];
+						markers.push(L.marker(viewPosition).addTo(map));
+					}
+				} else {//other cams : red marker
+					if(cam.gps){
+						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: myIcon}).addTo(map));
+					}
+				}
+			})
+		}
 		map.invalidateSize();
-		map.setView(pos);
-	},300);
+		map.setView(viewPosition);
+	},2000);
 	
+
+	$("#mapWrapper").draggable().resizable();
 }
 
 $(document).ready(function(){
@@ -129,22 +168,22 @@ $(document).ready(function(){
 	
 	var counter = 1;
 	
-	window.setInterval(function(){
-		var obj = {speed:counter,rpm:counter++ * 36,driver:"alive"};
-		$("#car_data").html(
-			JSONtoTable(JSON.stringify(obj))
-		);
-		var obj = {status:"running", queued:(counter*93)%77,state:(counter%2 == 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100};
-		$("#dcc_data").html(
-			JSONtoTable(JSON.stringify(obj))
-		);
-	},1000);
+//	var carContainer = new Container("car", function(callback) {
+//		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
+//	},color="#ff2222");
+//	
+//	var dccContainer = new Container("dcc", function(callback) {
+//		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
+//	},color="#22ff22");
 	
-	
-	
-	$(function() {
-    	$( ".container" ).draggable().resizable();
-  	});
-
-
 });
+
+/* Open when someone clicks on the button element */
+function openNav() {
+    document.getElementById("myNav").style.width = "50%";
+}
+
+/* Close when someone clicks on the "x" symbol inside the overlay */
+function closeNav() {
+    document.getElementById("myNav").style.width = "0%";
+}

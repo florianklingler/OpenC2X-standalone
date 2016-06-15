@@ -1,23 +1,49 @@
 //each container class div needs and unique id
 
+containers = [];
+layoutLocked = true;
+
 /**
  * saves to current layout to localstorage on client side
  */
 function saveLayout(){
 	var containers = $(".container");
-	var containerIDs = [];
+	var containerLayouts = {ids:[]};
 	
 	for (var i = 0; i< containers.length;i++){
 		var con = containers[i];
-		containerIDs.push(con.id);
 		var config = {
 			offset: $("#"+con.id).offset(),
 			height: $("#"+con.id).height(),
 			width: $("#"+con.id).width()
 		}
-		localStorage.setItem(con.id, JSON.stringify(config));
+		console.log(con);
+		containerLayouts["ids"].push(con.id);
+		containerLayouts[con.id] =config;
 	}
-	localStorage.setItem("containerIDs",JSON.stringify(containerIDs));
+	console.log("layout JSON String:" +JSON.stringify(containerLayouts));
+	localStorage.setItem("containerLayouts",JSON.stringify(containerLayouts));
+}
+
+
+/**
+ * loads and applys layout configs from jsonString
+ */
+function loadLayoutFromJSON(jsonString){
+	containerLayouts = JSON.parse(jsonString);
+	
+	containerLayouts.ids.forEach(function(id){
+		var config = containerLayouts[id]; 
+		if($("#"+id).length === 0){ //container is not created
+			if(typeof window["create"+id+"Container"] != 'undefined'){ //creation Function is defined
+				window["create"+id+"Container"]() 
+			}
+		}
+		$("#"+id).offset(config.offset),
+		$("#"+id).height(config.height),
+		$("#"+id).width(config.width)
+		
+	})
 }
 
 
@@ -25,33 +51,57 @@ function saveLayout(){
  * loads and applys layout configs peviously saved via saveLayout()
  */
 function loadLayout(){
-	var containerIDs = localStorage.getItem("containerIDs");
-	if(containerIDs == null){
+	var containerLayoutsJSON = localStorage.getItem("containerLayouts");
+	if(containerLayoutsJSON == null){
 		console.log("No layout saved.");
 		return;
 	}
-	containerIDs = JSON.parse(containerIDs);
-	
-	containerIDs.forEach(function(id){
-		var config = localStorage.getItem(id);
-		if(config == null){
-			console.log("No layout information for "+id+" present.");
-			return;
-		}
-		config  = JSON.parse(config);
-		$("#"+id).offset(config.offset),
-		$("#"+id).height(config.height),
-		$("#"+id).width(config.width)
-		
-	})
-	
+	loadLayoutFromJSON(containerLayoutsJSON);
 }
-	
-//var offset= $("#car").offset();
-//console.log(offset);
-//$("#car").offset({ top: 329, left: 615 });
 
-$("#car").height();
-$("#car").height(100);
-$("#car").width();
-$("#car").width(100);
+function lockLayout(){
+	$(".container").draggable("disable").resizable("disable");
+}
+
+function unlockLayout(){
+	$(".container").draggable("enable").resizable("enable");
+}
+
+function toggleLayoutLock(){
+	if(layoutLocked){
+		unlockLayout();
+	} else {
+		lockLayout();
+	}
+	layoutLocked = !layoutLocked;
+}
+
+function createCamContainer(){
+	if($("#Cam").length === 0){ //container is not created
+		containers.push(new Container("Cam", camData.getLastOwnCam,color= "#0000ff"));
+	}
+}
+
+function createDenmContainer(){
+	if($("#Denm").length === 0){ //container is not created
+	containers.push(new Container("Denm", function(callback) {
+			requestDenm(callback);
+		},color= "#FFFF00"));
+	}
+}
+
+function createCamInfoContainer(){
+	if($("#CamInfo").length === 0){ //container is not created
+		containers.push(new Container("CamInfo", function(callback) {
+			requestCamInfo(callback);
+		}, color="#5555ff"));
+	}
+}
+
+function createDccInfoContainer(){
+	if($("#DccInfo").length === 0){ //container is not created
+		containers.push(new Container("DccInfo", function(callback) {
+			requestDccInfo(callback);
+		}, color="#FF7700"));
+	}
+}

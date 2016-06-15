@@ -30,44 +30,25 @@ void CommunicationClient::init() {
 }
 
 
-//timeout in ms (>1000)
-string CommunicationClient::sendRequest(string envelope, string request, int timeout, int retries) {
+//timeout in ms
+string CommunicationClient::sendRequest(string envelope, string request, int timeout) {
 	init();
-    int retries_left = retries;
-    while (retries_left) {
-    	s_sendmore(*mClient, envelope);
-        s_send (*mClient, request);
-        mLogger->logDebug("sent request to ldm: " + envelope + ", " + request);
-
-        bool expect_reply = true;
-        while (expect_reply) {
-            //  Poll socket for a reply, with timeout
-            zmq::pollitem_t items[] = { { (void*) *mClient, 0, ZMQ_POLLIN, 0 } };
-            zmq::poll (&items[0], 1, timeout);
-            //  If we got a reply, process it
-            if (items[0].revents & ZMQ_POLLIN) {
-                //  We got a reply from the server, return it to requester
-                std::string reply = s_recv (*mClient);
-                mLogger->logDebug("ldm replied");
-				retries_left = 0;
-				expect_reply = false;
-				return reply;
-            } else if (--retries_left == 0) {
-                mLogger->logDebug("ldm seems to be offline, abandoning request");
-                expect_reply = false;
-                break;
-			} else {
-                mLogger->logDebug("no response from ldm, retrying…");
-                //  Old socket will be confused; close it and open a new one
-                delete mClient;
-                init();
-                //  Send request again, on new socket
-                s_sendmore(*mClient, envelope);
-                s_send (*mClient, request);
-			}
-		}
+	s_sendmore(*mClient, envelope);
+	s_send (*mClient, request);
+	mLogger->logDebug("sent request to ldm: " + envelope + ", " + request);
+	//Poll socket for a reply, with timeout
+	zmq::pollitem_t items[] = { { (void*) *mClient, 0, ZMQ_POLLIN, 0 } };
+	zmq::poll (&items[0], 1, timeout);
+	//If we got a reply, process it
+	if (items[0].revents & ZMQ_POLLIN) {
+		//  We got a reply from the server, return it to requester
+		std::string reply = s_recv (*mClient);
+		mLogger->logDebug("ldm replied");
+	    delete mClient;
+		return reply;
 	}
     //could not get a reply, return ""
+	mLogger->logDebug("no response from ldm");
     delete mClient;
     return "";
 }
