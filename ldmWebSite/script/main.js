@@ -70,38 +70,44 @@ camData = {
 	init : function(){
 		if (this.mymac == ""){//is not initalised
 			requestMyMac(function(data) {
-				console.log(data);
-				console.log(this);
 				this.mymac = data.myMac;
-				console.log(this);
 			}.bind(this));
 			return false;
 		} else {
 			return true;
 		}
 	},
+	/**
+	 * takes a response object from "webAppQuerys.js" and updates camDatas cam map
+	 * @param data
+	 */
 	digestCams : function(data){
-		if (this.init()){ //is initalised
+		if (camData.init()){ //is initalised
 			data.msgs.forEach(function(cam) {
-				if(this.cams.get(cam.stationId)){
-					if (this.cams.get(cam.stationId).createTime < cam.createTime){
-						this.cams.set(cam.stationId,cam);
+				if(camData.cams.get(cam.stationId)){
+					if (camData.cams.get(cam.stationId).createTime < cam.createTime){
+						camData.cams.set(cam.stationId,cam);
 					}
 				} else {
-					this.cams.set(cam.stationId,cam);
+					camData.cams.set(cam.stationId,cam);
 				}
 			})
 			
 		}
-	}.bind(this),
+	},
+	
 	updateCams: function(){
 		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
 			requestCam(this.digestCams);
 		}
 	},
-	getLastOwnCam : function(){
-		this.updateCams();
-		return this.cams.get(this.mymac);
+	getLastOwnCam : function(callback){
+		camData.updateCams();
+		if(callback){
+			callback(camData.cams.get(camData.mymac));
+		} else {
+			return camData.cams.get(camData.mymac);
+		}
 	}
 	
 };

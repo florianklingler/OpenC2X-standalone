@@ -15,7 +15,7 @@ function requestCam(callback){
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
-		callback(data.msgs);
+		callback(data);
 	},"json");
 }
 

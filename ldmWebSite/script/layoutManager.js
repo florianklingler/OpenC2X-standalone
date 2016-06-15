@@ -78,9 +78,7 @@ function toggleLayoutLock(){
 
 function createCamContainer(){
 	if($("#Cam").length === 0){ //container is not created
-		containers.push(new Container("Cam", function(callback) {
-			requestCam(callback);
-		},color= "#0000ff"));
+		containers.push(new Container("Cam", camData.getLastOwnCam,color= "#0000ff"));
 	}
 }
 
