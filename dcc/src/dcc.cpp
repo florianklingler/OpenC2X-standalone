@@ -38,7 +38,8 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService); // wlan0
 	}
 
-	mPktStatsCollector = new PktStatsCollector(mConfig.ethernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService);
+	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService);
+	//FIXME: mPktStats = {};		//init stats to 0
 
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
@@ -251,19 +252,27 @@ void DCC::sendDccInfo(const boost::system::error_code& ec) {
 			dccInfo.set_state("restricted");
 		}
 
-		//set access category
+		//set access category and flush stats
 		switch (ac) {
 		case Channels::AC_VI:
 			dccInfo.set_accesscategory("VI");
+			dccInfo.set_flushreqpackets(mPktStats.vi_flush_req);
+			dccInfo.set_flushnotreqpackets(mPktStats.vi_flush_not_req);
 			break;
 		case Channels::AC_VO:
 			dccInfo.set_accesscategory("VO");
+			dccInfo.set_flushreqpackets(mPktStats.vo_flush_req);
+			dccInfo.set_flushnotreqpackets(mPktStats.vo_flush_not_req);
 			break;
 		case Channels::AC_BE:
 			dccInfo.set_accesscategory("BE");
+			dccInfo.set_flushreqpackets(mPktStats.be_flush_req);
+			dccInfo.set_flushnotreqpackets(mPktStats.be_flush_not_req);
 			break;
 		case Channels::AC_BK:
 			dccInfo.set_accesscategory("BK");
+			dccInfo.set_flushreqpackets(mPktStats.bk_flush_req);
+			dccInfo.set_flushnotreqpackets(mPktStats.bk_flush_not_req);
 			break;
 		case Channels::NO_AC:
 			dccInfo.set_accesscategory("NO");
@@ -277,7 +286,6 @@ void DCC::sendDccInfo(const boost::system::error_code& ec) {
 		dccInfo.set_tokeninterval(currentTokenInterval(ac));
 		dccInfo.set_datarate(currentDatarate(ac));
 		dccInfo.set_carriersense(currentCarrierSense(ac));
-		//TODO: get and set flushReqPackets and flushNotReqPackets
 
 		dccInfo.SerializeToString(&serializedDccInfo);
 		mSenderToLdm->send("dccInfo", serializedDccInfo);
@@ -313,6 +321,8 @@ void DCC::measureChannel(const boost::system::error_code& ec) {
 	if (ec == boost::asio::error::operation_aborted) {	// Timer was cancelled, do not measure channel
 		return;
 	}
+
+	//TODO: also set mPktStats
 
 	if(mConfig.simulateChannelLoad) {
 		mChannelLoad = simulateChannelLoad();

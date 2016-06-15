@@ -13,7 +13,7 @@
 
 class PktStatsCollector {
 public:
-	PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io);
+	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io);
 	virtual ~PktStatsCollector();
 
 	void init();
@@ -43,7 +43,7 @@ public:
 	static int mNl80211Id;
 
 	netinterface *mWifi;
-	string mIfname;
+	std::string mIfname;
 	double mProbeInterval;
 	LoggingUtility* mLogger;
 

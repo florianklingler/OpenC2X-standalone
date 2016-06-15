@@ -93,6 +93,7 @@ private:
 	double mChannelLoad;
 
 	PktStatsCollector* mPktStatsCollector;
+	PktStatsCollector::PktStats mPktStats;
 	
 	std::mutex mMutexLastTokenAt;
 	std::map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
