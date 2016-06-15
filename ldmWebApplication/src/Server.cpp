@@ -40,7 +40,7 @@ std::string Server::requestCam(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all CAMs from LDM
-	reply = mClientLdm->sendRequest("CAM", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("CAM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -71,7 +71,7 @@ std::string Server::requestDenm(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all DENMs from LDM
-	reply = mClientLdm->sendRequest("DENM", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("DENM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -102,7 +102,7 @@ std::string Server::requestGps(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all GPSs from LDM
-	reply = mClientLdm->sendRequest("GPS", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("GPS", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -133,7 +133,7 @@ std::string Server::requestObd2(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all OBD2s from LDM
-	reply = mClientLdm->sendRequest("OBD2", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("OBD2", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -164,7 +164,7 @@ std::string Server::requestDccInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;;
 	//get all dccInfos from LDM
-	reply = mClientLdm->sendRequest("dccInfo", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("dccInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -204,7 +204,7 @@ std::string Server::requestCamInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all camInfos from LDM
-	reply = mClientLdm->sendRequest("camInfo", condition, mLocalConfig.mTimeout, 1);
+	reply = mClientLdm->sendRequest("camInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -237,6 +237,7 @@ std::string Server::myMac() {
 
 int main(){
 	crow::SimpleApp app;
+	crow::logger::setLogLevel(crow::LogLevel::ERROR);	//ignore info logging in crow
 
 	//ldm requests
 	Server* server = new Server();
@@ -259,6 +260,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -281,6 +283,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -303,6 +306,7 @@ int main(){
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -323,9 +327,9 @@ int main(){
 
 		reply = server->requestObd2(condition);
 
-		//std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -346,9 +350,9 @@ int main(){
 
 		reply = server->requestDccInfo(condition);
 
-		//std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -369,9 +373,9 @@ int main(){
 
 		reply = server->requestCamInfo(condition);
 
-		//std::cout << "Response: " << reply << std::endl;
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -399,6 +403,7 @@ int main(){
 
 	    auto resp = crow::response{"Triggered DENM"};
 	    resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
@@ -408,11 +413,11 @@ int main(){
 	([server](){
 		auto resp = crow::response{server->myMac()};
 		resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
 		return resp;
 	});
 
 	app.port(1188).multithreaded().run();
-
 	delete server;
 	delete senderToDenm;
 }
