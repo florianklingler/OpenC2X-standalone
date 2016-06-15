@@ -4,6 +4,9 @@
 #include <time.h>
 #include <utility/LoggingUtility.h>
 
+using namespace std;
+using namespace el;
+
 LoggingUtility::LoggingUtility(string moduleName) {
 	mModuleName = moduleName;
 
@@ -57,5 +60,3 @@ void LoggingUtility::logError(string message){
 void LoggingUtility::logPError(string message){
 	CPLOG(ERROR, ("default_" + mModuleName).c_str()) << message;
 }
-
-

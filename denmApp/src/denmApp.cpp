@@ -32,7 +32,7 @@ int main(int argc, const char* argv[]) {
 
 	usleep(200*1000);	//FIXME: zmq seems to need some time for setup => doesn't send without sleep
 
-	if (argc >= 1) {
+	if (argc >= 2) {
 		string content(argv[1]);
 		denmApp.triggerDenm(content);
 	}

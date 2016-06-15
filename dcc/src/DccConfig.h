@@ -135,11 +135,9 @@ class DCC_State_Config {
 struct DccConfig {
 	// General
 	std::string xml_file;
-	std::string ethernetDevice;
 	bool ignoreOwnMessages;
-
-	//set to true to simulate channel load, false to use real data
-	bool simulateChannelLoad;
+	bool simulateChannelLoad;	//set to true to simulate channel load, false to use real data
+	int dccInfoInterval;		//interval in which dccInfo/network info is sent to LDM (default: 1000ms = 1s)
 
 	// Leaky Bucket
 	int bucketSize_AC_VI;
@@ -200,8 +198,8 @@ struct DccConfig {
 
 		read_xml(filename, pt);
 		simulateChannelLoad = pt.get("dcc.simulateChannelLoad", true);
-		ethernetDevice = pt.get("dcc.ethernetDevice", "notDefined");
 		ignoreOwnMessages = pt.get("dcc.ignoreOwnMessages", false);
+		dccInfoInterval = pt.get("dcc.dccInfoInterval", 1000);
 
 		xml_file = std::string(filename);
 		load_NDL_Parameters();

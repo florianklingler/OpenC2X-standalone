@@ -15,12 +15,12 @@ struct Obd2Config {
 	char* mDevice;
 	int mFrequency;
 
-	void loadConfigXML(const string &filename) {
+	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
 		mSimulateData = pt.get("obd2.SimulateData", true);
-		string device = pt.get("obd2.Device", "//dev//ttyUSB0");
+		std::string device = pt.get("obd2.Device", "//dev//ttyUSB0");
 		mDevice = strdup(device.c_str());
 		mFrequency = pt.get("obd2.Frequency", 100);
 	}
@@ -43,9 +43,9 @@ private:
 	LoggingUtility* mLogger;
 
 	//for simulation only
-	default_random_engine mRandNumberGen;
-	bernoulli_distribution mBernoulli;
-	uniform_real_distribution<double> mUniform;
+	std::default_random_engine mRandNumberGen;
+	std::bernoulli_distribution mBernoulli;
+	std::uniform_real_distribution<double> mUniform;
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;

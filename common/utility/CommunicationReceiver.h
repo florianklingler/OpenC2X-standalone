@@ -6,25 +6,24 @@
 #include <utility/zhelpers.hpp>
 #include <utility/LoggingUtility.h>
 
-using namespace std;
 
 class CommunicationReceiver {
 public:
-	CommunicationReceiver(string ownerModule, string portIn, string envelope);
+	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope);
 	~CommunicationReceiver();
-	pair<string, string> receive();
-	string receiveFromHw();
-	string receiveData();
+	std::pair<std::string, std::string> receive();
+	std::string receiveFromHw();
+	std::string receiveData();
 
 private:
-	string mOwnerModule;
+	std::string mOwnerModule;
 
 	zmq::context_t* mContext;
 	zmq::socket_t* mSubscriber;
 
 	LoggingUtility* mLogger;
 
-	string mEnvelope;
+	std::string mEnvelope;
 };
 
 #endif

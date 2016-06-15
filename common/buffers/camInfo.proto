@@ -1,0 +1,8 @@
+package infoPackage;
+
+message CamInfo {
+	optional int64 time = 1;
+	
+	optional string triggerReason = 2;
+	optional double delta = 3;
+}

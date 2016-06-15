@@ -3,10 +3,11 @@ import "gps.proto";
 import "obd2.proto";
 
 message CAM {
-	required int32 id = 1;
-	required string content = 2;
-	optional int64 createTime = 3;
-	optional gpsPackage.GPS gps = 4;
-	optional obd2Package.OBD2 obd2 = 5;
-	optional double heading = 6;
+	required string stationId = 1;
+	required int32 id = 2;
+	required string content = 3;
+	optional int64 createTime = 4;
+	optional gpsPackage.GPS gps = 5;
+	optional obd2Package.OBD2 obd2 = 6;
+	optional double heading = 7;
 }

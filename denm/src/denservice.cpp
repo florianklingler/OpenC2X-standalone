@@ -15,6 +15,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 DenService::DenService() {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+
 	string module = "DenService";
 	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER");
 	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM");
@@ -34,12 +41,10 @@ DenService::~DenService() {
 	mThreadGpsDataReceive->join();
 	mThreadObd2DataReceive->join();
 	mThreadAppTrigger->join();
-	mThreadSend->join();
 	delete mThreadReceive;
 	delete mThreadGpsDataReceive;
 	delete mThreadObd2DataReceive;
 	delete mThreadAppTrigger;
-	delete mThreadSend;
 
 	delete mReceiverFromApp;
 	delete mReceiverFromDcc;
@@ -57,7 +62,6 @@ void DenService::init() {
 	mThreadGpsDataReceive = new boost::thread(&DenService::receiveGpsData, this);
 	mThreadObd2DataReceive = new boost::thread(&DenService::receiveObd2Data, this);
 	mThreadAppTrigger = new boost::thread(&DenService::triggerAppDenm, this);
-//	mThreadSend = new boost::thread(&DenService::triggerPeriodicDenm, this);
 }
 
 //receive DENM from DCC and forward to LDM
@@ -120,15 +124,6 @@ void DenService::logDelay(string serializedDenm) {
 	mLogger->logStats(to_string(denm.id()) + "\t" + to_string(delay));
 }
 
-//trigger sending to LDM and DCC every 100 to 1000ms to simulate road safety application
-//void DenService::triggerPeriodicDenm() {
-//	while (1) {
-//		int randomSleep = rand() % 900 + 101;
-//		microSleep(randomSleep*1000);
-//		send();
-//	}
-//}
-
 //trigger generation/send of DENM by external application
 void DenService::triggerAppDenm() {
 	string envelope;
@@ -174,8 +169,8 @@ denmPackage::DENM DenService::generateDenm(triggerPackage::TRIGGER trigger) {
 	denmPackage::DENM denm;
 
 	//create DENM
+	denm.set_stationid(mGlobalConfig.mMac);
 	denm.set_id(mIdCounter++);
-//	denm.set_content("DENM from DEN service");
 	denm.set_content(trigger.content());
 	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 

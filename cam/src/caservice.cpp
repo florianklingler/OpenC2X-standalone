@@ -15,6 +15,13 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 CaService::CaService(CaServiceConfig &config) {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+
 	mConfig = config;
 	mLogger = new LoggingUtility("CaService");
 
@@ -68,7 +75,7 @@ CaService::~CaService() {
 //receive CAM from DCC and forward to LDM
 void CaService::receive() {
 	string envelope;		//envelope
-	string serializedData;		//byte string (serialized)
+	string serializedData;	//byte string (serialized)
 	dataPackage::DATA data;
 
 	while (1) {
@@ -111,6 +118,19 @@ void CaService::receiveObd2Data() {
 		mLatestObd2 = newObd2;
 		mMutexLatestObd2.unlock();
 	}
+}
+
+//sends info about triggering to LDM
+void CaService::sendCamInfo(string triggerReason, double delta) {
+	infoPackage::CamInfo camInfo;
+	string serializedCamInfo;
+
+	camInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	camInfo.set_triggerreason(triggerReason);
+	camInfo.set_delta(delta);
+
+	camInfo.SerializeToString(&serializedCamInfo);
+	mSenderToLdm->send("camInfo", serializedCamInfo);
 }
 
 //log delay of received CAM
@@ -156,6 +176,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	int64_t deltaTime = currentTime - mLastSentCam.createtime();
 	if(deltaTime >= 1*1000*1000*1000) {
+		sendCamInfo("time", deltaTime);
 		mLogger->logInfo("deltaTime: " + to_string(deltaTime));
 		sendCam = true;
 	}
@@ -170,6 +191,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
 		if(deltaHeading > 4.0) {
+			sendCamInfo("heading", deltaHeading);
 			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
 			sendCam = true;
 		}
@@ -177,6 +199,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		//|current position - last CAM position| > 5 m
 		double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 		if(distance > 5.0) {
+			sendCamInfo("distance", distance);
 			mLogger->logInfo("distance: " + to_string(distance));
 			sendCam = true;
 		}
@@ -192,6 +215,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		mObd2Valid = true;
 		double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
 		if(deltaSpeed > 1.0) {
+			sendCamInfo("speed", deltaSpeed);
 			mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
 			sendCam = true;
 		}
@@ -228,6 +252,7 @@ camPackage::CAM CaService::generateCam() {
 	camPackage::CAM cam;
 
 	//create CAM
+	cam.set_stationid(mGlobalConfig.mMac);
 	cam.set_id(mIdCounter++);
 	cam.set_content("CAM from CA service");
 	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));

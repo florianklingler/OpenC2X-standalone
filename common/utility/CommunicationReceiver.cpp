@@ -1,5 +1,7 @@
 #include "CommunicationReceiver.h"
 
+using namespace std;
+
 CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, string envelope) {
 	mOwnerModule = ownerModule;
 

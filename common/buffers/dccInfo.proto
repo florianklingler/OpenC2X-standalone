@@ -1,0 +1,19 @@
+package infoPackage;
+
+message DccInfo {
+	optional int64 time = 1;
+	
+	optional double channelLoad = 2;
+	optional string state = 3;
+	
+	optional string accessCategory = 4;
+	optional int32 availableTokens = 5;
+	optional int32 queuedPackets = 6;
+	optional int32 dccMechanism = 7;
+	optional double txPower = 8;
+	optional double tokenInterval = 9;
+	optional double datarate = 10;
+	optional double carrierSense = 11;
+	optional int32 flushReqPackets = 12;
+	optional int32 flushNotReqPackets = 13;
+}

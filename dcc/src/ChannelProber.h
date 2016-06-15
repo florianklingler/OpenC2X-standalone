@@ -13,7 +13,7 @@
 
 class ChannelProber {
 public:
-	ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io);
+	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io);
 	virtual ~ChannelProber();
 
 	void init();
@@ -40,7 +40,7 @@ public:
 	static int mNl80211Id;
 
 	netinterface *mWifi;
-	string mIfname;
+	std::string mIfname;
 	double mProbeInterval;
 	LoggingUtility* mLogger;
 

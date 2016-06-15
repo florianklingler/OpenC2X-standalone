@@ -19,10 +19,10 @@
 
 class SendToHardwareViaMAC {
 public:
-	SendToHardwareViaMAC(string ownerModule,string ethernetDevice);
+	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice);
 	virtual ~SendToHardwareViaMAC();
-	void send(string* msg, int priority);
-	string mOwnMac;
+	void send(std::string* msg, int priority);
+	std::string mOwnMac;
 private:
 	LoggingUtility* mLogger;
 

@@ -2,6 +2,7 @@
 #define DENSERVICE_H_
 
 #include <boost/thread.hpp>
+#include <config/config.h>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -19,7 +20,7 @@ public:
 
 	void init();
 	void receive();
-	void logDelay(string byteMessage);
+	void logDelay(std::string byteMessage);
 	void triggerPeriodicDenm();
 	void triggerAppDenm();
 	void send(triggerPackage::TRIGGER trigger);
@@ -30,6 +31,8 @@ public:
 
 private:
 	void microSleep(double us_sleep); // in us
+
+	GlobalConfig mGlobalConfig;
 
 	CommunicationReceiver* mReceiverFromApp;
 	CommunicationReceiver* mReceiverFromDcc;
@@ -43,17 +46,16 @@ private:
 	boost::thread* mThreadGpsDataReceive;
 	boost::thread* mThreadObd2DataReceive;
 	boost::thread* mThreadAppTrigger;
-	boost::thread* mThreadSend;
 
 	LoggingUtility* mLogger;
 
 	long mIdCounter;
 
 	gpsPackage::GPS mLatestGps;
-	mutex mMutexLatestGps;
+	std::mutex mMutexLatestGps;
 
 	obd2Package::OBD2 mLatestObd2;
-	mutex mMutexLatestObd2;
+	std::mutex mMutexLatestObd2;
 };
 
 #endif
