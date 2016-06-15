@@ -11,7 +11,7 @@ function requestMyMac(callback){
  * @param callback(latest cam msg)
  */
 function requestCam(callback){
-	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:""}),
+	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
