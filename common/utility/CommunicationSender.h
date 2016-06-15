@@ -8,7 +8,7 @@
 
 class CommunicationSender {
 public:
-	CommunicationSender(std::string ownerModule, std::string portOut);
+	CommunicationSender(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationSender();
 	void send(std::string envelope, std::string message);
 	void sendToHw(std::string message);

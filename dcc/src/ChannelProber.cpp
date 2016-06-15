@@ -12,11 +12,11 @@ using namespace std;
 
 int ChannelProber::mNl80211Id;
 
-ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io) {
+ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io, int expNo) {
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
 	mIoService = io;
-	mLogger = new LoggingUtility("ChannelProber");
+	mLogger = new LoggingUtility("ChannelProber", expNo);
 	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 

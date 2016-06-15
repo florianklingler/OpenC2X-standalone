@@ -17,10 +17,16 @@ INITIALIZE_EASYLOGGINGPP
 struct gps_data_t GpsService::mGpsData;
 
 GpsService::GpsService(GpsConfig &config) {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
 	mConfig = config;
 	mLastTime = NAN;
-	mSender = new CommunicationSender("GPS", "3333");
-	mLogger = new LoggingUtility("GPS");
+	mSender = new CommunicationSender("GPS", "3333", mGlobalConfig.mExpNo);
+	mLogger = new LoggingUtility("GPS", mGlobalConfig.mExpNo);
 	
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);

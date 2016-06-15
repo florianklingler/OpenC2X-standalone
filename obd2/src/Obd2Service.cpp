@@ -14,9 +14,15 @@ using namespace std;
 INITIALIZE_EASYLOGGINGPP
 
 Obd2Service::Obd2Service(Obd2Config &config) {
+	try {
+		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
 	mConfig = config;
-	mSender = new CommunicationSender("Obd2Service", "2222");
-	mLogger = new LoggingUtility("Obd2Service");
+	mSender = new CommunicationSender("Obd2Service", "2222", mGlobalConfig.mExpNo);
+	mLogger = new LoggingUtility("Obd2Service", mGlobalConfig.mExpNo);
 	
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);

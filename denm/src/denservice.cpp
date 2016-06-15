@@ -23,15 +23,15 @@ DenService::DenService() {
 	}
 
 	string module = "DenService";
-	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER");
-	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM");
-	mSenderToDcc = new CommunicationSender(module, "7777");
-	mSenderToLdm = new CommunicationSender(module, "9999");
+	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER", mGlobalConfig.mExpNo);
+	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM", mGlobalConfig.mExpNo);
+	mSenderToDcc = new CommunicationSender(module, "7777", mGlobalConfig.mExpNo);
+	mSenderToLdm = new CommunicationSender(module, "9999", mGlobalConfig.mExpNo);
 
-	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS");
-	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2");
+	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS", mGlobalConfig.mExpNo);
+	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2", mGlobalConfig.mExpNo);
 
-	mLogger = new LoggingUtility("DenService");
+	mLogger = new LoggingUtility("DenService", mGlobalConfig.mExpNo);
 
 	mIdCounter = 0;
 }

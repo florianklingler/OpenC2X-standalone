@@ -13,7 +13,7 @@
 
 class ChannelProber {
 public:
-	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io);
+	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
 	virtual ~ChannelProber();
 
 	void init();

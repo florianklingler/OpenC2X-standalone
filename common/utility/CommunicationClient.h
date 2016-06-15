@@ -9,7 +9,7 @@
 
 class CommunicationClient {
 public:
-	CommunicationClient(std::string ownerModule, std::string portOut);
+	CommunicationClient(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationClient();
 	std::string sendRequest(std::string envelope, std::string request, int timeout, int retries);
 	void init();

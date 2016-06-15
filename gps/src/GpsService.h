@@ -8,6 +8,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
+#include <config/config.h>
 
 struct GpsConfig {
 	bool mSimulateData;
@@ -43,6 +44,7 @@ public:
 
 private:
 	GpsConfig mConfig;
+	GlobalConfig mGlobalConfig;
 	static struct gps_data_t mGpsData;
 	double mLastTime;		//time of last received/measured GPS
 

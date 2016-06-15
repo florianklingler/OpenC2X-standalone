@@ -8,7 +8,7 @@
 
 class CommunicationServer {
 public:
-	CommunicationServer(std::string ownerModule, std::string portOut);
+	CommunicationServer(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationServer();
 	void sendReply(std::string reply);
 	std::pair<std::string, std::string> receiveRequest();

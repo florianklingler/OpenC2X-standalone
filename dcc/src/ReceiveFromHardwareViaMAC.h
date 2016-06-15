@@ -13,7 +13,7 @@
 
 class ReceiveFromHardwareViaMAC {
 public:
-	ReceiveFromHardwareViaMAC(std::string ownerModule);
+	ReceiveFromHardwareViaMAC(std::string ownerModule, int expNo);
 	virtual ~ReceiveFromHardwareViaMAC();
 	void init();
 	std::pair<std::string,std::string> receive();
