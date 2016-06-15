@@ -54,10 +54,57 @@ function Container(name,updateFunction,color,updateInterval){
 	this.updateButton.click(this.toggleUpdate);
 }
 
-//function camUpdate(callback){
-//	requestCam(callback);
-//}
+/**
+ * holds and updates cam data
+ */
+camData = {
+	mymac : "",
+	cams : new Map(),
+	refreshRate : 1000,
+	lastUpdate : 0,
 
+	/**
+	 * checks whether camData is inialised and initialises it if not
+	 * @returns {Boolean} is initalised
+	 */
+	init : function(){
+		if (this.mymac == ""){//is not initalised
+			requestMyMac(function(data) {
+				console.log(data);
+				console.log(this);
+				this.mymac = data.myMac;
+				console.log(this);
+			}.bind(this));
+			return false;
+		} else {
+			return true;
+		}
+	},
+	digestCams : function(data){
+		if (this.init()){ //is initalised
+			data.msgs.forEach(function(cam) {
+				if(this.cams.get(cam.stationId)){
+					if (this.cams.get(cam.stationId).createTime < cam.createTime){
+						this.cams.set(cam.stationId,cam);
+					}
+				} else {
+					this.cams.set(cam.stationId,cam);
+				}
+			})
+			
+		}
+	}.bind(this),
+	updateCams: function(){
+		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
+			requestCam(this.digestCams);
+		}
+	},
+	getLastOwnCam : function(){
+		this.updateCams();
+		return this.cams.get(this.mymac);
+	}
+	
+};
 
 function initMap(){
 	//init map
@@ -85,13 +132,12 @@ function initMap(){
 	//var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
 	
 	window.setInterval(function(){
-		requestCam(function(cam) {
-			if(cam.gps){
-				pos[0] = cam.gps.latitude;
-				pos[1] = cam.gps.longitude;
-			}
-			marker.setLatLng(pos);
-		});
+		var cam = camData.getLastOwnCam();
+		if(cam && cam.gps){
+			pos[0] = cam.gps.latitude;
+			pos[1] = cam.gps.longitude;
+		}
+		marker.setLatLng(pos);
 		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
 		map.invalidateSize();
 		map.setView(pos);
@@ -117,7 +163,7 @@ $(document).ready(function(){
 	
 });
 
-/* Open when someone clicks on the span element */
+/* Open when someone clicks on the button element */
 function openNav() {
     document.getElementById("myNav").style.width = "50%";
 }

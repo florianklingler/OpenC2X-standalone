@@ -1,10 +1,9 @@
 
-function myMac(){
+function requestMyMac(callback){
 	$.get("http://localhost:1188/my_mac",
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data);
+	},"json");
 }
 
 /**
@@ -12,11 +11,11 @@ function myMac(){
  * @param callback(latest cam msg)
  */
 function requestCam(callback){
-	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
+	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:""}),
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
-		callback(data.msgs[data.msgs.length-1]);
+		callback(data.msgs);
 	},"json");
 }
 
