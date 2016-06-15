@@ -8,19 +8,42 @@ layoutLocked = true;
  */
 function saveLayout(){
 	var containers = $(".container");
-	var containerIDs = [];
+	var containerLayouts = {ids:[]};
 	
 	for (var i = 0; i< containers.length;i++){
 		var con = containers[i];
-		containerIDs.push(con.id);
 		var config = {
 			offset: $("#"+con.id).offset(),
 			height: $("#"+con.id).height(),
 			width: $("#"+con.id).width()
 		}
-		localStorage.setItem(con.id, JSON.stringify(config));
+		console.log(con);
+		containerLayouts["ids"].push(con.id);
+		containerLayouts[con.id] =config;
 	}
-	localStorage.setItem("containerIDs",JSON.stringify(containerIDs));
+	console.log("layout JSON String:" +JSON.stringify(containerLayouts));
+	localStorage.setItem("containerLayouts",JSON.stringify(containerLayouts));
+}
+
+
+/**
+ * loads and applys layout configs from jsonString
+ */
+function loadLayoutFromJSON(jsonString){
+	containerLayouts = JSON.parse(jsonString);
+	
+	containerLayouts.ids.forEach(function(id){
+		var config = containerLayouts[id]; 
+		if($("#"+id).length === 0){ //container is not created
+			if(typeof window["create"+id+"Container"] != 'undefined'){ //creation Function is defined
+				window["create"+id+"Container"]() 
+			}
+		}
+		$("#"+id).offset(config.offset),
+		$("#"+id).height(config.height),
+		$("#"+id).width(config.width)
+		
+	})
 }
 
 
@@ -28,25 +51,12 @@ function saveLayout(){
  * loads and applys layout configs peviously saved via saveLayout()
  */
 function loadLayout(){
-	var containerIDs = localStorage.getItem("containerIDs");
-	if(containerIDs == null){
+	var containerLayoutsJSON = localStorage.getItem("containerLayouts");
+	if(containerLayoutsJSON == null){
 		console.log("No layout saved.");
 		return;
 	}
-	containerIDs = JSON.parse(containerIDs);
-	
-	containerIDs.forEach(function(id){
-		var config = localStorage.getItem(id);
-		if(config == null){
-			console.log("No layout information for "+id+" present.");
-			return;
-		}
-		config  = JSON.parse(config);
-		$("#"+id).offset(config.offset),
-		$("#"+id).height(config.height),
-		$("#"+id).width(config.width)
-		
-	})
+	loadLayoutFromJSON(containerLayoutsJSON);
 }
 
 function lockLayout(){
@@ -67,25 +77,31 @@ function toggleLayoutLock(){
 }
 
 function createCamContainer(){
-	containers.push(new Container("Cam", function(callback) {
-		requestCam(callback);
-	},color= "#0000ff"));
+	if($("#Cam").length === 0){ //container is not created
+		containers.push(new Container("Cam", camData.getLastOwnCam,color= "#0000ff"));
+	}
 }
 
 function createDenmContainer(){
+	if($("#Denm").length === 0){ //container is not created
 	containers.push(new Container("Denm", function(callback) {
-		requestDenm(callback);
-	},color= "#FFFF00"));
+			requestDenm(callback);
+		},color= "#FFFF00"));
+	}
 }
 
 function createCamInfoContainer(){
-	containers.push(new Container("CamInfo", function(callback) {
-		requestCamInfo(callback);
-	}, color="#5555ff"));
+	if($("#CamInfo").length === 0){ //container is not created
+		containers.push(new Container("CamInfo", function(callback) {
+			requestCamInfo(callback);
+		}, color="#5555ff"));
+	}
 }
 
 function createDccInfoContainer(){
-	containers.push(new Container("DccInfo", function(callback) {
-		requestDccInfo(callback);
-	}, color="#FF7700"));
+	if($("#DccInfo").length === 0){ //container is not created
+		containers.push(new Container("DccInfo", function(callback) {
+			requestDccInfo(callback);
+		}, color="#FF7700"));
+	}
 }

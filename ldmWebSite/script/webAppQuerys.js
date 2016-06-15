@@ -1,10 +1,9 @@
 
-function myMac(){
+function requestMyMac(callback){
 	$.get("http://localhost:1188/my_mac",
-			function(data,status,xhr){
-		console.log("data: "+data);
-		console.log("status: "+status);
-	});
+			function(data){
+		callback(data);
+	},"json");
 }
 
 /**
@@ -16,7 +15,7 @@ function requestCam(callback){
 			function(data/*status,xhr*/){
 		//console.log("data: "+data);
 		//console.log("status: "+status);
-		callback(data.msgs[data.msgs.length-1]);
+		callback(data);
 	},"json");
 }
 

@@ -54,14 +54,66 @@ function Container(name,updateFunction,color,updateInterval){
 	this.updateButton.click(this.toggleUpdate);
 }
 
-//function camUpdate(callback){
-//	requestCam(callback);
-//}
+/**
+ * holds and updates most recend cam data for each station id
+ */
+camData = {
+	mymac : "",
+	cams : new Map(),
+	refreshRate : 1000,
+	lastUpdate : 0,
 
+	/**
+	 * checks whether camData is inialised and initialises it if not
+	 * @returns {Boolean} is initalised
+	 */
+	init : function(){
+		if (this.mymac == ""){//is not initalised
+			requestMyMac(function(data) {
+				this.mymac = data.myMac;
+			}.bind(this));
+			return false;
+		} else {
+			return true;
+		}
+	},
+	/**
+	 * takes a response object from "webAppQuerys.js" and updates camDatas cam map
+	 * @param data
+	 */
+	digestCams : function(data){
+		if (camData.init()){ //is initalised
+			data.msgs.forEach(function(cam) {
+				if(camData.cams.get(cam.stationId)){
+					if (camData.cams.get(cam.stationId).createTime < cam.createTime){
+						camData.cams.set(cam.stationId,cam);
+					}
+				} else {
+					camData.cams.set(cam.stationId,cam);
+				}
+			})
+			
+		}
+	},
+	
+	updateCams: function(){
+		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
+			requestCam(this.digestCams);
+		}
+	},
+	getLastOwnCam : function(callback){
+		camData.updateCams();
+		if(callback){
+			callback(camData.cams.get(camData.mymac));
+		} else {
+			return camData.cams.get(camData.mymac);
+		}
+	},	
+};
 
 function initMap(){
 	//init map
-	var map = L.map('mapContainer');
+	map = L.map('mapContainer');
 
 	// create the tile layer with correct attribution
 	var osmUrl="map/openstreetmap/{z}/{x}/{y}.png";
@@ -73,28 +125,37 @@ function initMap(){
 	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
 
 	// start the map in Paderborn
-	map.setView(new L.LatLng(51.7315, 8.739),15);
+	viewPosition = [51.7315, 8.739];
+	map.setView(viewPosition,15);
 	map.addLayer(osm);
 	
-	var pos =[51.7315, 8.739];
-	var marker = L.marker([51.7315, 8.739]).addTo(map);
-	var myIcon = L.icon({
-	    iconUrl: 'image/marker/marker-icon-red.png',
-	});
-	
-	//var marker2 = L.marker([50.505, 30.57], {icon: myIcon}).addTo(map);
+	markers = [];
 	
 	window.setInterval(function(){
-		requestCam(function(cam) {
-			if(cam.gps){
-				pos[0] = cam.gps.latitude;
-				pos[1] = cam.gps.longitude;
-			}
-			marker.setLatLng(pos);
-		});
-		//marker2.setLatLng([pos[0]+0.001*(Math.random()+0.5),pos[1]]);
+		var cam = camData.getLastOwnCam();
+		if (camData.mymac != ""){//not uninitalised
+			markers.forEach(function(marker) {
+				map.removeLayer(marker);
+			})
+			var myIcon = L.icon({
+				    iconUrl: 'image/marker/marker-icon-red.png',
+				});
+			
+			camData.cams.forEach(function(cam, key) {
+				if ( key == camData.mymac){//own cam
+					if(cam.gps){
+						viewPosition = [cam.gps.latitude,cam.gps.longitude];
+						markers.push(L.marker(viewPosition).addTo(map));
+					}
+				} else {//other cams : red marker
+					if(cam.gps){
+						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: myIcon}).addTo(map));
+					}
+				}
+			})
+		}
 		map.invalidateSize();
-		map.setView(pos);
+		map.setView(viewPosition);
 	},2000);
 	
 
@@ -117,7 +178,7 @@ $(document).ready(function(){
 	
 });
 
-/* Open when someone clicks on the span element */
+/* Open when someone clicks on the button element */
 function openNav() {
     document.getElementById("myNav").style.width = "50%";
 }
