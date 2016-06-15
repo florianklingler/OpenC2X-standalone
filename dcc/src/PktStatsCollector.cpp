@@ -2,6 +2,19 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 #define PRINT_STATS 1
 
+#define NL80211_CMD_FLUSH_STATS 113
+#define NL80211_CMD_NEW_FLUSH_STATS 114
+#define NL80211_FLUSH_INFO_MAX 8
+#define NL80211_ATTR_FLUSH_INFO 216
+#define NL80211_FLUSH_REQ_BE 1
+#define NL80211_FLUSH_NOT_REQ_BE 2
+#define NL80211_FLUSH_REQ_BK 3
+#define NL80211_FLUSH_NOT_REQ_BK 4
+#define NL80211_FLUSH_REQ_VI 5
+#define NL80211_FLUSH_NOT_REQ_VI 6
+#define NL80211_FLUSH_REQ_VO 7
+#define NL80211_FLUSH_NOT_REQ_VO 8
+
 #include "PktStatsCollector.h"
 #include <unistd.h>
 #include <string>
@@ -12,6 +25,7 @@
 using namespace std;
 
 int PktStatsCollector::mNl80211Id;
+boost::mutex PktStatsCollector::mutexStats;
 
 PktStatsCollector::PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io) {
 	mProbeInterval = probeInterval;
@@ -162,12 +176,16 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 //	uint64_t busy_time_diff = busy_time - cp->mWifi->stats.busyTimeLast;
 //	uint64_t total_time_diff = total_time - cp->mWifi->stats.totalTimeLast;
 //	double load = ((100 * busy_time_diff) / total_time_diff) / 100.0;
-//	cp->mWifi->stats.mutexChannelLoad.lock();
-//	cp->mWifi->stats.load = load;
-//	cp->mWifi->stats.totalTimeLast = total_time;
-//	cp->mWifi->stats.busyTimeLast = busy_time;
-//	cp->mWifi->stats.noise = noise;
-//	cp->mWifi->stats.mutexChannelLoad.unlock();
+	mutexStats.lock();
+	cp->mWifi->stats.be_flush_not_req = be_flush_not_req;
+	cp->mWifi->stats.be_flush_req = be_flush_req;
+	cp->mWifi->stats.bk_flush_not_req = bk_flush_not_req;
+	cp->mWifi->stats.bk_flush_req = bk_flush_req;
+	cp->mWifi->stats.vi_flush_not_req = vi_flush_not_req;
+	cp->mWifi->stats.vi_flush_req = vi_flush_req;
+	cp->mWifi->stats.vo_flush_not_req = vo_flush_not_req;
+	cp->mWifi->stats.vo_flush_req = vo_flush_req;
+	mutexStats.unlock();
 //	cp->mLogger->logStats(to_string(channel) + "\t" + to_string(busy_time_diff) + "\t" + to_string(total_time_diff) + "\t" + to_string(load));
 	return NL_SKIP;
 }
@@ -221,10 +239,17 @@ int PktStatsCollector::send(uint8_t msgCmd, void *payload, unsigned int length,
 	return ret;
 }
 
-double PktStatsCollector::getChannelLoad() {
-	float load;
-	mWifi->stats.mutexChannelLoad.lock();
-	// TODO
-	mWifi->stats.mutexChannelLoad.unlock();
-	return (double) load;
+PktStats PktStatsCollector::getPktStats() {
+	PktStats res;
+	mutexStats.lock();
+	res.be_flush_not_req = mWifi->stats.be_flush_not_req;
+	res.be_flush_req = mWifi->stats.be_flush_req;
+	res.bk_flush_not_req = mWifi->stats.bk_flush_not_req;
+	res.bk_flush_req = mWifi->stats.bk_flush_req;
+	res.vi_flush_not_req = mWifi->stats.vi_flush_not_req;
+	res.vi_flush_req = mWifi->stats.vi_flush_req;
+	res.vo_flush_not_req = mWifi->stats.vo_flush_not_req;
+	res.vo_flush_req = mWifi->stats.vo_flush_req;
+	mutexStats.unlock();
+	return res;
 }

@@ -11,6 +11,21 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/mngt.h>
 
+struct PktStats {
+	uint32_t be_flush_req;
+	uint32_t be_flush_not_req;
+	uint32_t bk_flush_req;
+	uint32_t bk_flush_not_req;
+	uint32_t vi_flush_req;
+	uint32_t vi_flush_not_req;
+	uint32_t vo_flush_req;
+	uint32_t vo_flush_not_req;
+};
+struct netinterface {
+	unsigned int ifindex;
+	PktStats stats;
+};
+
 class PktStatsCollector {
 public:
 	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io);
@@ -20,24 +35,8 @@ public:
 	void probe(const boost::system::error_code &ec);
 	int sendNl80211(uint8_t msgCmd, void *payload, unsigned int length, int payloadType, unsigned int seq, int flags = 0);
 	int send(uint8_t msgCmd, void *payload, unsigned int length, int attrType, unsigned int seq, int protocolId, int flags = 0, uint8_t protocolVersion = 0x01);
-	double getChannelLoad();
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
-
-	struct PktStats {
-		boost::mutex mutexChannelLoad;
-		uint32_t be_flush_req;
-		uint32_t be_flush_not_req;
-		uint32_t bk_flush_req;
-		uint32_t bk_flush_not_req;
-		uint32_t vi_flush_req;
-		uint32_t vi_flush_not_req;
-		uint32_t vo_flush_req;
-		uint32_t vo_flush_not_req;
-	};
-	struct netinterface {
-		unsigned int ifindex;
-		PktStats stats;
-	};
+	PktStats getPktStats();
 
 	nl_sock *mSocket;
 	static int mNl80211Id;
@@ -48,6 +47,7 @@ public:
 	LoggingUtility* mLogger;
 
 private:
+	static boost::mutex mutexStats;
 	boost::asio::io_service* mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
