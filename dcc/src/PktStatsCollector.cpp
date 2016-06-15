@@ -2,6 +2,9 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 #define PRINT_STATS 1
 
+#define IGNORE_STATS true	//TODO: set to false when compiling on gericom, alix, ...
+
+#if IGNORE_STATS
 #define NL80211_CMD_FLUSH_STATS 113
 #define NL80211_CMD_NEW_FLUSH_STATS 114
 #define NL80211_FLUSH_INFO_MAX 8
@@ -14,6 +17,7 @@
 #define NL80211_FLUSH_NOT_REQ_VI 6
 #define NL80211_FLUSH_REQ_VO 7
 #define NL80211_FLUSH_NOT_REQ_VO 8
+#endif
 
 #include "PktStatsCollector.h"
 #include <unistd.h>
