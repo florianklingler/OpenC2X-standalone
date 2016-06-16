@@ -9,14 +9,8 @@
 
 INITIALIZE_EASYLOGGINGPP
 
-Server::Server() {
-	try {
-		mConfig.loadConfigXML("../../common/config/config.xml");
-	}
-	catch (std::exception &e) {
-		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
-	}
-
+Server::Server(GlobalConfig globalConfig) {
+	mGlobalConfig = globalConfig;
 	try {
 		mLocalConfig.loadConfigXML("../config/config.xml");
 	}
@@ -25,8 +19,8 @@ Server::Server() {
 	}
 
 	std::string moduleName = "WebApplication";
-	mClientLdm = new CommunicationClient(moduleName, "6789",0); //TODO: get real exp number
-	mLogger = new LoggingUtility(moduleName,0); //TODO: get real exp number
+	mClientLdm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo);
 }
 
 Server::~Server() {
@@ -231,16 +225,23 @@ std::string Server::requestCamInfo(std::string condition) {
 
 //returns own mac address from global config
 std::string Server::myMac() {
-	return "{\"myMac\":\"" + mConfig.mMac + "\"}";
+	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
 }
 
 
 int main(){
 	crow::SimpleApp app;
 	crow::logger::setLogLevel(crow::LogLevel::ERROR);	//ignore info logging in crow
+	GlobalConfig config;
+	try {
+		config.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
+	}
 
 	//ldm requests
-	Server* server = new Server();
+	Server* server = new Server(config);
 	//CAM
 	CROW_ROUTE(app, "/request_cam")
 	.methods("POST"_method)
@@ -380,7 +381,7 @@ int main(){
 	});
 
 	//denm triggering
-	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111",0); //TODO: get real exp number
+	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111", config.mExpNo);
 	CROW_ROUTE(app, "/trigger_denm")
 	.methods("POST"_method)
 	([senderToDenm](const crow::request& req){

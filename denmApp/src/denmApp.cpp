@@ -2,13 +2,21 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "denmApp.h"
+#include <config/config.h>
 
 using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
 DenmApp::DenmApp() {
-	mSenderToDenm = new CommunicationSender("DenmApp", "1111");
+	GlobalConfig config;
+	try {
+		config.loadConfigXML("../../common/config/config.xml");
+	}
+	catch (std::exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl;
+	}
+	mSenderToDenm = new CommunicationSender("DenmApp", "1111", config.mExpNo);
 }
 
 DenmApp::~DenmApp() {

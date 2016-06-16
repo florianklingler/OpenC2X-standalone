@@ -28,7 +28,7 @@ struct WebApplicationConfig {
 class Server {
 public:
 
-	Server();
+	Server(GlobalConfig config);
 	virtual ~Server();
 
 	std::string requestCam(std::string condition);
@@ -41,7 +41,7 @@ public:
 	std::string myMac();
 
 private:
-	GlobalConfig mConfig;
+	GlobalConfig mGlobalConfig;
 	WebApplicationConfig mLocalConfig;
 
 	CommunicationClient* mClientLdm;
