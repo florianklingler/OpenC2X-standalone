@@ -176,30 +176,36 @@ std::string Server::requestDccInfo(std::string condition) {
 		ldmData.ParseFromString(reply);
 
 		//convert to JSON
-		std::string json = "{\"type\":\"dccInfo\",\"number\":" + std::to_string(ldmData.data_size()/4) + ",\"msgs\":[";
-		for (int i=0; i<ldmData.data_size(); i+=4) {
-			if(i > 0){//not first element
-				json += ",";
-			}
-			json += "{";
-			for (int j = 0; j < 4; j++){
-				std::string tempJson;
-				std::string serializedDccInfo = ldmData.data(i+j);
-				infoPackage::DccInfo dccInfo;
-				dccInfo.ParseFromString(serializedDccInfo);
-				pbjson::pb2json(&dccInfo, tempJson);
-				if (j > 0) {
-					json += ",\"Cat"+std::to_string(j)+"\" :";
-					json +=  tempJson;
+		std::string json = "";
+		if(ldmData.data_size()%4 == 0) {	//only use valid information for all 4 access categories	TODO: this needs to be improved
+			json = "{\"type\":\"dccInfo\",\"number\":" + std::to_string(ldmData.data_size()/4) + ",\"msgs\":[";
+
+			for (int i=0; i<ldmData.data_size(); i+=4) {
+				if(i > 0){	//not first element
+					json += ",";
 				}
-				else {
-					json += "\"Cat"+std::to_string(j)+"\" :";
-					json += tempJson;
+				json += "{";
+				for (int j = 0; j < 4 && i+j < ldmData.data_size(); j++){
+					std::string tempJson;
+					std::string serializedDccInfo = ldmData.data(i+j);
+					infoPackage::DccInfo dccInfo;
+					dccInfo.ParseFromString(serializedDccInfo);
+					pbjson::pb2json(&dccInfo, tempJson);
+					if (j > 0) {
+						json += ",\"Cat"+std::to_string(j)+"\" :";
+						json +=  tempJson;
+					}
+					else {
+						json += "\"Cat"+std::to_string(j)+"\" :";
+						json += tempJson;
+					}
 				}
+				json+="}";
 			}
-			json+="}";
+			json += "]}";
+		} else {
+			mLogger->logError("received invalid DccInfo");
 		}
-		json += "]}";
 		mMutexDccInfo.unlock();
 		return json;
 	}
@@ -220,6 +226,7 @@ std::string Server::requestCamInfo(std::string condition) {
 
 		//convert to JSON
 		std::string json = "{\"type\":\"camInfo\",\"number\":" + std::to_string(ldmData.data_size()) + ",\"msgs\":[";
+
 		for (int i=0; i<ldmData.data_size(); i++) {
 			std::string tempJson;
 			std::string serializedCamInfo = ldmData.data(i);
@@ -276,7 +283,6 @@ int main(){
 		}
 
 		reply = server->requestCam(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -300,7 +306,6 @@ int main(){
 		}
 
 		reply = server->requestDenm(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -324,7 +329,6 @@ int main(){
 		}
 
 		reply = server->requestGps(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -348,7 +352,6 @@ int main(){
 		}
 
 		reply = server->requestObd2(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -372,7 +375,6 @@ int main(){
 		}
 
 		reply = server->requestDccInfo(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -396,7 +398,6 @@ int main(){
 		}
 
 		reply = server->requestCamInfo(condition);
-//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
