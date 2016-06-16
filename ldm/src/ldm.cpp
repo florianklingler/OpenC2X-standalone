@@ -28,7 +28,7 @@ LDM::LDM() {
 	mLogger = new LoggingUtility(moduleName, config.mExpNo);
 
 	//open SQLite database
-	if(sqlite3_open(("../db/ldm-" + to_string(config.mExpNo) + ".db").c_str(), &mDb)) {
+	if(sqlite3_open_v2(("../db/ldm-" + to_string(config.mExpNo) + ".db").c_str(), &mDb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL)) {
 		mLogger->logError("Cannot open database");
 		sqlite3_close(mDb);
 	}
@@ -75,12 +75,12 @@ void LDM::createTables() {
 	char* errmsg = 0;
 
 	//begin transaction
-	sqlCommand = (char*) "BEGIN TRANSACTION;";
-	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	sqlCommand = (char*) "BEGIN TRANSACTION;";
+//	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 
 	//create CAM table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
@@ -139,12 +139,12 @@ void LDM::createTables() {
 	}
 
 	//commit transaction
-	sqlCommand = (char*) "COMMIT;";
-	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	sqlCommand = (char*) "COMMIT;";
+//	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 }
 
 
@@ -156,6 +156,7 @@ dataPackage::LdmData LDM::gpsSelect(string condition) {
 	string sqlCommand = "SELECT * from GPS " + condition;
 	char* errmsg = 0;
 
+	mGpsMutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			gpsPackage::GPS gps;
@@ -182,7 +183,7 @@ dataPackage::LdmData LDM::gpsSelect(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mGpsMutex.unlock();
 	return result;
 }
 
@@ -193,7 +194,7 @@ dataPackage::LdmData LDM::obd2Select(string condition) {
 	sqlite3_stmt *stmt;
 	string sqlCommand = "SELECT * from OBD2 " + condition;
 	char* errmsg = 0;
-
+	mObd2Mutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			obd2Package::OBD2 obd2;
@@ -215,7 +216,7 @@ dataPackage::LdmData LDM::obd2Select(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mObd2Mutex.unlock();
 	return result;
 }
 
@@ -234,7 +235,7 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 	}
 
 	char* errmsg = 0;
-
+	mCamMutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			camPackage::CAM cam;
@@ -275,7 +276,7 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mCamMutex.unlock();
 	return result;
 }
 
@@ -292,7 +293,7 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 		sqlCommand = "SELECT * from DENM " + condition;
 	}
 	char* errmsg = 0;
-
+	mDenmMutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			denmPackage::DENM denm;
@@ -333,7 +334,7 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mDenmMutex.unlock();
 	return result;
 }
 
@@ -350,7 +351,7 @@ dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 		sqlCommand = "SELECT * from DccInfo " + condition;
 	}
 	char* errmsg = 0;
-
+	mDccInfoMutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			infoPackage::DccInfo dccInfo;
@@ -382,7 +383,7 @@ dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mDccInfoMutex.unlock();
 	return result;
 }
 
@@ -399,7 +400,7 @@ dataPackage::LdmData LDM::camInfoSelect(string condition) {
 		sqlCommand = "SELECT * from CamInfo " + condition;
 	}
 	char* errmsg = 0;
-
+	mCamInfoMutex.lock();
 	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 			infoPackage::CamInfo camInfo;
@@ -421,14 +422,13 @@ dataPackage::LdmData LDM::camInfoSelect(string condition) {
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
+	mCamInfoMutex.unlock();
 	return result;
 }
 
 //executes specified insert
 void LDM::insert(string sqlCommand) {
 	char* errmsg = 0;
-
 	if (sqlite3_exec(mDb, sqlCommand.c_str(), NULL, 0, &errmsg) != SQLITE_OK) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -443,29 +443,33 @@ void LDM::insertCam(camPackage::CAM cam) {
 	int64_t obd2RowId = -1;
 
 	//begin transaction
-	char* errmsg = 0;
-	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	char* errmsg = 0;
+//	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 
 	//insert GPS if available
 	if (cam.has_gps()) {
+		mGpsMutex.lock();
 		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << cam.gps().latitude() << ", " << cam.gps().longitude() << ", " << cam.gps().altitude() << ", " << cam.gps().epx() << ", " << cam.gps().epy() << ", " << cam.gps().time() << ", " << cam.gps().online() << ", " << cam.gps().satellites() << " );";
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
 		gpsRowId = sqlite3_last_insert_rowid(mDb);
+		mGpsMutex.unlock();
 	}
 
 	//insert OBD2 if available
 	if (cam.has_obd2()) {
+		mObd2Mutex.lock();
 		sSql << "INSERT INTO OBD2 (time, speed, rpm) VALUES (" << cam.obd2().time() << ", " << cam.obd2().speed() << ", " << cam.obd2().rpm() << " );";
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
 		obd2RowId = sqlite3_last_insert_rowid(mDb);
+		mObd2Mutex.unlock();
 	}
 
 	//insert CAM with foreign keys to reference GPS, OBD2
@@ -481,14 +485,16 @@ void LDM::insertCam(camPackage::CAM cam) {
 	else {
 		sSql << "INSERT INTO CAM (stationId, id, content, createTime) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
 	}
+	mCamMutex.lock();
 	insert(sSql.str());
+	mCamMutex.unlock();
 
 	//commit transaction
-	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 }
 
 //inserts DENM into DB
@@ -499,28 +505,32 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 
 	//begin transaction
 	char* errmsg = 0;
-	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 
 	//insert GPS if available
 	if (denm.has_gps()) {
+		mGpsMutex.lock();
 		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << denm.gps().latitude() << ", " << denm.gps().longitude() << ", " << denm.gps().altitude() << ", " << denm.gps().epx() << ", " << denm.gps().epy() << ", " << denm.gps().time() << ", " << denm.gps().online() << ", " << denm.gps().satellites() << " );";
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
 		gpsRowId = sqlite3_last_insert_rowid(mDb);
+		mGpsMutex.unlock();
 	}
 
 	//insert OBD2 if available
 	if (denm.has_obd2()) {
+		mObd2Mutex.lock();
 		sSql << "INSERT INTO OBD2 (time, speed, rpm) VALUES (" << denm.obd2().time() << ", " << denm.obd2().speed() << ", " << denm.obd2().rpm() << " );";
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
 		obd2RowId = sqlite3_last_insert_rowid(mDb);
+		mObd2Mutex.unlock();
 	}
 
 	//insert CAM with foreign keys to reference GPS, OBD2
@@ -536,14 +546,16 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 	else {
 		sSql << "INSERT INTO DENM (stationId, id, content, createTime) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
 	}
+	mDenmMutex.lock();
 	insert(sSql.str());
+	mDenmMutex.unlock();
 
 	//commit transaction
-	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
+//	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
+//		string error(errmsg);
+//		mLogger->logError("SQL error: " + error);
+//		sqlite3_free(errmsg);
+//	}
 }
 
 
@@ -687,7 +699,9 @@ void LDM::receiveDccInfo() {
 		stringstream sSql;
 		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense, flushReqPackets, flushNotReqPackets) ";
 		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << ", " << dccInfo.flushreqpackets() << ", " << dccInfo.flushnotreqpackets() << " );";
+		mDccInfoMutex.lock();
 		insert(sSql.str());
+		mDccInfoMutex.unlock();
 
 		mLogger->logDebug("received dccInfo");
 	}
@@ -705,7 +719,9 @@ void LDM::receiveCamInfo() {
 		stringstream sSql;
 		sSql << "INSERT INTO CamInfo (time, triggerReason, delta) ";
 		sSql << "VALUES (" << camInfo.time() << ", '" << camInfo.triggerreason() << "', " << camInfo.delta() << " );";
+		mCamInfoMutex.lock();
 		insert(sSql.str());
+		mCamInfoMutex.unlock();
 
 		mLogger->logDebug("received camInfo");
 	}

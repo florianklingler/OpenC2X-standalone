@@ -18,6 +18,7 @@
 #include <ctime>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <mutex>
 
 //TODO: add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
 class LDM {
@@ -65,6 +66,14 @@ private:
 	boost::thread* mThreadServer;
 
 	LoggingUtility* mLogger;
+
+	std::mutex mCamMutex;
+	std::mutex mCamInfoMutex;
+	std::mutex mDccInfoMutex;
+	std::mutex mGpsMutex;
+	std::mutex mObd2Mutex;
+	std::mutex mDenmMutex;
+
 
 	sqlite3* mDb;
 };
