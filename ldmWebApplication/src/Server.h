@@ -32,7 +32,6 @@ public:
 	Server(GlobalConfig config);
 	virtual ~Server();
 
-	//TODO: are requests for one type of messages completely thread-safe?
 	std::string requestCam(std::string condition);
 	std::string requestDenm(std::string condition);
 	std::string requestGps(std::string condition);
@@ -46,9 +45,12 @@ private:
 	GlobalConfig mGlobalConfig;
 	WebApplicationConfig mLocalConfig;
 
-	CommunicationClient* mClientLdm;
-
-	LoggingUtility* mLogger;
+	CommunicationClient* mClientCam;
+	CommunicationClient* mClientDenm;
+	CommunicationClient* mClientGps;
+	CommunicationClient* mClientObd2;
+	CommunicationClient* mClientCamInfo;
+	CommunicationClient* mClientDccInfo;
 
 	std::mutex mMutexCam;
 	std::mutex mMutexDenm;
@@ -56,5 +58,7 @@ private:
 	std::mutex mMutexObd2;
 	std::mutex mMutexCamInfo;
 	std::mutex mMutexDccInfo;
+
+	LoggingUtility* mLogger;
 };
 #endif /* SERVER_H_ */

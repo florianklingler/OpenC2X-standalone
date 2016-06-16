@@ -19,12 +19,22 @@ Server::Server(GlobalConfig globalConfig) {
 	}
 
 	std::string moduleName = "WebApplication";
-	mClientLdm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientCam = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientDenm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientGps = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientObd2 = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientCamInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
+	mClientDccInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
 	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo);
 }
 
 Server::~Server() {
-	delete mClientLdm;
+	delete mClientCam;
+	delete mClientDenm;
+	delete mClientGps;
+	delete mClientObd2;
+	delete mClientCamInfo;
+	delete mClientDccInfo;
 	delete mLogger;
 }
 
@@ -35,7 +45,7 @@ std::string Server::requestCam(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all CAMs from LDM
-	reply = mClientLdm->sendRequest("CAM", condition, mLocalConfig.mTimeout);
+	reply = mClientCam->sendRequest("CAM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -69,7 +79,7 @@ std::string Server::requestDenm(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all DENMs from LDM
-	reply = mClientLdm->sendRequest("DENM", condition, mLocalConfig.mTimeout);
+	reply = mClientDenm->sendRequest("DENM", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -103,7 +113,7 @@ std::string Server::requestGps(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all GPSs from LDM
-	reply = mClientLdm->sendRequest("GPS", condition, mLocalConfig.mTimeout);
+	reply = mClientGps->sendRequest("GPS", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -137,7 +147,7 @@ std::string Server::requestObd2(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all OBD2s from LDM
-	reply = mClientLdm->sendRequest("OBD2", condition, mLocalConfig.mTimeout);
+	reply = mClientObd2->sendRequest("OBD2", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -171,7 +181,7 @@ std::string Server::requestDccInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;;
 	//get all dccInfos from LDM
-	reply = mClientLdm->sendRequest("dccInfo", condition, mLocalConfig.mTimeout);
+	reply = mClientDccInfo->sendRequest("dccInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
@@ -220,7 +230,7 @@ std::string Server::requestCamInfo(std::string condition) {
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
 	//get all camInfos from LDM
-	reply = mClientLdm->sendRequest("camInfo", condition, mLocalConfig.mTimeout);
+	reply = mClientCamInfo->sendRequest("camInfo", condition, mLocalConfig.mTimeout);
 	if (reply != "") {
 		ldmData.ParseFromString(reply);
 
