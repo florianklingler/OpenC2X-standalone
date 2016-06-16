@@ -32,6 +32,7 @@ void CommunicationClient::init() {
 
 //timeout in ms
 string CommunicationClient::sendRequest(string envelope, string request, int timeout) {
+	mMutex.lock();
 	init();
 	s_sendmore(*mClient, envelope);
 	s_send (*mClient, request);
@@ -45,10 +46,12 @@ string CommunicationClient::sendRequest(string envelope, string request, int tim
 		std::string reply = s_recv (*mClient);
 		mLogger->logDebug("ldm replied");
 	    delete mClient;
+	    mMutex.unlock();
 		return reply;
 	}
     //could not get a reply, return ""
 	mLogger->logDebug("no response from ldm");
     delete mClient;
+    mMutex.unlock();
     return "";
 }

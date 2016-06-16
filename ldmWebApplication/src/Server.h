@@ -12,6 +12,7 @@
 #include <buffers/build/camInfo.pb.h>
 #include <buffers/build/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
+#include <mutex>
 
 struct WebApplicationConfig {
 	int mTimeout;
@@ -31,6 +32,7 @@ public:
 	Server(GlobalConfig config);
 	virtual ~Server();
 
+	//TODO: are requests for one type of messages completely thread-safe?
 	std::string requestCam(std::string condition);
 	std::string requestDenm(std::string condition);
 	std::string requestGps(std::string condition);
@@ -48,5 +50,11 @@ private:
 
 	LoggingUtility* mLogger;
 
+	std::mutex mMutexCam;
+	std::mutex mMutexDenm;
+	std::mutex mMutexGps;
+	std::mutex mMutexObd2;
+	std::mutex mMutexCamInfo;
+	std::mutex mMutexDccInfo;
 };
 #endif /* SERVER_H_ */

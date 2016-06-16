@@ -30,6 +30,7 @@ Server::~Server() {
 
 //requests all CAMs from LDM
 std::string Server::requestCam(std::string condition) {
+	mMutexCam.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
@@ -54,13 +55,16 @@ std::string Server::requestCam(std::string condition) {
 			}
 		}
 		json += "]}";
+		mMutexCam.unlock();
 		return json;
 	}
+	mMutexCam.unlock();
 	return "";
 }
 
 //requests all DENMs from LDM
 std::string Server::requestDenm(std::string condition) {
+	mMutexDenm.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
@@ -85,13 +89,16 @@ std::string Server::requestDenm(std::string condition) {
 			}
 		}
 		json += "]}";
+		mMutexDenm.unlock();
 		return json;
 	}
+	mMutexDenm.unlock();
 	return "";
 }
 
 //requests all GPSs from LDM
 std::string Server::requestGps(std::string condition) {
+	mMutexGps.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
@@ -116,13 +123,16 @@ std::string Server::requestGps(std::string condition) {
 			}
 		}
 		json += "]}";
+		mMutexGps.unlock();
 		return json;
 	}
+	mMutexGps.unlock();
 	return "";
 }
 
 //requests all OBD2s from LDM
 std::string Server::requestObd2(std::string condition) {
+	mMutexObd2.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
@@ -147,13 +157,16 @@ std::string Server::requestObd2(std::string condition) {
 			}
 		}
 		json += "]}";
+		mMutexObd2.unlock();
 		return json;
 	}
+	mMutexObd2.unlock();
 	return "";
 }
 
 //requests all DCCINFOs from LDM
 std::string Server::requestDccInfo(std::string condition) {
+	mMutexDccInfo.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;;
@@ -187,13 +200,16 @@ std::string Server::requestDccInfo(std::string condition) {
 			json+="}";
 		}
 		json += "]}";
+		mMutexDccInfo.unlock();
 		return json;
 	}
+	mMutexDccInfo.unlock();
 	return "";
 }
 
 //requests all CAMINFOs from LDM
 std::string Server::requestCamInfo(std::string condition) {
+	mMutexCamInfo.lock();
 	std::string request, reply;
 	std::string serializedData;
 	dataPackage::LdmData ldmData;
@@ -218,8 +234,10 @@ std::string Server::requestCamInfo(std::string condition) {
 			}
 		}
 		json += "]}";
+		mMutexCamInfo.unlock();
 		return json;
 	}
+	mMutexCamInfo.unlock();
 	return "";
 }
 
@@ -227,7 +245,6 @@ std::string Server::requestCamInfo(std::string condition) {
 std::string Server::myMac() {
 	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
 }
-
 
 int main(){
 	crow::SimpleApp app;
@@ -242,6 +259,7 @@ int main(){
 
 	//ldm requests
 	Server* server = new Server(config);
+
 	//CAM
 	CROW_ROUTE(app, "/request_cam")
 	.methods("POST"_method)
@@ -258,6 +276,7 @@ int main(){
 		}
 
 		reply = server->requestCam(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -281,6 +300,7 @@ int main(){
 		}
 
 		reply = server->requestDenm(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -304,6 +324,7 @@ int main(){
 		}
 
 		reply = server->requestGps(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -327,6 +348,7 @@ int main(){
 		}
 
 		reply = server->requestObd2(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -350,6 +372,7 @@ int main(){
 		}
 
 		reply = server->requestDccInfo(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");
@@ -373,6 +396,7 @@ int main(){
 		}
 
 		reply = server->requestCamInfo(condition);
+//		std::cout << reply << std::endl;
 
 	    auto resp = crow::response{reply};
 	    resp.add_header("Access-Control-Allow-Origin","*");

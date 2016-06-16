@@ -5,6 +5,7 @@
 #include <zmq.hpp>
 #include "zhelpers.hpp"
 #include "LoggingUtility.h"
+#include <mutex>
 
 
 class CommunicationClient {
@@ -22,6 +23,8 @@ private:
 	zmq::socket_t* mClient;
 
 	LoggingUtility* mLogger;
+
+	std::mutex mMutex;
 };
 
 #endif
