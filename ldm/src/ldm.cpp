@@ -36,6 +36,24 @@ LDM::LDM() {
 		mLogger->logInfo("Opened database successfully");
 		createTables();
 	}
+
+	//optimize, eg. don't wait until inserts are written to disk
+	char* errmsg = 0;
+	if (sqlite3_exec(mDb, "PRAGMA synchronous = OFF", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+	if (sqlite3_exec(mDb, "PRAGMA default_temp_store = MEMORY", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
+	if (sqlite3_exec(mDb, "PRAGMA journal_mode = MEMORY", NULL, 0, &errmsg)) {
+		string error(errmsg);
+		mLogger->logError("SQL error: " + error);
+		sqlite3_free(errmsg);
+	}
 }
 
 LDM::~LDM() {
@@ -277,6 +295,7 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 		sqlite3_free(errmsg);
 	}
 	mCamMutex.unlock();
+
 	return result;
 }
 
