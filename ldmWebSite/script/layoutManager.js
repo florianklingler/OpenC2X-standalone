@@ -1,7 +1,7 @@
 //each container class div needs and unique id
 
 containers = [];
-layoutLocked = true;
+layoutLocked = false;
 
 /**
  * saves to current layout to localstorage on client side
