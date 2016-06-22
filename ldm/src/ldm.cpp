@@ -93,14 +93,6 @@ void LDM::createTables() {
 	char* sqlCommand;
 	char* errmsg = 0;
 
-	//begin transaction
-//	sqlCommand = (char*) "BEGIN TRANSACTION;";
-//	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
-
 	//create CAM table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
 			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
@@ -123,7 +115,7 @@ void LDM::createTables() {
 
 	//create GPS table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS GPS(" \
-				"key INTEGER PRIMARY KEY, latitude REAL, longitude REAL, altitude REAL, epx REAL, epy REAL, time INTEGER, online INTEGER, satellites INTEGER);";
+				"key INTEGER PRIMARY KEY, latitude DOUBLE, longitude DOUBLE, altitude DOUBLE, epx DOUBLE, epy DOUBLE, time INTEGER, online INTEGER, satellites INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -132,7 +124,7 @@ void LDM::createTables() {
 
 	//create OBD2 table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS OBD2(" \
-				"key INTEGER PRIMARY KEY, time INTEGER, speed REAL, rpm INTEGER);";
+				"key INTEGER PRIMARY KEY, time INTEGER, speed DOUBLE, rpm INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -141,7 +133,7 @@ void LDM::createTables() {
 
 	//create DccInfo table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DccInfo(" \
-				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad REAL, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower REAL, tokenInterval REAL, datarate REAL, carrierSense REAL, flushReqPackets INTEGER, flushNotReqPackets INTEGER);";
+				"key INTEGER PRIMARY KEY, time INTEGER, channelLoad DOUBLE, state TEXT, AC TEXT, availableTokens INTEGER, queuedPackets INTEGER, dccMechanism INTEGER, txPower DOUBLE, tokenInterval DOUBLE, datarate DOUBLE, carrierSense DOUBLE, flushReqPackets INTEGER, flushNotReqPackets INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -150,20 +142,12 @@ void LDM::createTables() {
 
 	//create CamInfo table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CamInfo(" \
-				"key INTEGER PRIMARY KEY, time INTEGER, triggerReason TEXT, delta REAL);";
+				"key INTEGER PRIMARY KEY, time INTEGER, triggerReason TEXT, delta DOUBLE);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
 		sqlite3_free(errmsg);
 	}
-
-	//commit transaction
-//	sqlCommand = (char*) "COMMIT;";
-//	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
 }
 
 
@@ -461,16 +445,10 @@ void LDM::insert(string sqlCommand) {
 //inserts CAM into DB
 void LDM::insertCam(camPackage::CAM cam) {
 	stringstream sSql;
+	// set decimal precision to 15
+	sSql  << setprecision(15);
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
-
-	//begin transaction
-//	char* errmsg = 0;
-//	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
 
 	//insert GPS if available
 	if (cam.has_gps()) {
@@ -511,26 +489,15 @@ void LDM::insertCam(camPackage::CAM cam) {
 	insert(sSql.str());
 	mCamMutex.unlock();
 
-	//commit transaction
-//	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
 }
 
 //inserts DENM into DB
 void LDM::insertDenm(denmPackage::DENM denm) {
 	stringstream sSql;
+	// set decimal precision to 15
+	sSql  << setprecision(15);
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
-
-	//begin transaction
-//	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
 
 	//insert GPS if available
 	if (denm.has_gps()) {
@@ -571,12 +538,6 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 	insert(sSql.str());
 	mDenmMutex.unlock();
 
-	//commit transaction
-//	if (sqlite3_exec(mDb, "COMMIT;", NULL, 0, &errmsg)) {
-//		string error(errmsg);
-//		mLogger->logError("SQL error: " + error);
-//		sqlite3_free(errmsg);
-//	}
 }
 
 
@@ -598,6 +559,8 @@ string LDM::readableTime(int64_t nanoTime) {
 
 void LDM::printGps(gpsPackage::GPS gps) {
 	stringstream stream;
+	// set decimal precision to 15
+	stream << setprecision(15);
 
 	stream << "GPS - " << readableTime(gps.time()) << ", lat: " << gps.latitude() << ", long: " << gps.longitude() << ", alt: " << gps.altitude();
 	//TODO: include epx, epy, ...?
@@ -607,12 +570,18 @@ void LDM::printGps(gpsPackage::GPS gps) {
 
 void LDM::printObd2(obd2Package::OBD2 obd2) {
 	stringstream stream;
+	// set decimal precision to 15
+	stream  << setprecision(15);
+
 	stream << "OBD2 - " << readableTime(obd2.time()) << ", speed: " << obd2.speed() << ", rpm: " << obd2.rpm();
 	mLogger->logInfo(stream.str());
 }
 
 void LDM::printCam(camPackage::CAM cam) {
 	stringstream stream;
+	// set decimal precision to 15
+	stream  << setprecision(15);
+
 	stream << "CAM - " << readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
 	if (cam.has_gps()) {
 
@@ -626,6 +595,9 @@ void LDM::printCam(camPackage::CAM cam) {
 
 void LDM::printDenm(denmPackage::DENM denm) {
 	stringstream stream;
+	// set decimal precision to 15
+	stream  << setprecision(15);
+
 	stream << "DENM - " << readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
 	if (denm.has_gps()) {
 
@@ -723,6 +695,9 @@ void LDM::receiveDccInfo() {
 		dccInfo.ParseFromString(serializedDccInfo);
 
 		stringstream sSql;
+		// set decimal precision to 15
+		sSql  << setprecision(15);
+
 		sSql << "INSERT INTO DccInfo (time, channelLoad, state, AC, availableTokens, queuedPackets, dccMechanism, txPower, tokenInterval, datarate, carrierSense, flushReqPackets, flushNotReqPackets) ";
 		sSql << "VALUES (" << dccInfo.time() << ", " << dccInfo.channelload() << ", '" << dccInfo.state() << "', '" << dccInfo.accesscategory() << "', " << dccInfo.availabletokens() << ", " << dccInfo.queuedpackets() << ", " << dccInfo.dccmechanism() << ", " << dccInfo.txpower() << ", " << dccInfo.tokeninterval() << ", " << dccInfo.datarate() << ", " << dccInfo.carriersense() << ", " << dccInfo.flushreqpackets() << ", " << dccInfo.flushnotreqpackets() << " );";
 		mDccInfoMutex.lock();
@@ -746,6 +721,9 @@ void LDM::receiveCamInfo() {
 		camInfoCache.ParseFromString(serializedCamInfo);
 
 		stringstream sSql;
+		// set decimal precision to 15
+		sSql  << setprecision(15);
+
 		sSql << "INSERT INTO CamInfo (time, triggerReason, delta) ";
 		sSql << "VALUES (" << camInfoCache.time() << ", '" << camInfoCache.triggerreason() << "', " << camInfoCache.delta() << " );";
 		mCamInfoMutex.lock();
