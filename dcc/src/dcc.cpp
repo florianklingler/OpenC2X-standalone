@@ -63,6 +63,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 		mTimerAddToken.insert(make_pair(accessCategory, new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(currentTokenInterval(accessCategory)*1000.00))));
 		mAddedFirstToken[accessCategory] = false;
 	}
+	mStatIdx = 0;
 }
 
 DCC::~DCC() {
@@ -344,6 +345,13 @@ void DCC::measurePktStats(const boost::system::error_code& ec) {
 	}
 
 	mPktStats = mPktStatsCollector->getPktStats();
+	mLogger->logStats(to_string(mStatIdx++)
+			+ "\t" + to_string(mChannelProber->getChannelLoad())
+			+ "\t" + to_string(mPktStats.be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req)
+			+ "\t" + to_string(mPktStats.be_flush_req - prev_be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req - prev_be_flush_not_req)
+		);
+	prev_be_flush_req = mPktStats.be_flush_req;
+	prev_be_flush_not_req = mPktStats.be_flush_not_req;
 
 	mTimerMeasurePktStats->expires_at(mTimerMeasurePktStats->expires_at() + boost::posix_time::milliseconds(mConfig.DCC_collect_pkt_flush_stats*1000));	//1s
 	mTimerMeasurePktStats->async_wait(mStrand.wrap(boost::bind(&DCC::measurePktStats, this, boost::asio::placeholders::error)));

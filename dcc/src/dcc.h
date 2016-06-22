@@ -96,6 +96,9 @@ private:
 
 	PktStatsCollector* mPktStatsCollector;
 	PktStats mPktStats;
+	int mStatIdx;
+	uint32_t prev_be_flush_req;
+	uint32_t prev_be_flush_not_req;
 	
 	std::mutex mMutexLastTokenAt;
 	std::map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
