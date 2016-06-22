@@ -187,11 +187,11 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->mWifi->stats.vo_flush_not_req = vo_flush_not_req;
 	cp->mWifi->stats.vo_flush_req = vo_flush_req;
 	mutexStats.unlock();
-	cp->mLogger->logStats(to_string(cp->mWifi->stats.be_flush_req) + "\t" + to_string(cp->mWifi->stats.be_flush_not_req)
-			+ "\t" + to_string(cp->mWifi->stats.bk_flush_req) + "\t" + to_string(cp->mWifi->stats.bk_flush_not_req)
-			+ "\t" + to_string(cp->mWifi->stats.vi_flush_req) + "\t" + to_string(cp->mWifi->stats.vi_flush_not_req)
-			+ "\t" + to_string(cp->mWifi->stats.vo_flush_req) + "\t" + to_string(cp->mWifi->stats.vo_flush_not_req)
-		);
+//	cp->mLogger->logStats(to_string(cp->mWifi->stats.be_flush_req) + "\t" + to_string(cp->mWifi->stats.be_flush_not_req)
+//			+ "\t" + to_string(cp->mWifi->stats.bk_flush_req) + "\t" + to_string(cp->mWifi->stats.bk_flush_not_req)
+//			+ "\t" + to_string(cp->mWifi->stats.vi_flush_req) + "\t" + to_string(cp->mWifi->stats.vi_flush_not_req)
+//			+ "\t" + to_string(cp->mWifi->stats.vo_flush_req) + "\t" + to_string(cp->mWifi->stats.vo_flush_not_req)
+//		);
 	return NL_SKIP;
 }
 
