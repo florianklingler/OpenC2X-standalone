@@ -1,8 +1,10 @@
 #!/bin/sh
 
+#only on hardware devices (alix, apu, gericom), else comment this line out
 sed -i 's/IGNORE_STATS true/IGNORE_STATS false/g' dcc/src/PktStatsCollector.cpp
 
 cd common/Debug
+make clean
 make all
 
 cd ..
