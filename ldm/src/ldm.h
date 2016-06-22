@@ -74,8 +74,12 @@ private:
 	std::mutex mObd2Mutex;
 	std::mutex mDenmMutex;
 
-
 	sqlite3* mDb;
+
+	std::map<std::string,camPackage::CAM> camCache;
+	infoPackage::CamInfo camInfoCache;
+	std::map<std::string,infoPackage::DccInfo>  dccInfoCache;
+	std::map<std::string,denmPackage::DENM> denmCache;
 };
 
 #endif

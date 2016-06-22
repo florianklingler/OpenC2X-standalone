@@ -1,4 +1,4 @@
 <global>
 	<expNo>1</expNo>
-	<ethernetDevice>wlp9s0</ethernetDevice> <!--get via console: "ip link show" -->
+	<ethernetDevice>enp0s3</ethernetDevice> <!--get via console: "ip link show" -->
 </global>

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <config/config.h>
+#include <map>
 
 using namespace std;
 
@@ -242,60 +243,61 @@ dataPackage::LdmData LDM::obd2Select(string condition) {
 dataPackage::LdmData LDM::camSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_CAM);
-	sqlite3_stmt *stmt;
-	string sqlCommand;
-	if (condition == "latest") {	//only get the most recent CAM for each stationId
+
+	//initalise cache with content from db
+	if (camCache.empty()){
+		sqlite3_stmt *stmt;
 		//sql from http://stackoverflow.com/questions/1313120/retrieving-the-last-record-in-each-group; have to use createTime instead of id because id isn't necessarily unique and growing
-		sqlCommand = "SELECT cam1.* from CAM cam1 LEFT JOIN CAM cam2 ON (cam1.stationId = cam2.stationId AND cam1.createTime < cam2.createTime) WHERE cam2.createTime IS NULL";
-	}
-	else {
-		sqlCommand = "SELECT * from CAM " + condition;
-	}
+		string sqlCommand = "SELECT cam1.* from CAM cam1 LEFT JOIN CAM cam2 ON (cam1.stationId = cam2.stationId AND cam1.createTime < cam2.createTime) WHERE cam2.createTime IS NULL";
 
-	char* errmsg = 0;
-	mCamMutex.lock();
-	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-			camPackage::CAM cam;
+		char* errmsg = 0;
+		mCamMutex.lock();
+		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				camPackage::CAM cam;
 
-			//set attributes retrieved from result columns
-			cam.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
-			cam.set_id(sqlite3_column_int(stmt, 2));
-			cam.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
-			cam.set_createtime(sqlite3_column_int64(stmt, 4));
+				//set attributes retrieved from result columns
+				cam.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
+				cam.set_id(sqlite3_column_int(stmt, 2));
+				cam.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+				cam.set_createtime(sqlite3_column_int64(stmt, 4));
 
-			//add GPS if available
-			int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
-			if (gpsRowId > 0) {
-				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS* gps = new gpsPackage::GPS();
-				gps->ParseFromString(ldmData.data(0));
-				cam.set_allocated_gps(gps);
+				//add GPS if available
+				int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
+				if (gpsRowId > 0) {
+					dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
+					gpsPackage::GPS* gps = new gpsPackage::GPS();
+					gps->ParseFromString(ldmData.data(0));
+					cam.set_allocated_gps(gps);
+				}
+
+				//add OBD2 if available
+				int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
+				if (obd2RowId > 0) {
+					dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
+					obd2Package::OBD2* obd2 = new obd2Package::OBD2();
+					obd2->ParseFromString(ldmData.data(0));
+					cam.set_allocated_obd2(obd2);
+				}
+
+				//add result
+				camCache[cam.stationid()]=cam;
 			}
-
-			//add OBD2 if available
-			int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
-			if (obd2RowId > 0) {
-				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
-				obd2->ParseFromString(ldmData.data(0));
-				cam.set_allocated_obd2(obd2);
-			}
-
-			//add result
-			string serializedCam;
-			cam.SerializeToString(&serializedCam);
-			result.add_data(serializedCam);
+			sqlite3_finalize(stmt);
 		}
-		sqlite3_finalize(stmt);
+		else {
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
+		mCamMutex.unlock();
 	}
-	else {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
-	mCamMutex.unlock();
 
+	for (auto entry : camCache){
+		string serializedCam;
+		entry.second.SerializeToString(&serializedCam);
+		result.add_data(serializedCam);
+	}
 	return result;
 }
 
@@ -303,57 +305,59 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 dataPackage::LdmData LDM::denmSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_DENM);
-	sqlite3_stmt *stmt;
-	string sqlCommand;
-	if (condition == "latest") {	//only get the latest DENM for each stationId
-		sqlCommand = "SELECT denm1.* from DENM denm1 LEFT JOIN DENM denm2 ON (denm1.stationId = denm2.stationId AND denm1.createTime < denm2.createTime) WHERE denm2.createTime IS NULL";
-	}
-	else {
-		sqlCommand = "SELECT * from DENM " + condition;
-	}
-	char* errmsg = 0;
-	mDenmMutex.lock();
-	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-			denmPackage::DENM denm;
 
-			//set attributes retrieved from result columns
-			denm.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
-			denm.set_id(sqlite3_column_int(stmt, 2));
-			denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
-			denm.set_createtime(sqlite3_column_int64(stmt, 4));
+	//initalize cache from db
+	if (denmCache.empty()){
+		sqlite3_stmt *stmt;
+		//only get the latest DENM for each stationId
+		string sqlCommand = "SELECT denm1.* from DENM denm1 LEFT JOIN DENM denm2 ON (denm1.stationId = denm2.stationId AND denm1.createTime < denm2.createTime) WHERE denm2.createTime IS NULL";
+		char* errmsg = 0;
+		mDenmMutex.lock();
+		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				denmPackage::DENM denm;
 
-			//add GPS if available
-			int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
-			if (gpsRowId > 0) {
-				dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-				gpsPackage::GPS* gps = new gpsPackage::GPS();
-				gps->ParseFromString(ldmData.data(0));
-				denm.set_allocated_gps(gps);
+				//set attributes retrieved from result columns
+				denm.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
+				denm.set_id(sqlite3_column_int(stmt, 2));
+				denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+				denm.set_createtime(sqlite3_column_int64(stmt, 4));
+
+				//add GPS if available
+				int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
+				if (gpsRowId > 0) {
+					dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
+					gpsPackage::GPS* gps = new gpsPackage::GPS();
+					gps->ParseFromString(ldmData.data(0));
+					denm.set_allocated_gps(gps);
+				}
+
+				//add OBD2 if available
+				int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
+				if (obd2RowId > 0) {
+					dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
+					obd2Package::OBD2* obd2 = new obd2Package::OBD2();
+					obd2->ParseFromString(ldmData.data(0));
+					denm.set_allocated_obd2(obd2);
+				}
+
+				//add result
+				denmCache[denm.stationid()]=denm;
 			}
-
-			//add OBD2 if available
-			int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
-			if (obd2RowId > 0) {
-				dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-				obd2Package::OBD2* obd2 = new obd2Package::OBD2();
-				obd2->ParseFromString(ldmData.data(0));
-				denm.set_allocated_obd2(obd2);
-			}
-
-			//add result
-			string serializedDenm;
-			denm.SerializeToString(&serializedDenm);
-			result.add_data(serializedDenm);
+			sqlite3_finalize(stmt);
 		}
-		sqlite3_finalize(stmt);
+		else {
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
+		mDenmMutex.unlock();
 	}
-	else {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
+	for (auto entry : denmCache){
+		string serializedDenm;
+		entry.second.SerializeToString(&serializedDenm);
+		result.add_data(serializedDenm);
 	}
-	mDenmMutex.unlock();
 	return result;
 }
 
@@ -361,48 +365,48 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_dccInfo);
-	sqlite3_stmt *stmt;
-	string sqlCommand;
-	if (condition == "latest") {	//only get the latest dccInfo for each AC
-		sqlCommand = "SELECT dccInfo1.* from DccInfo dccInfo1 LEFT JOIN DccInfo dccInfo2 ON (dccInfo1.AC = dccInfo2.AC AND dccInfo1.time < dccInfo2.time) WHERE dccInfo2.time IS NULL";
-	}
-	else {
-		sqlCommand = "SELECT * from DccInfo " + condition;
-	}
-	char* errmsg = 0;
-	mDccInfoMutex.lock();
-	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-			infoPackage::DccInfo dccInfo;
 
-			//set attributes retrieved from result columns
-			dccInfo.set_time(sqlite3_column_int64(stmt, 1));
-			dccInfo.set_channelload(sqlite3_column_double(stmt, 2));
-			dccInfo.set_state(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
-			dccInfo.set_accesscategory(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4))));
-			dccInfo.set_availabletokens(sqlite3_column_int(stmt, 5));
-			dccInfo.set_queuedpackets(sqlite3_column_int(stmt, 6));
-			dccInfo.set_dccmechanism(sqlite3_column_int(stmt, 7));
-			dccInfo.set_txpower(sqlite3_column_double(stmt, 8));
-			dccInfo.set_tokeninterval(sqlite3_column_double(stmt, 9));
-			dccInfo.set_datarate(sqlite3_column_double(stmt, 10));
-			dccInfo.set_carriersense(sqlite3_column_double(stmt, 11));
-			dccInfo.set_flushreqpackets(sqlite3_column_int(stmt, 12));
-			dccInfo.set_flushnotreqpackets(sqlite3_column_int(stmt, 13));
+	//init cache from db
+	if (dccInfoCache.empty()){
+		sqlite3_stmt *stmt;
+		string sqlCommand = "SELECT dccInfo1.* from DccInfo dccInfo1 LEFT JOIN DccInfo dccInfo2 ON (dccInfo1.AC = dccInfo2.AC AND dccInfo1.time < dccInfo2.time) WHERE dccInfo2.time IS NULL";
+		char* errmsg = 0;
+		mDccInfoMutex.lock();
+		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				infoPackage::DccInfo dccInfo;
 
-			//add to result
-			string serializedDccInfo;
-			dccInfo.SerializeToString(&serializedDccInfo);
-			result.add_data(serializedDccInfo);
+				//set attributes retrieved from result columns
+				dccInfo.set_time(sqlite3_column_int64(stmt, 1));
+				dccInfo.set_channelload(sqlite3_column_double(stmt, 2));
+				dccInfo.set_state(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
+				dccInfo.set_accesscategory(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4))));
+				dccInfo.set_availabletokens(sqlite3_column_int(stmt, 5));
+				dccInfo.set_queuedpackets(sqlite3_column_int(stmt, 6));
+				dccInfo.set_dccmechanism(sqlite3_column_int(stmt, 7));
+				dccInfo.set_txpower(sqlite3_column_double(stmt, 8));
+				dccInfo.set_tokeninterval(sqlite3_column_double(stmt, 9));
+				dccInfo.set_datarate(sqlite3_column_double(stmt, 10));
+				dccInfo.set_carriersense(sqlite3_column_double(stmt, 11));
+				dccInfo.set_flushreqpackets(sqlite3_column_int(stmt, 12));
+				dccInfo.set_flushnotreqpackets(sqlite3_column_int(stmt, 13));
+
+				dccInfoCache[dccInfo.accesscategory()]=dccInfo;
+			}
+			sqlite3_finalize(stmt);
 		}
-		sqlite3_finalize(stmt);
+		else {
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
+		mDccInfoMutex.unlock();
 	}
-	else {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
+	for (auto entry : dccInfoCache){
+		string serializedDccInfo;
+		entry.second.SerializeToString(&serializedDccInfo);
+		result.add_data(serializedDccInfo);
 	}
-	mDccInfoMutex.unlock();
 	return result;
 }
 
@@ -410,38 +414,37 @@ dataPackage::LdmData LDM::dccInfoSelect(string condition) {
 dataPackage::LdmData LDM::camInfoSelect(string condition) {
 	dataPackage::LdmData result;
 	result.set_type(dataPackage::LdmData_Type_camInfo);
-	sqlite3_stmt *stmt;
-	string sqlCommand;
-	if (condition == "latest") {	//only get the latest camInfo
-		sqlCommand = "SELECT * from CamInfo ORDER BY key DESC LIMIT 1";
-	}
-	else {
-		sqlCommand = "SELECT * from CamInfo " + condition;
-	}
-	char* errmsg = 0;
-	mCamInfoMutex.lock();
-	if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-		while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-			infoPackage::CamInfo camInfo;
 
-			//set attributes retrieved from result columns
-			camInfo.set_time(sqlite3_column_int64(stmt, 1));
-			camInfo.set_triggerreason(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
-			camInfo.set_delta(sqlite3_column_double(stmt, 3));
+	//Initialize cache from db
+	if(!camInfoCache.has_time()){
 
-			//add to result
-			string serializedCamInfo;
-			camInfo.SerializeToString(&serializedCamInfo);
-			result.add_data(serializedCamInfo);
+		sqlite3_stmt *stmt;
+		string sqlCommand = "SELECT * from CamInfo " + condition;
+		char* errmsg = 0;
+		mCamInfoMutex.lock();
+		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+
+				//set attributes retrieved from result columns
+				camInfoCache.set_time(sqlite3_column_int64(stmt, 1));
+				camInfoCache.set_triggerreason(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))));
+				camInfoCache.set_delta(sqlite3_column_double(stmt, 3));
+			}
+			sqlite3_finalize(stmt);
 		}
-		sqlite3_finalize(stmt);
+		else {
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
+		mCamInfoMutex.unlock();
 	}
-	else {
-		string error(errmsg);
-		mLogger->logError("SQL error: " + error);
-		sqlite3_free(errmsg);
-	}
-	mCamInfoMutex.unlock();
+
+	//add to result
+	string serializedCamInfo;
+	camInfoCache.SerializeToString(&serializedCamInfo);
+	result.add_data(serializedCamInfo);
+
 	return result;
 }
 
@@ -523,7 +526,6 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 	int64_t obd2RowId = -1;
 
 	//begin transaction
-	char* errmsg = 0;
 //	if (sqlite3_exec(mDb, "BEGIN TRANSACTION;", NULL, 0, &errmsg)) {
 //		string error(errmsg);
 //		mLogger->logError("SQL error: " + error);
@@ -688,6 +690,9 @@ void LDM::receiveFromCa() {
 		cam.ParseFromString(serializedCam);
 
 		printCam(cam);
+		//ASSUMPTION: received cam is the newer than all cams that were received before.
+		//TODO: OPTIMIZATION: use pointers instead of copying cams.
+		camCache[cam.stationid()]=cam;
 		insertCam(cam);
 	}
 }
@@ -702,6 +707,9 @@ void LDM::receiveFromDen() {
 		denm.ParseFromString(serializedDenm);
 
 		printDenm(denm);
+		//ASSUMPTION: received denm is the newer than all denm that were received before.
+		//TODO: OPTIMIZATION: use pointers instead of copying denm.
+		denmCache[denm.stationid()] = denm;
 		insertDenm(denm);
 	}
 }
@@ -709,7 +717,6 @@ void LDM::receiveFromDen() {
 void LDM::receiveDccInfo() {
 	string serializedDccInfo;
 	infoPackage::DccInfo dccInfo;
-
 	while (1) {
 		pair<string, string> received = mReceiverDccInfo->receive();
 		serializedDccInfo = received.second;
@@ -722,22 +729,25 @@ void LDM::receiveDccInfo() {
 		insert(sSql.str());
 		mDccInfoMutex.unlock();
 
+		//ASSUMPTION: received dccInfo is the newer than all dccInfos that were received before.
+		//TODO: OPTIMIZATION: use pointers instead of copying dccInfos.
+		dccInfoCache[dccInfo.accesscategory()]=dccInfo;
+
 		mLogger->logDebug("received dccInfo");
 	}
 }
 
 void LDM::receiveCamInfo() {
 	string serializedCamInfo;
-	infoPackage::CamInfo camInfo;
 
 	while (1) {
 		pair<string, string> received = mReceiverCamInfo->receive();
 		serializedCamInfo = received.second;
-		camInfo.ParseFromString(serializedCamInfo);
+		camInfoCache.ParseFromString(serializedCamInfo);
 
 		stringstream sSql;
 		sSql << "INSERT INTO CamInfo (time, triggerReason, delta) ";
-		sSql << "VALUES (" << camInfo.time() << ", '" << camInfo.triggerreason() << "', " << camInfo.delta() << " );";
+		sSql << "VALUES (" << camInfoCache.time() << ", '" << camInfoCache.triggerreason() << "', " << camInfoCache.delta() << " );";
 		mCamInfoMutex.lock();
 		insert(sSql.str());
 		mCamInfoMutex.unlock();
