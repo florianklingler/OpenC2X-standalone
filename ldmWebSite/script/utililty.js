@@ -37,6 +37,17 @@ function increase_brightness(hex, percent){
 function objectToTable(obj){
 	var str = ""; //"<table>";
 	
+	/**
+	 * shotens #data if its a decimal number to 6 numbers after the dot. else just returns #data
+	 */
+	var shortenDecimalNumber = function(data){
+		if (typeof data == "number"){
+			return Math.round(data*1000000)/1000000;
+		} else {
+			return data;
+		}
+	};
+	
 	for (var name in obj){
 		str += "<tr>";
 		str += "<td>"+name+"</td>";
@@ -47,10 +58,20 @@ function objectToTable(obj){
 			if (name.includes("time") | name.includes("Time") | name.includes("delta")){//.includes is case sensitive
 				str += "<td>";
 				var date = new Date(Number(String(obj[name]).slice(0,-6)));//need to cut last 6 values cause Date() is not that precise
-				str += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+":"+date.getMilliseconds();
+				/** adds upto 1 leading zero*/
+				var pad10 = function(n) {
+				    return (n < 10) ? ("0" + n) : n; 
+				}
+				/** adds up to 2 leading zeros*/
+				var pad100 = function(n) {
+				    return (n < 10) ? ("00" + n) : 
+				    	((n<100) ? "0" +n : n);
+				}
+				str += pad10(date.getHours())+":"+pad10(date.getMinutes())+":"+
+					pad10(date.getSeconds())+":"+pad100(date.getMilliseconds());
 				str +="</td>";
 			} else {
-				str += "<td>"+obj[name]+"</td>";
+				str += "<td>"+shortenDecimalNumber(obj[name])+"</td>";
 			}
 		}
 		str += "</tr>";

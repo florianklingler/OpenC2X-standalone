@@ -132,15 +132,19 @@ function initMap(){
 	markers = [];
 	
 	window.setInterval(function(){
-		var cam = camData.getLastOwnCam();
+		camData.updateCams();
 		if (camData.mymac != ""){//not uninitalised
 			markers.forEach(function(marker) {
 				map.removeLayer(marker);
 			})
-			var myIcon = L.icon({
+			var redMarker = L.icon({
 				    iconUrl: 'image/marker/marker-icon-red.png',
 				});
-			
+			var redMarkerPale = L.icon({
+			    iconUrl: 'image/marker/marker-icon-red-pale.png',
+			});
+
+			var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
 				if ( key == camData.mymac){//own cam
 					if(cam.gps){
@@ -149,7 +153,13 @@ function initMap(){
 					}
 				} else {//other cams : red marker
 					if(cam.gps){
-						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: myIcon}).addTo(map));
+						if(cam.createTime +60*1000000000 < ownCam.createTime){//other cam is old
+							var icon = redMarkerPale;
+						} else {//cam is fresh
+							var icon = redMarker;
+						}
+						
+						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: icon}).addTo(map));
 					}
 				}
 			})
