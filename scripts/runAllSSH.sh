@@ -3,7 +3,7 @@ SESSION=ETSI
 BOX=gericom1
 SSH_WAIT_TIME=0.2s # not sure whether needed but if running the app fails after connecting, try increasing this value
 
-#Opens for every programm a seperate ssh connection to $BOX and runs it there.
+#Opens for every programm a seperate ssh connection to $BOX and runs it there. Also opens the Monitor Website locally in forefox
 #All ssh connections are displayed in seperate tmux panels.
 #Panels may be resized by mouse dragging. Also the focus can be changed by mouse clicking.
 #The applications stop running if the ssh connection is closed/lost.
