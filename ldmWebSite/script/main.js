@@ -177,7 +177,12 @@ function initMap(){
 							var icon = redMarker;
 						}
 						
-						markers.push(L.marker([cam.gps.latitude,cam.gps.longitude],{icon: icon}).addTo(map));
+						var marker = L.marker([cam.gps.latitude,cam.gps.longitude],{icon: icon}).addTo(map);
+						marker.bindPopup(cam.stationId);
+						marker.on('mouseover', function(e){
+						    marker.openPopup();
+						});
+						markers.push(marker);
 					}
 				}
 			})

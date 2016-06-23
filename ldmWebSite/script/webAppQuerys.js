@@ -29,7 +29,15 @@ function requestCamInfo(callback){
 function requestDenm(callback){
 	$.post("http://localhost:1188/request_denm",JSON.stringify({condition:"latest"}),
 			function(data){
-		callback(data.msgs[data.msgs.length-1]);
+                            var latestTime = 0;
+                            var latestDenm;
+                            data.msgs.forEach(function(denm){
+                                if (denm.createTime > latestTime){
+                                    latestDenm = denm;
+                                    latestTime = denm.createTime;
+                                }
+                            });
+		callback(latestDenm);
 	},"json");
 }
 
