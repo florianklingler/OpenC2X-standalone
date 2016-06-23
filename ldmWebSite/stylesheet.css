@@ -3,15 +3,16 @@
 
 #mapContainer {
 	height : 100%;
-	background :lightblue;
 }
 
 #mapWrapper {
 	border:4px solid green; 
+	background :lightgreen;
 	border-radius: 10px;
 	height: 300px;
 	width: 300px;
 	padding : 10px;
+	float:right;
 }
 
 .container.dataContainer{

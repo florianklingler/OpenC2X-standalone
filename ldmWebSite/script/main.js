@@ -153,7 +153,7 @@ function initMap(){
 					}
 				} else {//other cams : red marker
 					if(cam.gps){
-						if(cam.createTime +60*1000000000 < ownCam.createTime){//other cam is old
+						if(cam.createTime +10*1000000000 < ownCam.createTime){//other cam is old
 							var icon = redMarkerPale;
 						} else {//cam is fresh
 							var icon = redMarker;

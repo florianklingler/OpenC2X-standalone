@@ -57,7 +57,6 @@ function requestObd2(callback){
 function requestDccInfo(callback){
 	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
 			function(data){
-		console.log(data.msgs[data.msgs.length-1]);
 		callback(data.msgs[data.msgs.length-1]);
 	},"json");
 }
