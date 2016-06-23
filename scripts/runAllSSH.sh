@@ -16,6 +16,8 @@ fi
 
 BOX=$1
 
+ssh $BOX "./setup_interfaces.sh"
+
 tmux -2 new-session -d -s $SESSION
 
 
