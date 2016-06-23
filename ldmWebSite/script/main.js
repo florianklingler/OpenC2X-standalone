@@ -161,7 +161,13 @@ function initMap(){
 				if ( key == camData.mymac){//own cam
 					if(cam.gps){
 						viewPosition = [cam.gps.latitude,cam.gps.longitude];
-						markers.push(L.marker(viewPosition).addTo(map));
+						var marker = L.marker(viewPosition).addTo(map);
+						//station id popup
+						marker.bindPopup(cam.stationId);
+						marker.on('mouseover', function(e){
+						    marker.openPopup();
+						});
+						markers.push(marker);
 					}
 				} else {//other cams : red marker
 					if(cam.gps){
