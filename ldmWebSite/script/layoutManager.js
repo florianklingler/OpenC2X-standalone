@@ -90,6 +90,14 @@ function createDenmContainer(){
 	}
 }
 
+function createCamOverviewContainer(){
+	if($("#CamOverview").length === 0){ //container is not created
+		containers.push(new Container("CamOverview", function(callback) {
+			camData.getCamOverview(callback);
+		}, color="#8888ff"));
+	}
+}
+
 function createCamInfoContainer(){
 	if($("#CamInfo").length === 0){ //container is not created
 		containers.push(new Container("CamInfo", function(callback) {

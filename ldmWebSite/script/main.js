@@ -109,6 +109,18 @@ camData = {
 			return camData.cams.get(camData.mymac);
 		}
 	},	
+	getCamOverview : function(callback){
+		camData.updateCams();
+		var table= {}; //own mac is at top
+		camData.cams.forEach(function(cam, stationID) {
+			if (stationID == camData.mymac){
+				table["self"] = {"createTime" : cam.createTime};
+			}else{
+				table[stationID] = {"createTime" : cam.createTime};
+			} 
+		})
+		callback(table);
+	},
 };
 
 function initMap(){
