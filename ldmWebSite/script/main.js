@@ -155,13 +155,16 @@ function initMap(){
 			var redMarkerPale = L.icon({
 			    iconUrl: 'image/marker/marker-icon-red-pale.png',
 			});
+                        var blueMarker = L.icon({
+				    iconUrl: 'image/marker/marker-icon-blue.png',
+				});
 
 			var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
 				if ( key == camData.mymac){//own cam
 					if(cam.gps){
 						viewPosition = [cam.gps.latitude,cam.gps.longitude];
-						var marker = L.marker(viewPosition).addTo(map);
+						var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
 						//station id popup
 						marker.bindPopup(cam.stationId);
 						marker.on('mouseover', function(e){
