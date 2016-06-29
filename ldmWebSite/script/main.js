@@ -151,13 +151,19 @@ function initMap(){
 			})
 			var redMarker = L.icon({
 				    iconUrl: 'image/marker/marker-icon-red.png',
+				    iconSize: [25,41],
+				    iconAnchor: [12,41]
 				});
 			var redMarkerPale = L.icon({
 			    iconUrl: 'image/marker/marker-icon-red-pale.png',
+			    iconSize: [25,41],
+			    iconAnchor: [12,41]
 			});
-                        var blueMarker = L.icon({
-				    iconUrl: 'image/marker/marker-icon-blue.png',
-				});
+            var blueMarker = L.icon({
+			    iconUrl: 'image/marker/marker-icon-blue.png',
+			    iconSize: [25,41],
+			    iconAnchor: [12,41]
+			});
 
 			var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
