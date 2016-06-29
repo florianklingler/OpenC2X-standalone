@@ -1,3 +1,5 @@
+camTimeout = 60 //seconds
+
 
 /**
  *updateFunction is repeatedly called to provide data for this div. should take a callback which shall be called with the retrived data 
@@ -152,17 +154,20 @@ function initMap(){
 			var redMarker = L.icon({
 				    iconUrl: 'image/marker/marker-icon-red.png',
 				    iconSize: [25,41],
-				    iconAnchor: [12,41]
+				    iconAnchor: [12,41],
+                                    popupAnchor:  [0, -20]
 				});
 			var redMarkerPale = L.icon({
 			    iconUrl: 'image/marker/marker-icon-red-pale.png',
 			    iconSize: [25,41],
-			    iconAnchor: [12,41]
+			    iconAnchor: [12,41],
+                            popupAnchor:  [0, -20]
 			});
             var blueMarker = L.icon({
 			    iconUrl: 'image/marker/marker-icon-blue.png',
 			    iconSize: [25,41],
-			    iconAnchor: [12,41]
+			    iconAnchor: [12,41],
+                            popupAnchor:  [0, -20]
 			});
 
 			var ownCam = camData.getLastOwnCam();
@@ -180,7 +185,7 @@ function initMap(){
 					}
 				} else {//other cams : red marker
 					if(cam.gps){
-						if(cam.createTime +10*1000000000 < ownCam.createTime){//other cam is old
+						if(cam.createTime +camTimeout*100000000 < ownCam.createTime){//other cam is old
 							var icon = redMarkerPale;
 						} else {//cam is fresh
 							var icon = redMarker;
