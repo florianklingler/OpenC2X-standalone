@@ -1,6 +1,6 @@
 #!/bin/bash
 SESSION=ETSI
-SSH_WAIT_TIME=0.2s # not sure whether needed but if running the app fails after connecting, try increasing this value
+SSH_WAIT_TIME=1s # not sure whether needed but if running the app fails after connecting, try increasing this value
 
 #Opens for every programm a seperate ssh connection to $arg1 and runs it there. Also opens the Monitor Website locally in forefox
 #All ssh connections are displayed in seperate tmux panels.
@@ -26,7 +26,7 @@ tmux new-window -t $SESSION:1 -n 'App'
 tmux set-option -g mouse
 
 
-for APP in ldm ldmWebApplication cam gps obd2 denm
+for APP in ldm ldmWebApplication cam gps denm
 do
     echo "Starting $APP"
     # C-m semms to equal to pressing enter -> line is executed
@@ -38,6 +38,17 @@ do
     tmux split-window -v
     tmux select-layout tiled
 done 
+
+#start obd2 with sudo
+echo "Starting obd2"
+# C-m semms to equal to pressing enter -> line is executed
+tmux send-keys "ssh $BOX" C-m
+sleep $SSH_WAIT_TIME
+tmux send-keys "cd pg2015w/scripts" C-m
+tmux send-keys "cd ../obd2/Debug" C-m
+tmux send-keys "sudo ./obd2" C-m
+tmux split-window -v
+tmux select-layout tiled
 
 echo "Stating SSH Tunnel"
 tmux send-keys "ssh -L 1188:localhost:1188 $BOX -N" C-m
