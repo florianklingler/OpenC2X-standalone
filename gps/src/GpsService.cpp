@@ -97,8 +97,10 @@ gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
 	buffer.set_altitude(gpsdata->fix.altitude);
 	buffer.set_epx(gpsdata->fix.epx);
 	buffer.set_epy(gpsdata->fix.epy);
-	buffer.set_time(gpsdata->fix.time);
-	buffer.set_online(gpsdata->online);
+//	buffer.set_time(gpsdata->fix.time);	//FIXME: convert GPS time to epoch time
+//	buffer.set_online(gpsdata->online);
+	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_online(0);
 	buffer.set_satellites(gpsdata->satellites_visible);
 
 	return buffer;
