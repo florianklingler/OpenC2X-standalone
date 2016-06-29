@@ -54,7 +54,7 @@ function objectToTable(obj){
 		if (typeof obj[name] == "object"){
 			str += "<td><table>" + objectToTable(obj[name]) + "</table></td>";
 		} else {
-			if (name.includes("time") | name.includes("Time") | name.includes("delta")){//.includes is case sensitive
+			if (name.includes("time") | name.includes("Time")){//.includes is case sensitive
 				str += "<td>";
 				var date = new Date(Number(String(obj[name]).slice(0,-6)));//need to cut last 6 values cause Date() is not that precise
 				/** adds upto 1 leading zero*/

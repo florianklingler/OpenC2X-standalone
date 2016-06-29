@@ -14,7 +14,7 @@ function Container(name,updateFunction,color,updateInterval){
 	var htmlstr = 
 		'<div id="'+name+'" class="container dataContainer"> '+
         	'<h4 style="display:inline-block">'+name+'</h4>'+
-        	'<div style="background:green" class="updateButton"></div>'+
+    //    	'<div style="background:green" class="updateButton"></div>'+
         	'<table id="'+name+'_data">'+
 				'<tr><td>loading</td><td>Data</td></tr>'+
         	'</table>'+
@@ -28,32 +28,32 @@ function Container(name,updateFunction,color,updateInterval){
 		$("#"+this.id+"_data").html(objectToTable(data));
 	}.bind(this);
 	
-	this.updateButton = div.children(".updateButton");
+	//this.updateButton = div.children(".updateButton");
 	this.enableUpdate = function(){
 		if (this.intervalID === -1){
 			this.intervalID=window.setInterval(
 				function(){this.updateFunction(this.setTable);}.bind(this),
 				this.updateInterval
 			);
-			this.updateButton.css("background","green");
+	//		this.updateButton.css("background","green");
 		}
 	}.bind(this);
 	this.enableUpdate();
 	
-	this.disableUpdate = function(){
-		window.clearInterval(this.intervalID);
-		this.intervalID=-1;
-		this.updateButton.css("background","red");
-	}.bind(this);
-	
-	this.toggleUpdate= function(){
-		if (this.intervalID ===-1){
-			this.enableUpdate();
-		} else {
-			this.disableUpdate();
-		}
-	}.bind(this);
-	this.updateButton.click(this.toggleUpdate);
+//	this.disableUpdate = function(){
+//		window.clearInterval(this.intervalID);
+//		this.intervalID=-1;
+//		this.updateButton.css("background","red");
+//	}.bind(this);
+//	
+//	this.toggleUpdate= function(){
+//		if (this.intervalID ===-1){
+//			this.enableUpdate();
+//		} else {
+//			this.disableUpdate();
+//		}
+//	}.bind(this);
+//	this.updateButton.click(this.toggleUpdate);
 }
 
 /**
@@ -71,6 +71,11 @@ camData = {
 	 */
 	init : function(){
 		if (this.mymac == ""){//is not initalised
+			//start updating
+			window.setInterval(function(){
+				camData.updateCams();
+			},camData.refreshRate);
+			//get own mac
 			requestMyMac(function(data) {
 				this.mymac = data.myMac;
 			}.bind(this));
@@ -104,7 +109,7 @@ camData = {
 		}
 	},
 	getLastOwnCam : function(callback){
-		camData.updateCams();
+		camData.init();
 		if(callback){
 			callback(camData.cams.get(camData.mymac));
 		} else {
@@ -112,16 +117,17 @@ camData = {
 		}
 	},	
 	getCamOverview : function(callback){
-		camData.updateCams();
-		var table= {}; //own mac is at top
-		camData.cams.forEach(function(cam, stationID) {
-			if (stationID == camData.mymac){
-				table["self"] = {"createTime" : cam.createTime};
-			}else{
-				table[stationID] = {"createTime" : cam.createTime};
-			} 
-		})
-		callback(table);
+		if(camData.init()){
+			var table= {}; //own mac is at top
+			camData.cams.forEach(function(cam, stationID) {
+				if (stationID == camData.mymac){
+					table["self"] = {"createTime" : cam.createTime};
+				}else{
+					table[stationID] = {"createTime" : cam.createTime};
+				} 
+			})
+			callback(table);
+		}
 	},
 };
 
@@ -146,8 +152,7 @@ function initMap(){
 	markers = [];
 	
 	window.setInterval(function(){
-		camData.updateCams();
-		if (camData.mymac != ""){//not uninitalised
+		if (camData.init()){//not uninitalised
 			markers.forEach(function(marker) {
 				map.removeLayer(marker);
 			})
