@@ -258,7 +258,6 @@ std::string Server::requestCamInfo(std::string condition) {
 	return "";
 }
 
-//returns own mac address from global config
 std::string Server::myMac() {
 	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
 }
