@@ -45,6 +45,6 @@ make all
 
 cd ..
 cd ..
-cd ldmWebApplication/Debug
+cd httpServer/Debug
 make clean
 make all
