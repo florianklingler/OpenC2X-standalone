@@ -31,7 +31,11 @@ public:
 
 	Server(GlobalConfig config);
 	virtual ~Server();
-
+	/**short desc.
+	 * long desc
+	 * @param condition
+	 * @return
+	 */
 	std::string requestCam(std::string condition);
 	std::string requestDenm(std::string condition);
 	std::string requestGps(std::string condition);

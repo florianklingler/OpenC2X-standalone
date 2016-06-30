@@ -2,7 +2,7 @@
 #define UTILITY_LOGGINGUTILITY_H_
 
 #include <string>
-#include "easylogging++.h"
+#include "external/easylogging++.h"
 
 class LoggingUtility {
 public:
