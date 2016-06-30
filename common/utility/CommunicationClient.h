@@ -3,7 +3,7 @@
 
 #include <string>
 #include <zmq.hpp>
-#include "zhelpers.hpp"
+#include "external/zhelpers.hpp"
 #include "LoggingUtility.h"
 #include <mutex>
 
