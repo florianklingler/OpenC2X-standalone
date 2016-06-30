@@ -2,8 +2,8 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "Server.h"
-#include "pbjson.hpp"
-#include "crow_all.h"
+#include "external/pbjson.hpp"
+#include "external/crow_all.h"
 #include <utility/CommunicationSender.h>
 #include <buffers/build/trigger.pb.h>
 
