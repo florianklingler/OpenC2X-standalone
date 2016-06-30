@@ -2,8 +2,8 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "Server.h"
-#include "pbjson.hpp"
-#include "crow_all.h"
+#include "external/pbjson.hpp"
+#include "external/crow_all.h"
 #include <utility/CommunicationSender.h>
 #include <buffers/build/trigger.pb.h>
 
@@ -258,7 +258,6 @@ std::string Server::requestCamInfo(std::string condition) {
 	return "";
 }
 
-//returns own mac address from global config
 std::string Server::myMac() {
 	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
 }
