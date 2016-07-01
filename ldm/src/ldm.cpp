@@ -95,7 +95,7 @@ void LDM::createTables() {
 
 	//create CAM table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
-			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, heading DOUBLE, " \
 			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -263,6 +263,8 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 					obd2->ParseFromString(ldmData.data(0));
 					cam.set_allocated_obd2(obd2);
 				}
+
+				cam.set_heading(sqlite3_column_double(stmt, 7));
 
 				//add result
 				camCache[cam.stationid()]=cam;
@@ -472,18 +474,18 @@ void LDM::insertCam(camPackage::CAM cam) {
 		mObd2Mutex.unlock();
 	}
 
-	//insert CAM with foreign keys to reference GPS, OBD2
+	//insert CAM with foreign keys to reference GPS, OBD2 //TODO: always include heading? might be invalid/not set; just include if has_heading=true?
 	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << ", " << cam.heading() << " );";
 	}
 	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << cam.heading() << " );";
 	}
 	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2, heading) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << ", " << cam.heading() << " );";
 	}
 	else {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << cam.heading() << " );";
 	}
 	mCamMutex.lock();
 	insert(sSql.str());
@@ -590,6 +592,7 @@ void LDM::printCam(camPackage::CAM cam) {
 	if (cam.has_obd2()) {
 		stream << "\n\tOBD2 - " << readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
 	}
+	stream << ", heading: " << cam.heading();
 	mLogger->logInfo(stream.str());
 }
 

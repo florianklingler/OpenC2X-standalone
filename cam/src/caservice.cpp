@@ -156,6 +156,11 @@ double CaService::getDistance(double lat1, double lon1, double lat2, double lon2
 }
 
 double CaService::getHeading(double lat1, double lon1, double lat2, double lon2) {
+	if (lat1 == lat2 && lon1 == lon2) {
+		mLogger->logError("Invalid heading: calculating heading for two equal GPS positions (returns 0)");
+		return 0;
+	}
+
 	double dLat = (lat2-lat1) * M_PI/180.0;		//convert to rad
 	double dLon = (lon2-lon1) * M_PI/180.0;
 	lat1 = lat1 * M_PI/180.0;
@@ -188,12 +193,14 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	}
 	else {
 		mGpsValid = true;
-		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
-		if(deltaHeading > 4.0) {
-			sendCamInfo("heading", deltaHeading);
-			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
-			sendCam = true;
+		if (mLastSentCam.gps().latitude() != mLatestGps.latitude() || mLastSentCam.gps().longitude() != mLatestGps.longitude()) {	//only calculate heading when GPS position changed (otherwise: heading=0)
+			double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+			double deltaHeading = abs(currentHeading - mLastSentCam.heading());
+			if(deltaHeading > 4.0) {
+				sendCamInfo("heading", deltaHeading);
+				mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
+				sendCam = true;
+			}
 		}
 
 		//|current position - last CAM position| > 5 m
@@ -262,7 +269,10 @@ camPackage::CAM CaService::generateCam() {
 		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
 		cam.set_allocated_gps(gps);
 
-		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+		double currentHeading = -1;
+		if (mLastSentCam.gps().latitude() != mLatestGps.latitude() || mLastSentCam.gps().longitude() != mLatestGps.longitude()) {	//only calculate heading when GPS position changed (otherwise: heading=0)
+			currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+		}
 		cam.set_heading(currentHeading);
 	}
 	mMutexLatestGps.unlock();
