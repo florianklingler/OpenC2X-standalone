@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <cmath>
+#include <string>
 
 using namespace std;
 
@@ -43,10 +44,24 @@ GpsService::GpsService(GpsConfig &config) {
 		receiveData();
 	}
 	else {				//use simulated GPS data
-		position startPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
-		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
-		mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
+		if(mConfig.mMode == 0) {
+			position startPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+			mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
+
+		} else if (mConfig.mMode == 1) {
+			stringstream ss;
+			ss << "../gpsdata/" << mConfig.mGpsDataFile;
+			mFile.open(ss.str(), fstream::in);
+			if(!mFile.is_open()) {
+				mLogger->logError("Failed to open gpsdata file");
+				exit(1);
+			}
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(500));
+			mTimer->async_wait(boost::bind(&GpsService::simulateFromDemoTrail, this, boost::asio::placeholders::error));
+		}
 		mIoService.run();
+
 	}
 }
 
@@ -56,8 +71,14 @@ GpsService::~GpsService() {
 	delete mSender;
 	delete mLogger;
 
-	mTimer->cancel();
-	delete mTimer;
+	if(mConfig.mSimulateData) {
+		if(mConfig.mMode == 0) {
+			mTimer->cancel();
+			delete mTimer;
+		} else if(mConfig.mMode == 1) {
+			mFile.close();
+		}
+	}
 }
 
 
@@ -192,6 +213,39 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 	mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, currentPosition));
 }
 
+void GpsService::simulateFromDemoTrail(const boost::system::error_code &ec) {
+	string line;
+	while(getline(mFile, line)) {
+		gpsPackage::GPS buffer = convertTrailDataToBuffer(line);
+		sendToServices(buffer);
+		usleep(500000);
+	}
+}
+
+gpsPackage::GPS GpsService::convertTrailDataToBuffer(string data) {
+	gpsPackage::GPS buffer;
+	std::string delimiter = "\t";
+	size_t pos = 0;
+	int idx = 0;
+	std::string token;
+	while ((pos = data.find(delimiter)) != std::string::npos) {
+	    token = data.substr(0, pos);
+	    if(idx == 1) {
+	    	buffer.set_latitude(stod(token));
+	    } else if(idx == 2) {
+	    	buffer.set_longitude(stod(token));
+	    }
+	    idx++;
+	    data.erase(0, pos + delimiter.length());
+	}
+	buffer.set_altitude(0);
+	buffer.set_epx(0);
+	buffer.set_epy(0);
+	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_online(0);
+	buffer.set_satellites(1);
+	return buffer;
+}
 
 //other
 

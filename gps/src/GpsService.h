@@ -9,15 +9,21 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
 #include <config/config.h>
+#include <fstream>
 
 struct GpsConfig {
 	bool mSimulateData;
+	std::string mGpsDataFile;
+	int mMode;
+
 
 	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
 		mSimulateData = pt.get("gps.SimulateData", true);
+		mGpsDataFile = pt.get("gps.DataFile", "");
+		mMode = pt.get("gps.SimulationMode", 0);
 	}
 };
 
@@ -36,6 +42,8 @@ public:
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec, position currentPosition);
 	position simulateNewPosition(position start, double offsetN, double offsetE);
+	void simulateFromDemoTrail(const boost::system::error_code &ec);
+	gpsPackage::GPS convertTrailDataToBuffer(std::string data);
 
 	void sendToServices(gpsPackage::GPS gps);
 	static void closeGps();
@@ -58,6 +66,8 @@ private:
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
+
+	std::ifstream mFile;
 };
 
 #endif

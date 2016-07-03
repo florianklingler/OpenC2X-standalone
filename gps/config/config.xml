@@ -1,3 +1,5 @@
 <gps>
 	<SimulateData>false</SimulateData>
+	<SimulationMode>1</SimulationMode> <!-- 0 for mathematical simuation, 1 for demo trails -->
+	<DataFile>apu2.csv</DataFile>
 </gps>
