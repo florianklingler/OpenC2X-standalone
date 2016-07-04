@@ -1,12 +1,42 @@
-/*! \mainpage My Personal Index Page
+/*! \mainpage Documentation
+ * \section Overview
+ * The ITS Protocol Stack implementation includes Decentralized Congestion Control (DCC), services like Cooperative Awareness Service (CaService), 
+ * Decentralized Environmental Notification Service (DenService), modifications in the transmission path in the Linux kernel 3.18 and a web interface to 
+ * view the current position and monitor the incoming or outgoing CAMs, DENMs and DCC states.
  *
- * \section intro_sec Introduction
+ * \section high_level_arch High level architecture 
+ * ![High Level Architecture Diagram](/home/pannu/my-data/uni-paderborn/es/project-group/git/pg2015w/documentation/res/architecture-small.png "High Level Architecture Diagram")
  *
- * This is the introduction.
+ * \section compile_sec Compiling the source
+ * To fulfill the package dependencies, run the following command in the terminal.
+ * \code{.sh}
+ * sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev 
+ * \endcode
  *
- * \section install_sec Installation
+ * To compile, run the script.
+ * \code{.sh}
+ * ./scripts/compileAll.sh
+ * \endcode
+ * 
+ * \section config_sec Setting configuration
+ * There are 2 types of config files in the system.
+ * \li GlobalConfig: It contains the system related configuration like experiment number, interface name etc.
+ * It can be found in ''common/config/config.xml''
+ * \li Config: Every module also has it's own configuration e.g. CaServiceConfig in CaService, which can be found in ''<module>/config/config.xml''
  *
- * \subsection step1 Step 1: Opening the box
+ * \subsection log_subsec Logging Outputs 
+ * INFO, DEBUG and ERROR logging levels have been used in the software. The logging configs can also be set in logging.conf and statistics.conf in every ''<module>/config/''.
  *
- * etc...
+ * \section run_sec Execution
+ * The system can be run by the script.
+ * \code{.sh}
+ * ./scripts/runAllLocal.sh
+ * \endcode
+ * 
+ * \section gui_sec Web Interface
+ * TODO: A screenshot of web interface
+ *
+ *
+ * \section license_sec Licenses
+ * TODO: 
  */
