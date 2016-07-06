@@ -22,10 +22,10 @@
  * There are 2 types of config files in the system.
  * \li GlobalConfig: It contains the system related configuration like experiment number, interface name etc.
  * It can be found in ''common/config/config.xml''
- * \li Config: Every module also has it's own configuration e.g. CaServiceConfig in CaService, which can be found in ''<module>/config/config.xml''
+ * \li Config: Every module also has it's own configuration e.g. CaServiceConfig in CaService, which can be found in ''\<module\>/config/config.xml''
  *
  * \subsection log_subsec Logging Outputs 
- * INFO, DEBUG and ERROR logging levels have been used in the software. The logging configs can also be set in logging.conf and statistics.conf in every ''<module>/config/''.
+ * INFO, DEBUG and ERROR logging levels have been used in the software. The logging configs can also be set in logging.conf and statistics.conf in every ''\<module\>/config/''.
  *
  * \section run_sec Execution
  * The system can be run by the script.
@@ -34,9 +34,9 @@
  * \endcode
  * 
  * \section gui_sec Web Interface
- * TODO: A screenshot of web interface
+ * @todo A screenshot of web interface
  *
  *
  * \section license_sec Licenses
- * TODO: 
+ * @todo license information  
  */
