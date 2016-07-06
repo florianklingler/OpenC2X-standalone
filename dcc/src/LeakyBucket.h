@@ -4,6 +4,11 @@
 #ifndef LEAKYBUCKET_H_
 #define LEAKYBUCKET_H_
 
+/**
+ * @addtogroup dcc
+ * @{
+ */
+
 #include <cstdlib>
 #include <list>
 #include <mutex>
@@ -11,7 +16,10 @@
 #include <utility/LoggingUtility.h>
 
 
-//LeakyBucket consists of a bucket for tokens, i.e. send-permits, and a queue for packets that need to be sent
+/**
+ * LeakyBucket consists of a bucket for tokens, i.e. send-permits, and a queue
+ * for packets that need to be sent.
+ */
 template<typename T> class LeakyBucket {
 private:
 	LoggingUtility* mLogger;
@@ -158,5 +166,8 @@ public:
 	}
 };
 
+/**
+ * @}
+ */
 
 #endif /* LEAKYBUCKET_H_ */

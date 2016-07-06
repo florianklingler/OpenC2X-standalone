@@ -1,6 +1,10 @@
 #ifndef GPSSERVICE_H_
 #define GPSSERVICE_H_
 
+/**
+ * @addtogroup gps
+ * @{
+ */
 #include <gps.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -11,6 +15,9 @@
 #include <config/config.h>
 #include <fstream>
 
+/** Struct that hold the configuration for GpsService.
+ * The configuration is defined in <a href="../../gps/config/config.xml">gps/config/config.xml</a>
+ */
 struct GpsConfig {
 	bool mSimulateData;
 	std::string mGpsDataFile;
@@ -29,6 +36,9 @@ struct GpsConfig {
 
 typedef struct std::pair<double, double> position;
 
+/**
+ * Class that connects to the gps deamon and offers its data to the other modules via zmq.
+ */
 class GpsService {
 public:
 	GpsService(GpsConfig &config);
@@ -71,3 +81,6 @@ private:
 };
 
 #endif
+
+
+/** @} */ //end group

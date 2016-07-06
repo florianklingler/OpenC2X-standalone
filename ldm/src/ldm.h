@@ -1,6 +1,11 @@
 #ifndef LDM_H_
 #define LDM_H_
 
+/**
+ * @addtogroup ldm
+ * @{
+ */
+
 #include <boost/thread.hpp>
 #include <utility/CommunicationReceiver.h>
 #include <utility/CommunicationServer.h>
@@ -20,7 +25,14 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
 
-//TODO: add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
+/**
+ * Responsible for Data holding and maintainance.
+ *
+ * Writes into a SQL database. Caches newest incoming data to answer
+ * requests because sql querys are to slow.
+ *
+ * @todo add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
+ */
 class LDM {
 public:
 	LDM();
@@ -82,4 +94,5 @@ private:
 	std::map<std::string,denmPackage::DENM> denmCache;
 };
 
+/** @} */ //end group
 #endif

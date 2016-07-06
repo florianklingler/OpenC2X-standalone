@@ -1,6 +1,11 @@
 #ifndef CHANNELPROBER_H_
 #define CHANNELPROBER_H_
 
+/**
+ * @addtogroup dccHardware
+ * @{
+ */
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
@@ -48,5 +53,9 @@ private:
 	boost::asio::io_service* mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
+
+/**
+ * @}
+ */
 
 #endif

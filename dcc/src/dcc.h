@@ -1,6 +1,11 @@
 #ifndef DCC_H_
 #define DCC_H_
 
+/**
+ * @addtogroup dcc
+ * @{
+ */
+
 #include "DccConfig.h"
 #include "State.h"
 #include "RingBuffer.h"
@@ -20,6 +25,9 @@
 #include "PktStatsCollector.h"
 #include <random>
 
+/**
+ * Decentralized Congestion Control.
+ */
 class DCC {
 public:
 	DCC(DccConfig &config);
@@ -104,4 +112,8 @@ private:
 	std::map<Channels::t_access_category, bool> mAddedFirstToken;					//was any token added in this state, yet?
 	std::map<Channels::t_access_category, boost::posix_time::ptime> mLastTokenAt;	//when was the last token added in this state
 };
+
+/**
+ * @}
+ */
 #endif

@@ -1,8 +1,5 @@
-/** @addtogroup website
- *  @{
- *  
- *  @addtogroup layoutManager Layout Manager
- *  Functions responsible for saving, loading, creating and locking the Layout of divs.
+/**  
+ * @addtogroup layoutManager
  *  @{
  */
 
@@ -122,4 +119,4 @@ function createDccInfoContainer(){
 	}
 }
 
-/**  @} */ /**@} */ // end of group
+/**  @} */// end of group

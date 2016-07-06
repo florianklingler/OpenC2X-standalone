@@ -1,7 +1,5 @@
-/** @addtogroup website
- * @{
- * @addtogroup utility Utility Functions
- * Utility functions which have no dependencies to other .js files.
+/** 
+ * @addtogroup utility 
  * @{
  */
 
@@ -93,4 +91,4 @@ function JSONtoTable(jsonString){
 	return objectToTable(jsonObj);
 }
 
-/** @}*/ /**@} */ // end of group
+/** @}*/ // end of group

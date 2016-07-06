@@ -1,6 +1,4 @@
-/** @addtogroup website Website
- * 	Displays information about the application status.
- *  A monitoring website which connects via http to httpServer over Port 1188 and displays information about the application.
+/** @addtogroup website
  *  @{
  */
 

@@ -1,0 +1,60 @@
+//defines all doxygen modules/groups
+
+/**
+ * @addtogroup sensor Sensor Connectors
+ * Modules that make sensor data available to the internal zmq network.
+ * @{ 
+ * 		@addtogroup gps GPS Service Module
+ * 		gets GPS data.
+ * 	
+ * 		@addtogroup obd2 OBD2 Service Module
+ * 		gets OBD2 data.
+ * @}
+ */
+
+/**
+ * @addtogroup dcc DCC Module
+ * Decentralized Congestion Control.
+ * @{
+ * 		@addtogroup dccHardware DCC Hardware Communication
+ * 		Communication between DCC and Ath9k WiFi Card
+ * @}
+ */
+ 
+ /**
+ * @addtogroup cam CA Service Module
+ * Responsible for Cooperative Awareness Messages.
+ */
+ 
+ /**
+ * @addtogroup denm DEN Service Module
+ * Responsible for Decentralized Environmental Notification Messages.
+ */
+ 
+ /**
+  * @addtogroup ldm Local Dynamic Map Module
+  * Responsible for Data holding and maintainance.
+  */
+ 
+ /**
+ * @addtogroup httpServer Http Server
+ * A httpServer to expose LDMs data via http.
+ * For a more detailed description see httpServer.
+ */
+ 
+ /** @addtogroup website Website
+ * 	Displays information about the application status.
+ *  A monitoring website which connects via http to httpServer over Port 1188 and displays information about the application.
+ *  @{
+ *  
+ *  	@addtogroup layoutManager Layout Manager
+ *  	Functions responsible for saving, loading, creating and locking the Layout of divs.
+ *		
+ *		@addtogroup utility Utility Functions
+ * 		Utility functions which have no dependencies to other \.js files.
+ *	
+ *		@addtogroup querys Querys to httpServer
+ *  	A collection of query functions to httpServer.
+ *  	A bit of data processing may happen.
+ */
+ 

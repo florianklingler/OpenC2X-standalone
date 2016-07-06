@@ -1,9 +1,4 @@
-/** @addtogroup website
- *  @{
- *  
- *  @addtogroup querys Querys to httpServer
- *  A collection of query functions to httpServer.
- *  A bit of data processing may happen.
+/** @addtogroup querys
  *  @{
  */
 
@@ -79,4 +74,4 @@ function triggerDenm(){
 	});
 }
 
-/** @} */ /**@} */ // end of group
+/** @} */ // end of group

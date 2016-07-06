@@ -1,6 +1,11 @@
 #ifndef OBD2SERVICE_H_
 #define OBD2SERVICE_H_
 
+/**
+ * @addtogroup obd2
+ * @{
+ */
+
 #include "SerialPort.h"
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -52,5 +57,7 @@ private:
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
+
+/** @} */ //end group
 
 #endif

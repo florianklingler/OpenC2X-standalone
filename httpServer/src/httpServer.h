@@ -2,9 +2,7 @@
 #define HTTPSERVER_H_
 
 /**
- * @addtogroup httpServer Http Server
- * A httpServer to expose LDMs data via http.
- * For a more detailed description see httpServer.
+ * @addtogroup httpServer
  * @{
  */
 

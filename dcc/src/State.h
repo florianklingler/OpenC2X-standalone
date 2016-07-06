@@ -1,6 +1,10 @@
 #ifndef STATE_H_
 #define STATE_H_
 
+/**
+ * @addtogroup dcc
+ * @{
+ */
 #include "DccConfig.h"
 #include <map>
 
@@ -31,4 +35,7 @@ public:
 
 typedef std::map<size_t, State> States;		//map of all states
 
+/**
+ * @}
+ */
 #endif /* STATE_H_ */

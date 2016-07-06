@@ -1,6 +1,11 @@
 #ifndef PKT_STATS_COLLECTOR_H_
 #define PKT_STATS_COLLECTOR_H_
 
+/**
+ * @addtogroup dccHardware
+ * @{
+ */
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
@@ -51,5 +56,9 @@ private:
 	boost::asio::io_service* mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
+
+/**
+ * @}
+ */
 
 #endif

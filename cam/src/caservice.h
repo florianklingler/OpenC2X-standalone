@@ -1,6 +1,11 @@
 #ifndef CASERVICE_H_
 #define CASERVICE_H_
 
+/**
+ * @addtogroup cam
+ * @{
+ */
+
 #include <boost/thread.hpp>
 #include <config/config.h>
 #include <utility/CommunicationReceiver.h>
@@ -15,6 +20,9 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
 
+/** Struct that hold the configuration for CaService.
+ * The configuration is defined in <a href="../../cam/config/config.xml">cam/config/config.xml</a>
+ */
 struct CaServiceConfig {
 	bool mGenerateMsgs;
 	int mExpirationTime;
@@ -32,14 +40,15 @@ struct CaServiceConfig {
 	}
 };
 
+/**
+ * Class that handles the receiving, creating and sending of CA Messages.
+ */
 class CaService {
 public:
 	CaService(CaServiceConfig &config);
 	~CaService();
 
-	/** Sends a new CAM to LDM and DCC.
-	 *
-	 */
+	/** Sends a new CAM to LDM and DCC.	 */
 	void send();
 
 	/** Calculates the heading towards North based on the two specified coordinates.
@@ -154,4 +163,5 @@ private:
 	camPackage::CAM mLastSentCam;
 };
 
+/** @} */ //end group
 #endif
