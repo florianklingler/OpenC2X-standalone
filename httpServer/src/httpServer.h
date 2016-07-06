@@ -1,5 +1,5 @@
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef HTTPSERVER_H_
+#define HTTPSERVER_H_
 
 #include <config/config.h>
 #include <utility/CommunicationClient.h>
@@ -30,11 +30,11 @@ struct WebApplicationConfig {
  * Uses the Crow Framework (<a href="https://github.com/ipkn/crow"> git link</a>) for the http service.
  * @todo write about protobuf to json libary
  */
-class Server {
+class httpServer {
 public:
 
-	Server(GlobalConfig config);
-	virtual ~Server();
+	httpServer(GlobalConfig config);
+	virtual ~httpServer();
 
 	/** Gets CAMs from LDM and converts them to JSON.
 	 * Requests CAMs from LDM via ZMQ and converts them from Protobuffer to JSON.
@@ -114,4 +114,4 @@ private:
 
 	LoggingUtility* mLogger;
 };
-#endif /* SERVER_H_ */
+#endif /* HTTPSERVER_H_ */

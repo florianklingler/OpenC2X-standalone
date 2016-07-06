@@ -1,7 +1,8 @@
+
 #define ELPP_THREAD_SAFE
 #define ELPP_NO_DEFAULT_LOG_FILE
 
-#include "Server.h"
+#include "httpServer.h"
 #include "external/pbjson.hpp"
 #include "external/crow_all.h"
 #include <utility/CommunicationSender.h>
@@ -9,7 +10,7 @@
 
 INITIALIZE_EASYLOGGINGPP
 
-Server::Server(GlobalConfig globalConfig) {
+httpServer::httpServer(GlobalConfig globalConfig) {
 	mGlobalConfig = globalConfig;
 	try {
 		mLocalConfig.loadConfigXML("../config/config.xml");
@@ -28,7 +29,7 @@ Server::Server(GlobalConfig globalConfig) {
 	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo);
 }
 
-Server::~Server() {
+httpServer::~httpServer() {
 	delete mClientCam;
 	delete mClientDenm;
 	delete mClientGps;
@@ -39,7 +40,7 @@ Server::~Server() {
 }
 
 //requests all CAMs from LDM
-std::string Server::requestCam(std::string condition) {
+std::string httpServer::requestCam(std::string condition) {
 	mMutexCam.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -73,7 +74,7 @@ std::string Server::requestCam(std::string condition) {
 }
 
 //requests all DENMs from LDM
-std::string Server::requestDenm(std::string condition) {
+std::string httpServer::requestDenm(std::string condition) {
 	mMutexDenm.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -107,7 +108,7 @@ std::string Server::requestDenm(std::string condition) {
 }
 
 //requests all GPSs from LDM
-std::string Server::requestGps(std::string condition) {
+std::string httpServer::requestGps(std::string condition) {
 	mMutexGps.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -141,7 +142,7 @@ std::string Server::requestGps(std::string condition) {
 }
 
 //requests all OBD2s from LDM
-std::string Server::requestObd2(std::string condition) {
+std::string httpServer::requestObd2(std::string condition) {
 	mMutexObd2.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -175,7 +176,7 @@ std::string Server::requestObd2(std::string condition) {
 }
 
 //requests all DCCINFOs from LDM
-std::string Server::requestDccInfo(std::string condition) {
+std::string httpServer::requestDccInfo(std::string condition) {
 	mMutexDccInfo.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -224,7 +225,7 @@ std::string Server::requestDccInfo(std::string condition) {
 }
 
 //requests all CAMINFOs from LDM
-std::string Server::requestCamInfo(std::string condition) {
+std::string httpServer::requestCamInfo(std::string condition) {
 	mMutexCamInfo.lock();
 	std::string request, reply;
 	std::string serializedData;
@@ -258,7 +259,7 @@ std::string Server::requestCamInfo(std::string condition) {
 	return "";
 }
 
-std::string Server::myMac() {
+std::string httpServer::myMac() {
 	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
 }
 
@@ -274,7 +275,7 @@ int main(){
 	}
 
 	//ldm requests
-	Server* server = new Server(config);
+	httpServer* server = new httpServer(config);
 
 	//CAM
 	CROW_ROUTE(app, "/request_cam")
