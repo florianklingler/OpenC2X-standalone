@@ -60,6 +60,8 @@ public:
 	void startStreaming();
 	static void stopStreaming();
 
+	void init();
+
 private:
 	GpsConfig mConfig;
 	GlobalConfig mGlobalConfig;

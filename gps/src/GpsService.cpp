@@ -34,35 +34,6 @@ GpsService::GpsService(GpsConfig &config) {
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.01, 0.01);
 
-	if (!mConfig.mSimulateData) {	//use real GPS data
-		while (!connectToGpsd()) {
-			// Could not connect to GPSd. Keep trying every 1 sec
-			sleep(1);
-		}
-
-		startStreaming();
-		receiveData();
-	}
-	else {				//use simulated GPS data
-		if(mConfig.mMode == 0) {
-			position startPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
-			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
-			mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
-
-		} else if (mConfig.mMode == 1) {
-			stringstream ss;
-			ss << "../gpsdata/" << mConfig.mGpsDataFile;
-			mFile.open(ss.str(), fstream::in);
-			if(!mFile.is_open()) {
-				mLogger->logError("Failed to open gpsdata file");
-				exit(1);
-			}
-			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(500));
-			mTimer->async_wait(boost::bind(&GpsService::simulateFromDemoTrail, this, boost::asio::placeholders::error));
-		}
-		mIoService.run();
-
-	}
 }
 
 GpsService::~GpsService() {
@@ -116,13 +87,25 @@ gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
 	buffer.set_latitude(gpsdata->fix.latitude);
 	buffer.set_longitude(gpsdata->fix.longitude);
 	buffer.set_altitude(gpsdata->fix.altitude);
-	buffer.set_epx(gpsdata->fix.epx);
-	buffer.set_epy(gpsdata->fix.epy);
+	if(gpsdata->fix.epx != gpsdata->fix.epx) { // set epx to -1 in case of NaN
+		buffer.set_epx(-1);
+	} else {
+		buffer.set_epx(gpsdata->fix.epx);
+	}
+	if(gpsdata->fix.epy != gpsdata->fix.epy) { // set epy to -1 in case of NaN
+		buffer.set_epy(-1);
+	} else {
+		buffer.set_epy(gpsdata->fix.epy);
+	}
 //	buffer.set_time(gpsdata->fix.time);	//FIXME: convert GPS time to epoch time
 //	buffer.set_online(gpsdata->online);
 	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
 	buffer.set_online(0);
-	buffer.set_satellites(gpsdata->satellites_visible);
+	if(gpsdata->satellites_visible != gpsdata->satellites_visible) { // set satellites visible to -1 in case of NaN
+		buffer.set_satellites(-1);
+	} else {
+		buffer.set_satellites(gpsdata->satellites_visible);
+	}
 
 	return buffer;
 }
@@ -261,6 +244,36 @@ void GpsService::sendToServices(gpsPackage::GPS gps) {
 	mLogger->logStats(csvPosition);
 }
 
+void GpsService::init() {
+	if (!mConfig.mSimulateData) {	//use real GPS data
+		while (!connectToGpsd()) {
+			// Could not connect to GPSd. Keep trying every 1 sec
+			sleep(1);
+		}
+		startStreaming();
+		receiveData();
+	}
+	else {				//use simulated GPS data
+		if(mConfig.mMode == 0) {
+			position startPosition(51.732724, 8.735936);	//start position at HNI: latitude, longitude
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
+			mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
+
+		} else if (mConfig.mMode == 1) {
+			stringstream ss;
+			ss << "../gpsdata/" << mConfig.mGpsDataFile;
+			mFile.open(ss.str(), fstream::in);
+			if(!mFile.is_open()) {
+				mLogger->logError("Failed to open gpsdata file");
+				exit(1);
+			}
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(500));
+			mTimer->async_wait(boost::bind(&GpsService::simulateFromDemoTrail, this, boost::asio::placeholders::error));
+		}
+		mIoService.run();
+	}
+}
+
 void GpsService::closeGps() {
 	gps_close(&mGpsData);
 }
@@ -290,6 +303,7 @@ int main() {
 		return EXIT_FAILURE;
 	}
 	GpsService gps(config);
+	gps.init();
 
 	signal(SIGINT, &sigHandler);
 	signal(SIGTERM, &sigHandler);
