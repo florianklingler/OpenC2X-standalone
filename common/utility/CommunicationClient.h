@@ -7,7 +7,11 @@
 #include "LoggingUtility.h"
 #include <mutex>
 
-
+/**
+ * Send ZMQ request to CommunicationServer and waits a specified time for an answer.
+ *
+ * @ingroup communication
+ */
 class CommunicationClient {
 public:
 	CommunicationClient(std::string ownerModule, std::string portOut, int expNo);

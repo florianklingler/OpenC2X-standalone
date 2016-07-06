@@ -1,9 +1,17 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+/**
+ * Struct that hold the global configuration.
+ * The configuration is defined in <a href="../../common/config/config.xml">common/config/config.xml</a>
+ * @ingroup common
+ */
 struct GlobalConfig {
-	int mExpNo;		//number of experiment
+	/** number of experiment */
+	int mExpNo;
+	/** name of Ethernet device */
 	std::string mEthernetDevice;
+	/** MAC address of mEthernetDevice*/
 	std::string mMac;
 
 	void loadConfigXML(const std::string &filename) {

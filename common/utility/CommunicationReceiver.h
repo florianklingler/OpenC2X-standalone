@@ -7,6 +7,11 @@
 #include "LoggingUtility.h"
 
 
+/**
+ * Receiver of zmq broadcasts send by CommunicationSender.
+ *
+ * @ingroup communication
+ */
 class CommunicationReceiver {
 public:
 	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo);

@@ -2,6 +2,10 @@
 #ifndef DCCCONFIG_H_
 #define DCCCONFIG_H_
 
+/**
+ * @addtogroup dcc
+ * @{
+ */
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -365,5 +369,9 @@ struct DccConfig {
 	}
 
 };
+
+/**
+ * @}
+ */
 
 #endif /* DCCCONFIG_H_ */

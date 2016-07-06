@@ -16,6 +16,9 @@
 #include <string>
 #include <config/config.h>
 
+/** Struct that hold the configuration for Obd2Service.
+ * The configuration is defined in <a href="../../obd2/config/config.xml">obd2/config/config.xml</a>
+ */
 struct Obd2Config {
 	bool mSimulateData;
 	char* mDevice;
@@ -32,6 +35,9 @@ struct Obd2Config {
 	}
 };
 
+/**
+ * Class that connects to the opd2 deamon and offers its data to the other modules via zmq.
+ */
 class Obd2Service {
 public:
 	Obd2Service(Obd2Config &config);

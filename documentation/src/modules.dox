@@ -32,8 +32,8 @@
  */
  
  /**
-  * @addtogroup ldm Local Dynamic Map Module
-  * Responsible for Data holding and maintainance.
+  * @addtogroup ldm LDM Module
+  * Local Dynamic Map, Responsible for Data holding and maintainance.
   */
  
  /**
@@ -56,5 +56,20 @@
  *		@addtogroup querys Querys to httpServer
  *  	A collection of query functions to httpServer.
  *  	A bit of data processing may happen.
+ *  @}
  */
  
+/**
+ * @addtogroup common Common Libary
+ * Functionality all other modules use bundled in a common library.
+ * This Project needs to build first.
+ * 	@{
+ * 		@addtogroup communication Inter-module communication.
+ * 		Communication between modules via zmq.
+ * 	@}
+ */
+
+
+
+
+

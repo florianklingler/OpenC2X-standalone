@@ -6,6 +6,12 @@
 #include "external/zhelpers.hpp"
 #include "LoggingUtility.h"
 
+
+/**
+ * Sender of zmq broadcasts to be received by CommunicationReceiver.
+ *
+ * @ingroup communication
+ */
 class CommunicationSender {
 public:
 	CommunicationSender(std::string ownerModule, std::string portOut, int expNo);

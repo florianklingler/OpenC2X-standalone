@@ -6,6 +6,11 @@
 #include "external/zhelpers.hpp"
 #include "LoggingUtility.h"
 
+/**
+ * Replys to ZMQ requests from CommunicationClient.
+ *
+ * @ingroup communication
+ */
 class CommunicationServer {
 public:
 	CommunicationServer(std::string ownerModule, std::string portOut, int expNo);
