@@ -13,4 +13,5 @@ echo "Copying logs and db for experiment $EXP from $BOX"
 
 mkdir ../results
 scp $BOX:~/pg2015w/logs/$EXP_*.log ../results
+scp $BOX:~/pg2015w/logs/$EXP_*.csv ../results
 scp $BOX:~/pg2015w/ldm/db/*-$EXP.db ../results
