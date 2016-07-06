@@ -220,7 +220,7 @@ void DCC::receiveFromHw() {
 
 		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages
 		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac) == 0){
-			mLogger->logInfo("received own Message, discarding");
+			mLogger->logDebug("received own Message, discarding");
 			continue;
 		}
 
@@ -429,7 +429,7 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
-	mLogger->logInfo("AC " + to_string(ac) + ": added token -> available tokens: " + to_string(mBucket[ac]->availableTokens));
+	mLogger->logDebug("AC " + to_string(ac) + ": added token -> available tokens: " + to_string(mBucket[ac]->availableTokens));
 	sendQueuedPackets(ac);															//send packet(s) from queue with newly added token
 
 	mMutexLastTokenAt.lock();
