@@ -240,7 +240,6 @@ void GpsService::sendToServices(gpsPackage::GPS gps) {
 	mSender->sendData("GPS", serializedGps);
 	//log position
 	string csvPosition = to_string(gps.latitude()) + "\t" + to_string(gps.longitude()) + "\t" + to_string(gps.altitude());
-	mLogger->logInfo("Sent GPS: \t" + csvPosition);
 	mLogger->logStats(csvPosition);
 }
 
