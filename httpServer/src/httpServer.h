@@ -14,14 +14,14 @@
 #include <google/protobuf/text_format.h>
 #include <mutex>
 
-struct WebApplicationConfig {
+struct httpServerConfig {
 	int mTimeout;
 
 	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
-		mTimeout = pt.get("webApplication.timeout", 100);
+		mTimeout = pt.get("httpServer.timeout", 100);
 
 	}
 };
@@ -96,7 +96,7 @@ public:
 
 private:
 	GlobalConfig mGlobalConfig;
-	WebApplicationConfig mLocalConfig;
+	httpServerConfig mLocalConfig;
 
 	CommunicationClient* mClientCam;
 	CommunicationClient* mClientDenm;
