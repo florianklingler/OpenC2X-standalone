@@ -84,7 +84,7 @@ function objectToTable(obj){
 /**
  * Converts a JSON string to a html table body.
  * @param jsonString
- * @return html table body filles with values from json obj
+ * @return html table body filled with values from json obj
  */
 function JSONtoTable(jsonString){
 	var jsonObj = JSON.parse(jsonString); 

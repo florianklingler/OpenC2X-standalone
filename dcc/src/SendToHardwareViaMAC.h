@@ -29,6 +29,12 @@
  */
 class SendToHardwareViaMAC {
 public:
+	/**
+	 * ownerModule and expNo forwarded to LoggingUtility constructor
+	 * @param ownerModule Module Name
+	 * @param expNo Experiment Number
+	 * @param ethernetDevice Device used for sending
+	 */
 	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice, int expNo);
 	virtual ~SendToHardwareViaMAC();
 	/**

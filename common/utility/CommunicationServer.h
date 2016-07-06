@@ -13,6 +13,12 @@
  */
 class CommunicationServer {
 public:
+	/**
+	 * ownerModule and expNo forwarded to LoggingUtility constructor
+	 * @param ownerModule Module Name
+	 * @param expNo Experiment Number
+	 * @param portOut port used for listening for requests and answering
+	 */
 	CommunicationServer(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationServer();
 	void sendReply(std::string reply);

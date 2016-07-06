@@ -21,7 +21,7 @@
 /**
  * Class that handles the receiving, creating and sending of DEN Messages.
  *
- * @todo DENM REPETITION/KEEP ALIVE PROTOCOL IS NOT IMPLEMENTED!
+ * @nonStandard DENM REPETITION/KEEP ALIVE PROTOCOL IS NOT IMPLEMENTED!
  */
 class DenService {
 public:

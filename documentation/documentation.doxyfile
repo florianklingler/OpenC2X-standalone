@@ -228,7 +228,7 @@ TAB_SIZE = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES = 
+ALIASES = "nonStandard=@xrefitem nonStandard \"non Standard\" \"Not conform to ETSI ITS standard\"" 
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -661,7 +661,7 @@ SHOW_FILES = YES
 # Folder Tree View (if specified).
 # The default value is: YES.
 
-SHOW_NAMESPACES = YES
+SHOW_NAMESPACES = NO
 
 # The FILE_VERSION_FILTER tag can be used to specify a program or script that
 # doxygen should invoke to get the current version for each file (typically from

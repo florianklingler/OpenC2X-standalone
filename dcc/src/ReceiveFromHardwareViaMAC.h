@@ -21,12 +21,17 @@
  */
 class ReceiveFromHardwareViaMAC {
 public:
+	/**
+	 * parameter forwarded to LoggingUtility constructor
+	 * @param ownerModule Module Name
+	 * @param expNo Experiment Number
+	 */
 	ReceiveFromHardwareViaMAC(std::string ownerModule, int expNo);
 	virtual ~ReceiveFromHardwareViaMAC();
 	void init();
 
 	/**
-	 * receives packages till a CAR Communication package is found and returns its payload.
+	 * sniffs packages till a CAR Communication package is found and returns its payload.
 	 *
 	 * @return <MAC address of sender,payload>
 	 */

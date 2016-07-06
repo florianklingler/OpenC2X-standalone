@@ -14,6 +14,12 @@
  */
 class CommunicationClient {
 public:
+	/**
+	 * ownerModule and expNo forwarded to LoggingUtility constructor
+	 * @param ownerModule Module Name
+	 * @param expNo Experiment Number
+	 * @param portOut port used for requesting
+	 */
 	CommunicationClient(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationClient();
 	std::string sendRequest(std::string envelope, std::string request, int timeout);

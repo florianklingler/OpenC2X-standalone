@@ -64,14 +64,23 @@ function loadLayout(){
 	loadLayoutFromJSON(containerLayoutsJSON);
 }
 
+/**
+ * disables dragging and resizing of containers
+ */
 function lockLayout(){
 	$(".container").draggable("disable").resizable("disable");
 }
 
+/**
+ * enables dragging and resizing of containers
+ */
 function unlockLayout(){
 	$(".container").draggable("enable").resizable("enable");
 }
 
+/**
+ * switches between locked and unlocked Layout
+ */
 function toggleLayoutLock(){
 	if(layoutLocked){
 		unlockLayout();

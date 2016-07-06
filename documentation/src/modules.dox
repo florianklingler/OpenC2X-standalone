@@ -62,7 +62,7 @@
 /**
  * @addtogroup common Common Libary
  * Functionality all other modules use bundled in a common library.
- * This Project needs to build first.
+ * This Project needs to be build first.
  * 	@{
  * 		@addtogroup communication Inter-module communication.
  * 		Communication between modules via zmq.

@@ -31,7 +31,7 @@
  * Writes into a SQL database. Caches newest incoming data to answer
  * requests because sql querys are to slow.
  *
- * @todo add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
+ * @nonStandard deleting of old data. for debugging add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
  */
 class LDM {
 public:
