@@ -14,6 +14,7 @@
 #include <google/protobuf/text_format.h>
 #include <mutex>
 
+/** Struct that hold the configuration for httpServer. */
 struct httpServerConfig {
 	int mTimeout;
 
@@ -50,11 +51,11 @@ public:
 	 *
 	 * Condition is not working at the moment. Always returns latest DENMs from each known Station ID.
 	 * @param condition if =="latest" returns only the latest DENMs else returns all DENMs
-	 * @return JSON String of a Array of CAM(s)
+	 * @return JSON String of a Array of DENM(s)
 	 */
 	std::string requestDenm(std::string condition);
 
-	/**
+	/** unused.
 	 * @todo check whether function is needed/working
 	 * @deprecated not tested
 	 * @param condition
@@ -62,7 +63,7 @@ public:
 	 */
 	std::string requestGps(std::string condition);
 
-	/**
+	/** unused.
 	 * @todo check whether function is needed/working
 	 * @deprecated not tested
 	 * @param condition
@@ -76,7 +77,7 @@ public:
 	 *
 	 * Condition is not working at the moment.
 	 * @param condition condition if =="latest" returns only the latest else return all
-	 * @return JSON String
+	 * @return JSON String of DCC Status Information
 	 */
 	std::string requestDccInfo(std::string condition);
 
@@ -85,7 +86,7 @@ public:
 	 * Contains Information like triggering reason oder creation time. Obtained from LDM via ZMQ.
 	 *
 	 * @param condition
-	 * @return JSON string about the last CAM
+	 * @return JSON String of Information about the most recent generated CAM
 	 */
 	std::string requestCamInfo(std::string condition);
 
