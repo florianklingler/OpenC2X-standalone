@@ -36,6 +36,9 @@
  * \section gui_sec Web Interface
  * @todo A screenshot of web interface
  *
+ * \section ports Port Diagramm
+ * Diagram of ports used by zmq and http between the modules
+ * ![Diagram of used Ports](../res/portDiagram.png "Diagram of used Ports")
  *
  * \section license_sec Licenses
  * @todo license information  
