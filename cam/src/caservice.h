@@ -28,6 +28,7 @@ struct CaServiceConfig {
 	int mExpirationTime;
 	int mMaxGpsAge;
 	int mMaxObd2Age;
+	double mThresholdRadiusForHeading;
 
 	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
@@ -37,6 +38,7 @@ struct CaServiceConfig {
 		mExpirationTime = pt.get("cam.expirationTime", 1);
 		mMaxGpsAge = pt.get("cam.maxGpsAge", 10);
 		mMaxObd2Age = pt.get("cam.maxObd2Age", 10);
+		mThresholdRadiusForHeading = pt.get("cam.thresholdRadiusForHeading", 0.3);
 	}
 };
 
@@ -123,6 +125,31 @@ private:
 	 *
 	 */
 	void receiveObd2Data();
+
+	/** Checks if heading has changed more than 4 degrees.
+	 * @return True if CAM needs to be triggered, false otherwise
+	 */
+	bool isHeadingChanged();
+
+	/** Checks if position has changed more than 5 metres.
+	 * @return True if CAM needs to be triggered, false otherwise
+	 */
+	bool isPositionChanged();
+
+	/** Checks if speed has changed more than 1 m/sec.
+	 * @return True if CAM needs to be triggered, false otherwise
+	 */
+	bool isSpeedChanged();
+
+	/** Checks if time more than 1 second has past since last CAM.
+	 * @return True if CAM needs to be triggered, false otherwise
+	 */
+	bool isTimeToTriggerCAM();
+
+	/** Schedules next triggering checks for new CAM.
+	 *
+	 */
+	void scheduleNextTrigger();
 
 	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
