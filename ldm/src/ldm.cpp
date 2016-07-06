@@ -451,6 +451,8 @@ void LDM::insertCam(camPackage::CAM cam) {
 	sSql  << setprecision(15);
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
+	sqlite3_stmt *stmt;
+	char* errmsg = 0;
 
 	//insert GPS if available
 	if (cam.has_gps()) {
@@ -459,9 +461,25 @@ void LDM::insertCam(camPackage::CAM cam) {
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
-		gpsRowId = sqlite3_last_insert_rowid(mDb);
+		sSql << "SELECT key FROM GPS ORDER BY key DESC LIMIT 1;";
+
+		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				// get last inserted row id in gps
+				gpsRowId = (sqlite3_column_int64(stmt, 0));
+			}
+			sqlite3_finalize(stmt);
+		}
+		else {
+			gpsRowId = -1;
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
 		mGpsMutex.unlock();
 	}
+	sSql.str("");
+	sSql.clear();
 
 	//insert OBD2 if available
 	if (cam.has_obd2()) {
@@ -470,10 +488,24 @@ void LDM::insertCam(camPackage::CAM cam) {
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
-		obd2RowId = sqlite3_last_insert_rowid(mDb);
+		sSql << "SELECT key FROM OBD2 ORDER BY key DESC LIMIT 1;";
+		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				// get last inserted row id in obd2
+				obd2RowId = (sqlite3_column_int64(stmt, 0));
+			}
+			sqlite3_finalize(stmt);
+		}
+		else {
+			obd2RowId = -1;
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
 		mObd2Mutex.unlock();
 	}
-
+	sSql.str("");
+	sSql.clear();
 	//insert CAM with foreign keys to reference GPS, OBD2 //TODO: always include heading? might be invalid/not set; just include if has_heading=true?
 	if (gpsRowId > 0 && obd2RowId > 0) {
 		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << ", " << cam.heading() << " );";
@@ -711,7 +743,6 @@ void LDM::receiveDccInfo() {
 		//TODO: OPTIMIZATION: use pointers instead of copying dccInfos.
 		dccInfoCache[dccInfo.accesscategory()]=dccInfo;
 
-		mLogger->logDebug("received dccInfo");
 	}
 }
 
@@ -733,7 +764,6 @@ void LDM::receiveCamInfo() {
 		insert(sSql.str());
 		mCamInfoMutex.unlock();
 
-		mLogger->logDebug("received camInfo");
 	}
 }
 
