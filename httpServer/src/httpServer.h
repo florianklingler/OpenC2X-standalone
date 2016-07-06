@@ -1,6 +1,14 @@
 #ifndef HTTPSERVER_H_
 #define HTTPSERVER_H_
 
+/**
+ * @addtogroup httpServer Http Server
+ * A httpServer to expose LDMs data via http.
+ * For a more detailed description see httpServer.
+ * @{
+ */
+
+
 #include <config/config.h>
 #include <utility/CommunicationClient.h>
 #include <utility/LoggingUtility.h>
@@ -14,7 +22,9 @@
 #include <google/protobuf/text_format.h>
 #include <mutex>
 
-/** Struct that hold the configuration for httpServer. */
+/** Struct that hold the configuration for httpServer.
+ * The configuration is defined in <a href="../../httpServer/config/config.xml">httpServer/config/config.xml</a>
+ */
 struct httpServerConfig {
 	int mTimeout;
 
@@ -115,4 +125,5 @@ private:
 
 	LoggingUtility* mLogger;
 };
+/** @}*/ //end group
 #endif /* HTTPSERVER_H_ */

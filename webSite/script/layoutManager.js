@@ -1,3 +1,11 @@
+/** @addtogroup website
+ *  @{
+ *  
+ *  @addtogroup layoutManager Layout Manager
+ *  Functions responsible for saving, loading, creating and locking the Layout of divs.
+ *  @{
+ */
+
 //each container class div needs and unique id
 
 containers = [];
@@ -113,3 +121,5 @@ function createDccInfoContainer(){
 		}, color="#FF7700"));
 	}
 }
+
+/**  @} */ /**@} */ // end of group

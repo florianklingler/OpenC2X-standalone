@@ -1,14 +1,17 @@
-/**
- * utility functions which have no dependencies on other .js files
+/** @addtogroup website
+ * @{
+ * @addtogroup utility Utility Functions
+ * Utility functions which have no dependencies to other .js files.
+ * @{
  */
 
 
 /**
  * brightens the hex color by percent
  * copied from http://stackoverflow.com/questions/6443990/javascript-calculate-brighter-colour
- * @param hex
+ * @param hex hex value of color
  * @param percent
- * @returns {String}
+ * @returns hex value
  */
 function increase_brightness(hex, percent){
     // strip the leading # if it's there
@@ -30,15 +33,16 @@ function increase_brightness(hex, percent){
 }
 
 /**
- * converts a Object to a html table body
- * @param {Object} Object
- * @returm {String} html table body filles with values from obj
+ * Converts a object to a html table body.
+ * Transforms values of fields which names include "time" to a human readable format. 
+ * @param obj Javascript object
+ * @return  html table body filles with values from obj
  */
 function objectToTable(obj){
 	var str = ""; //"<table>";
 	
-	/**
-	 * shotens #data if its a decimal number to 6 numbers after the dot. else just returns #data
+	/*
+	 * shotens data if its a decimal number to 6 numbers after the dot. else just returns data
 	 */
 	var shortenDecimalNumber = function(data){
 		if (typeof data == "number"){
@@ -57,11 +61,11 @@ function objectToTable(obj){
 			if (name.includes("time") | name.includes("Time")){//.includes is case sensitive
 				str += "<td>";
 				var date = new Date(Number(String(obj[name]).slice(0,-6)));//need to cut last 6 values cause Date() is not that precise
-				/** adds upto 1 leading zero*/
+				/* adds upto 1 leading zero*/
 				var pad10 = function(n) {
 				    return (n < 10) ? ("0" + n) : n; 
 				}
-				/** adds up to 2 leading zeros*/
+				/* adds up to 2 leading zeros*/
 				var pad100 = function(n) {
 				    return (n < 10) ? ("00" + n) : 
 				    	((n<100) ? "0" +n : n);
@@ -80,12 +84,13 @@ function objectToTable(obj){
 }
 
 /**
- * converts a JSON string to a html table body
- * @param {String} jsonString
- * @returm {String} html table body filles with values from json obj
+ * Converts a JSON string to a html table body.
+ * @param jsonString
+ * @return html table body filles with values from json obj
  */
 function JSONtoTable(jsonString){
-	/** @type {JSON} */
 	var jsonObj = JSON.parse(jsonString); 
 	return objectToTable(jsonObj);
 }
+
+/** @}*/ /**@} */ // end of group

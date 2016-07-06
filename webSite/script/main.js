@@ -1,60 +1,13 @@
-camTimeout = 60 //seconds
-
+/** @addtogroup website Website
+ * 	Displays information about the application status.
+ *  A monitoring website which connects via http to httpServer over Port 1188 and displays information about the application.
+ *  @{
+ */
 
 /**
- *updateFunction is repeatedly called to provide data for this div. should take a callback which shall be called with the retrived data 
- * @param updateFunction fn(callback)
+ *  time after which CAMs are marked as old and grayed out on the map in seconds.
  */
-function Container(name,updateFunction,color,updateInterval){
-	this.updateInterval = updateInterval || 1000;
-	var color = color || "#555555";
-	this.id = name;
-	this.updateFunction = updateFunction;
-	this.intervalID = -1;
-	var htmlstr = 
-		'<div id="'+name+'" class="container dataContainer"> '+
-        	'<h4 style="display:inline-block">'+name+'</h4>'+
-    //    	'<div style="background:green" class="updateButton"></div>'+
-        	'<table id="'+name+'_data">'+
-				'<tr><td>loading</td><td>Data</td></tr>'+
-        	'</table>'+
-    	'</div>';
-	$("body").append(htmlstr);
-	var div = $("#"+name).draggable().resizable();
-	div.css("border-color",color);
-	div.css("background",increase_brightness(color, 70));
-	this.dataTable = $("#"+name+"_data");
-	this.setTable = function(data){
-		$("#"+this.id+"_data").html(objectToTable(data));
-	}.bind(this);
-	
-	//this.updateButton = div.children(".updateButton");
-	this.enableUpdate = function(){
-		if (this.intervalID === -1){
-			this.intervalID=window.setInterval(
-				function(){this.updateFunction(this.setTable);}.bind(this),
-				this.updateInterval
-			);
-	//		this.updateButton.css("background","green");
-		}
-	}.bind(this);
-	this.enableUpdate();
-	
-//	this.disableUpdate = function(){
-//		window.clearInterval(this.intervalID);
-//		this.intervalID=-1;
-//		this.updateButton.css("background","red");
-//	}.bind(this);
-//	
-//	this.toggleUpdate= function(){
-//		if (this.intervalID ===-1){
-//			this.enableUpdate();
-//		} else {
-//			this.disableUpdate();
-//		}
-//	}.bind(this);
-//	this.updateButton.click(this.toggleUpdate);
-}
+camTimeout = 60 //seconds
 
 /**
  * holds and updates most recend cam data for each station id
@@ -131,6 +84,70 @@ camData = {
 	},
 };
 
+
+/** Container that handels the updating of the corresponding div on the webpage.
+ * updateFunction is repeatedly called to provide data for this div. 
+ * The Function hould take a callback which shall be called with the retrived data.
+ * @param updateFunction fn(callback)
+ * @param name name and id of the container and corresponding div
+ * @param color OPTIONAL HEX value of the color of the div
+ * @param updateInterval OPTIONAL time between updates in ms
+ */
+function Container(name,updateFunction,color,updateInterval){
+	this.updateInterval = updateInterval || 1000;
+	var color = color || "#555555";
+	this.id = name;
+	this.updateFunction = updateFunction;
+	this.intervalID = -1;
+	var htmlstr = 
+		'<div id="'+name+'" class="container dataContainer"> '+
+        	'<h4 style="display:inline-block">'+name+'</h4>'+
+    //    	'<div style="background:green" class="updateButton"></div>'+
+        	'<table id="'+name+'_data">'+
+				'<tr><td>loading</td><td>Data</td></tr>'+
+        	'</table>'+
+    	'</div>';
+	$("body").append(htmlstr);
+	var div = $("#"+name).draggable().resizable();
+	div.css("border-color",color);
+	div.css("background",increase_brightness(color, 70));
+	this.dataTable = $("#"+name+"_data");
+	this.setTable = function(data){
+		$("#"+this.id+"_data").html(objectToTable(data));
+	}.bind(this);
+	
+	//this.updateButton = div.children(".updateButton");
+	this.enableUpdate = function(){
+		if (this.intervalID === -1){
+			this.intervalID=window.setInterval(
+				function(){this.updateFunction(this.setTable);}.bind(this),
+				this.updateInterval
+			);
+	//		this.updateButton.css("background","green");
+		}
+	}.bind(this);
+	this.enableUpdate();
+	
+//	this.disableUpdate = function(){
+//		window.clearInterval(this.intervalID);
+//		this.intervalID=-1;
+//		this.updateButton.css("background","red");
+//	}.bind(this);
+//	
+//	this.toggleUpdate= function(){
+//		if (this.intervalID ===-1){
+//			this.enableUpdate();
+//		} else {
+//			this.disableUpdate();
+//		}
+//	}.bind(this);
+//	this.updateButton.click(this.toggleUpdate);
+}
+
+
+/**
+ * Initialises the Map.
+ */
 function initMap(){
 	//init map
 	map = L.map('mapContainer');
@@ -230,12 +247,14 @@ $(document).ready(function(){
 	
 });
 
-/* Open when someone clicks on the button element */
+/** Open when someone clicks on the button element */
 function openNav() {
     document.getElementById("myNav").style.width = "50%";
 }
 
-/* Close when someone clicks on the "x" symbol inside the overlay */
+/** Close when someone clicks on the "x" symbol inside the overlay */
 function closeNav() {
     document.getElementById("myNav").style.width = "0%";
 }
+
+/** @} */ // end of group

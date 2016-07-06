@@ -1,3 +1,12 @@
+/** @addtogroup website
+ *  @{
+ *  
+ *  @addtogroup querys Querys to httpServer
+ *  A collection of query functions to httpServer.
+ *  A bit of data processing may happen.
+ *  @{
+ */
+
 
 function requestMyMac(callback){
 	$.get("http://localhost:1188/my_mac",
@@ -8,7 +17,7 @@ function requestMyMac(callback){
 
 /**
  * 
- * @param callback(latest cam msg)
+ * @param callback fn(latest cam msg)
  */
 function requestCam(callback){
 	$.post("http://localhost:1188/request_cam",JSON.stringify({condition:"latest"}),
@@ -69,3 +78,5 @@ function triggerDenm(){
 		console.log("status: "+status);
 	});
 }
+
+/** @} */ /**@} */ // end of group
