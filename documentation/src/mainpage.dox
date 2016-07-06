@@ -5,7 +5,7 @@
  * view the current position and monitor the incoming or outgoing CAMs, DENMs and DCC states.
  *
  * \section high_level_arch High level architecture 
- * ![High Level Architecture Diagram](/home/pannu/my-data/uni-paderborn/es/project-group/git/pg2015w/documentation/res/architecture-small.png "High Level Architecture Diagram")
+ * ![High Level Architecture Diagram](../res/architecture.png "High Level Architecture Diagram")
  *
  * \section compile_sec Compiling the source
  * To fulfill the package dependencies, run the following command in the terminal.
