@@ -47,6 +47,7 @@ public:
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec);
 	void sendToServices(obd2Package::OBD2 obd2);
+	void init();
 
 private:
 	Obd2Config mConfig;
