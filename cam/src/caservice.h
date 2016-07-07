@@ -151,6 +151,11 @@ private:
 	 */
 	void scheduleNextTrigger();
 
+	/** Checks if the last received GPS data is still valid.
+	 * @return True if gps data is valid, false otherwise.
+	 */
+	bool isGPSdataValid();
+
 	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
 

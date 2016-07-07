@@ -157,7 +157,7 @@ double CaService::getDistance(double lat1, double lon1, double lat2, double lon2
 
 double CaService::getHeading(double lat1, double lon1, double lat2, double lon2) {
 	if (getDistance(lat1, lon1, lat2, lon2) < mConfig.mThresholdRadiusForHeading) {
-		mLogger->logDebug("Invalid heading: not moved more than " +to_string(mConfig.mThresholdRadiusForHeading) + " meters. So, ignoring heading. (returns -1)");
+		mLogger->logDebug("Ignore heading: not moved more than " +to_string(mConfig.mThresholdRadiusForHeading) + " meters.");
 		return -1;
 	}
 
@@ -175,27 +175,36 @@ double CaService::getHeading(double lat1, double lon1, double lat2, double lon2)
 
 //periodically check generation rules for sending to LDM and DCC
 void CaService::triggerCam(const boost::system::error_code &ec) {
-	//|current heading (towards North) - last CAM heading| > 4 deg
-	if(isHeadingChanged()) {
-		send();
-		scheduleNextTrigger();
-		cout << "heading" << endl;
-		return;
-	}
+	// Check heading and position conditions only if we have valid GPS data
+	if(isGPSdataValid()) {
 
-	//|current position - last CAM position| > 5 m
-	if(isPositionChanged()) {
-		send();
-		scheduleNextTrigger();
-		cout << "position" << endl;
-		return;
+		if(!mLastSentCam.has_gps()) {
+			sendCamInfo("First GPS data", -1);
+			mLogger->logInfo("First GPS data");
+			send();
+			scheduleNextTrigger();
+			return;
+		}
+
+		//|current position - last CAM position| > 5 m
+		if(isPositionChanged()) {
+			send();
+			scheduleNextTrigger();
+			return;
+		}
+
+		//|current heading (towards North) - last CAM heading| > 4 deg
+		if(isHeadingChanged()) {
+			send();
+			scheduleNextTrigger();
+			return;
+		}
 	}
 
 	//|current speed - last CAM speed| > 1 m/s
 	if(isSpeedChanged()) {
 		send();
 		scheduleNextTrigger();
-		cout << "speed" << endl;
 		return;
 	}
 
@@ -203,34 +212,36 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 	if(isTimeToTriggerCAM()) {
 		send();
 		scheduleNextTrigger();
-		cout << "Time" << endl;
 		return;
 	}
 
 	scheduleNextTrigger();
 }
 
-bool CaService::isHeadingChanged() {
+bool CaService::isGPSdataValid() {
 	mMutexLatestGps.lock();
 	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 	if (currentTime - mLatestGps.time() > (int64_t)mConfig.mMaxGpsAge * 1000*1000*1000) {	//GPS data too old
-		mMutexLatestGps.unlock();
 		mGpsValid = false;
-		return false;
+	} else {
+		mGpsValid = true;
 	}
-	mGpsValid = true;
-//	if (mLastSentCam.gps().latitude() != mLatestGps.latitude() || mLastSentCam.gps().longitude() != mLatestGps.longitude()) {	//only calculate heading when GPS position changed (otherwise: heading=0)
-		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-		if(currentHeading != -1) {
-			double deltaHeading = abs(currentHeading - mLastSentCam.heading());
-			if(deltaHeading > 4.0) {
-				sendCamInfo("heading", deltaHeading);
-				mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
-				mMutexLatestGps.unlock();
-				return true;
-			}
+	mMutexLatestGps.unlock();
+	return mGpsValid;
+}
+
+bool CaService::isHeadingChanged() {
+	mMutexLatestGps.lock();
+	double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+	if(currentHeading != -1) {
+		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
+		if(deltaHeading > 4.0) {
+			sendCamInfo("heading", deltaHeading);
+			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
+			mMutexLatestGps.unlock();
+			return true;
 		}
-//	}
+	}
 	mMutexLatestGps.unlock();
 	return false;
 }
@@ -317,10 +328,7 @@ camPackage::CAM CaService::generateCam() {
 		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
 		cam.set_allocated_gps(gps);
 
-		double currentHeading = -1;
-//		if (mLastSentCam.gps().latitude() != mLatestGps.latitude() || mLastSentCam.gps().longitude() != mLatestGps.longitude()) {	//only calculate heading when GPS position changed (otherwise: heading=0)
-			currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-//		}
+		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 		cam.set_heading(currentHeading);
 	}
 	mMutexLatestGps.unlock();
