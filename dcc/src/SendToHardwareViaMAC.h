@@ -26,6 +26,8 @@
  * Data is wrapped in a minimal Ethernet packet containing only a Ethernet header and the payload.
  * No IP header.
  * All data is broadcasted on the MAC layer.
+ *
+ * @nonStandard serialization is not standard conform. Uses protobuffer instead.
  */
 class SendToHardwareViaMAC {
 public:

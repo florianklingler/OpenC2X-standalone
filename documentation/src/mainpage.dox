@@ -24,11 +24,62 @@
  * INFO, DEBUG and ERROR logging levels have been used in the software. The logging configs can also be set in logging.conf and statistics.conf in every ''\<module\>/config/''.
  *
  * \section run_sec Execution
- * The system can be run by the script.
+ * After compiling the executable for each module can be found at \<module\>/Debug/ and executed by hand. But there are also
+ * scripts to automate the starting process. Tmux need to be installed for these scripts.
+ * The application can be run locally by the script.
  * \verbatim ./scripts/runAllLocal.sh \endverbatim
+ * To stop the execution run on the local machine
+ * \verbatim tmux kill-session \endverbatim
+ * There are two ways to run the Application on a remote like an alix box. But first the compiled repo needs to be copied to
+ * the remote home dir. Then following actions are possible.
+ *
+ * \subsection run_sec_1 the brittle but comfortable way
+ * The most comfortable way to start and setup everything is to simply run
+ * \verbatim ./scripts/runAllSSH.sh ssh-configuration-name\endverbatim
+ * Replace "ssh-configuration-name" with the name of the remote target in the local ssh configuration eg. "alix6". Preferably
+ * the keys are already copied to the target so password-less ssh connections are possible. This script executes the setup script
+ * on the remote and opens on the local machine a tmux session. This session is split in multiple planes and in each plane a
+ * separate ssh session is opened. Then in each ssh session one module is executed. Afterwards in a separate panel a ssh
+ * port forwarding tunnel is opened (for the monitoring interface) and on the local machine the monitoring webpage is opened.
+ * To stop the execution run on the local machine
+ * \verbatim tmux kill-session \endverbatim
+ * The problem with this method is that if the ssh connection is lost the execution of the application is aborted and everything
+ * needs to be restarted.
+ *
+ * \subsection run_sec_2 the robust but tedious way
+ *
+ * A more robust alternative starts with opening a ssh connection to the remote. There execute the
+ * \verbatim setup_interfaces.sh \endverbatim
+ * afterwards run
+ * \verbatim scripts/runAllLocal.sh \endverbatim
+ * on the remote also. Back on the local machine run
+ * \verbatim scripts/sshTunnel.sh ssh-configuration-name \endverbatim
+ * (Replace "ssh-configuration-name" with the name of the remote target in the local ssh configuration eg. "alix6".)\n
+ * and open the Monitor website at
+ * \verbatim webSite/index.html \endverbatim
+ * to stop the execution run on the remote machine
+ * \verbatim tmux kill-session \endverbatim
+ * If the ssh connection is lost simply restart the ssh tunnel and run on the remote machine
+ * \verbatim tmux attach \endverbatim
+ *
  * 
  * \section gui_sec Web Interface
  * See @ref websiteTutorial "Website Tutorial"
+ *
+ *
+ * \section standard_sec Standard Conformity
+ * Everything we know of which is not conform to the ETSI ITS standard and influences the external behavior of the Application
+ * is listed in @ref nonStandard "Not conform to ETSI ITS standard list"
+ *
+ * \section eclipse Eclipse Integration
+ * Every folder in the Repository is an working Eclipse Project.
+ * \n
+ * Used Plugins:
+ * - Base: Eclipse Mars 4.5.1 CDT
+ * - Doxygen editor: eclox (not up to date but still working)
+ * - Javascript editor:
+ * 	- "web dev tools" and "js dev tools" from the eclipse repositories (Help -> Install new Software)
+ * 	- "tern" from eclipse marketplace (Help -> Eclipse Marketplace)
  *
  * \section ports Port Diagramm
  * Diagram of ports used by zmq and http between the modules

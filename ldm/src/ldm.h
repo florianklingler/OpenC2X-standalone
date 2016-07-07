@@ -32,6 +32,10 @@
  * requests because sql querys are to slow.
  *
  * @nonStandard deleting of old data. for debugging add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
+ *
+ * @nonStandard no security checks for requests
+ *
+ * @nonStandard no registration of dataProviders, dataRecievers
  */
 class LDM {
 public:
