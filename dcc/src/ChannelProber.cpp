@@ -74,7 +74,6 @@ void ChannelProber::init() {
 		mLogger->logError("Could not get NL80211 id");
 		exit(1);
 	}
-	mLogger->logStats("Channel \tBusy time \tTotal time \tChannel load");
 	mTimer->async_wait(boost::bind(&ChannelProber::probe, this, boost::asio::placeholders::error));
 }
 

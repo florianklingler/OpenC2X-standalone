@@ -64,6 +64,7 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 		mAddedFirstToken[accessCategory] = false;
 	}
 	mStatIdx = 0;
+	mLogger->logStats("Index \tChannel Load \tFlush req in BE \tFlush not req in BE \tFlush req in BE in last 1 sec \tFlush not req in BE in last 1 sec");
 }
 
 DCC::~DCC() {
