@@ -22,7 +22,7 @@ function saveLayout(){
 			height: $("#"+con.id).height(),
 			width: $("#"+con.id).width()
 		}
-		console.log(con);
+		//console.log(con);
 		containerLayouts["ids"].push(con.id);
 		containerLayouts[con.id] =config;
 	}

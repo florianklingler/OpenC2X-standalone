@@ -45,7 +45,7 @@
 									<listOptionValue builtIn="false" value="boost_thread"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="common"/>
 								</option>
-								<option id="gnu.cpp.link.option.paths.145559901" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+								<option id="gnu.cpp.link.option.paths.145559901" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="../../common/Debug"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1095712846" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
