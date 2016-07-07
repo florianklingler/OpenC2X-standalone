@@ -175,14 +175,6 @@ double CaService::getHeading(double lat1, double lon1, double lat2, double lon2)
 
 //periodically check generation rules for sending to LDM and DCC
 void CaService::triggerCam(const boost::system::error_code &ec) {
-	//max. time interval 1s
-	if(isTimeToTriggerCAM()) {
-		send();
-		scheduleNextTrigger();
-		cout << "Time" << endl;
-		return;
-	}
-
 	//|current heading (towards North) - last CAM heading| > 4 deg
 	if(isHeadingChanged()) {
 		send();
@@ -206,6 +198,15 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 		cout << "speed" << endl;
 		return;
 	}
+
+	//max. time interval 1s
+	if(isTimeToTriggerCAM()) {
+		send();
+		scheduleNextTrigger();
+		cout << "Time" << endl;
+		return;
+	}
+
 	scheduleNextTrigger();
 }
 
