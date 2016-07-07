@@ -87,4 +87,16 @@
  *
  * \section license_sec Licenses
  * @todo license information  
+ * - crow
+ * - zmq
+ * - pbjson
+ * - rapidjson
+ * - protobuffer
+ * - boost
+ * - jquery.js
+ * - leaflet.js
+ * - open street map
+ * - installed packages
+ *
+ *
  */
