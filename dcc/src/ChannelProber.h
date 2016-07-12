@@ -16,6 +16,9 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/mngt.h>
 
+/**
+ * ChannelProber probes the Ath9k NIC for the current channel load periodically via netlink.
+ */
 class ChannelProber {
 public:
 	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
@@ -28,6 +31,9 @@ public:
 	double getChannelLoad();
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
 
+	/**
+	 * Struct that holds the latest information for channel load.
+	 */
 	struct channelload {
 		boost::mutex mutexChannelLoad;
 		uint8_t noise;
@@ -35,6 +41,9 @@ public:
 		uint64_t busyTimeLast;
 		double load;
 	};
+	/**
+	 * Struct for latest channel load specific to an interface.
+	 */
 	struct netinterface {
 		unsigned int ifindex;
 		unsigned int channel;
