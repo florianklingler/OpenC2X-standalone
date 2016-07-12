@@ -9,6 +9,7 @@
 #include <chrono>
 #include <string>
 #include <stdlib.h>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -32,6 +33,7 @@ DenService::DenService() {
 	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2", mGlobalConfig.mExpNo);
 
 	mLogger = new LoggingUtility("DenService", mGlobalConfig.mExpNo);
+	mLogger->logStats("Station Id \tDENM id \tCreate Time \tReceive Time");
 
 	mIdCounter = 0;
 }
@@ -120,8 +122,7 @@ void DenService::logDelay(string serializedDenm) {
 	int64_t receiveTime =
 			chrono::high_resolution_clock::now().time_since_epoch()
 					/ chrono::nanoseconds(1);
-	int64_t delay = receiveTime - createTime;
-	mLogger->logStats(to_string(denm.id()) + "\t" + to_string(delay));
+	mLogger->logStats(denm.stationid() + "\t" + to_string(denm.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
 //trigger generation/send of DENM by external application

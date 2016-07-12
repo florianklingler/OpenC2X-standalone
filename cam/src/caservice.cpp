@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cmath>
 #include <string>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ CaService::CaService(CaServiceConfig &config) {
 
 	mConfig = config;
 	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
+	mLogger->logStats("Station Id \tCAM id \tCreate Time \tReceive Time");
 
 	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM", mGlobalConfig.mExpNo);
 	mSenderToDcc = new CommunicationSender("CaService", "6666", mGlobalConfig.mExpNo);
@@ -139,8 +141,7 @@ void CaService::logDelay(string serializedCam) {
 	cam.ParseFromString(serializedCam);
 	int64_t createTime = cam.createtime();
 	int64_t receiveTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
-	int64_t delay = receiveTime - createTime;
-	mLogger->logStats(to_string(cam.id()) + "\t" + to_string(delay));
+	mLogger->logStats(cam.stationid() + "\t" + to_string(cam.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
 double CaService::getDistance(double lat1, double lon1, double lat2, double lon2) {
