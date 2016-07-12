@@ -127,7 +127,7 @@ void CaService::sendCamInfo(string triggerReason, double delta) {
 	infoPackage::CamInfo camInfo;
 	string serializedCamInfo;
 
-	camInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	camInfo.set_time(Utils::currentTime());
 	camInfo.set_triggerreason(triggerReason);
 	camInfo.set_delta(delta);
 
@@ -140,7 +140,7 @@ void CaService::logDelay(string serializedCam) {
 	camPackage::CAM cam;
 	cam.ParseFromString(serializedCam);
 	int64_t createTime = cam.createtime();
-	int64_t receiveTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	int64_t receiveTime = Utils::currentTime();
 	mLogger->logStats(cam.stationid() + "\t" + to_string(cam.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
@@ -221,7 +221,7 @@ void CaService::triggerCam(const boost::system::error_code &ec) {
 
 bool CaService::isGPSdataValid() {
 	mMutexLatestGps.lock();
-	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	int64_t currentTime = Utils::currentTime();
 	if (currentTime - mLatestGps.time() > (int64_t)mConfig.mMaxGpsAge * 1000*1000*1000) {	//GPS data too old
 		mGpsValid = false;
 	} else {
@@ -262,7 +262,7 @@ bool CaService::isPositionChanged() {
 
 bool CaService::isSpeedChanged() {
 	mMutexLatestObd2.lock();
-	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	int64_t currentTime = Utils::currentTime();
 	if (currentTime - mLatestObd2.time() > (int64_t)mConfig.mMaxObd2Age * 1000*1000*1000) {	//OBD2 data too old
 		mMutexLatestObd2.unlock();
 		mObd2Valid = false;
@@ -282,7 +282,7 @@ bool CaService::isSpeedChanged() {
 
 bool CaService::isTimeToTriggerCAM() {
 	//max. time interval 1s
-	int64_t currentTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	int64_t currentTime = Utils::currentTime();
 	int64_t deltaTime = currentTime - mLastSentCam.createtime();
 	if(deltaTime >= 1*1000*1000*1000) {
 		sendCamInfo("time", deltaTime);
@@ -322,7 +322,7 @@ camPackage::CAM CaService::generateCam() {
 	cam.set_stationid(mGlobalConfig.mMac);
 	cam.set_id(mIdCounter++);
 	cam.set_content("CAM from CA service");
-	cam.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	cam.set_createtime(Utils::currentTime());
 
 	mMutexLatestGps.lock();
 	if(mGpsValid) {														//only add gps if valid data is available

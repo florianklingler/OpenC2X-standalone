@@ -9,6 +9,7 @@
 #include <random>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <signal.h>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -167,7 +168,7 @@ void DCC::receiveFromCa() {
 		data->ParseFromString(serializedData);		//deserialize DATA
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
-		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+		int64_t nowTime = Utils::currentTime();
 		mBucket[ac]->flushQueue(nowTime);
 
 		mLogger->logInfo("");						//for readability
@@ -194,7 +195,7 @@ void DCC::receiveFromDen() {
 		data->ParseFromString(serializedData);		//deserialize DATA
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
-		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+		int64_t nowTime = Utils::currentTime();
 		mBucket[ac]->flushQueue(nowTime);
 
 		mLogger->logInfo("");						//for readability
@@ -242,7 +243,7 @@ void DCC::sendDccInfo(const boost::system::error_code& ec) {
 	string serializedDccInfo;
 
 	for (Channels::t_access_category ac : mAccessCategories) {	//send for each AC
-		dccInfo.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		dccInfo.set_time(Utils::currentTime());
 		dccInfo.set_channelload(mChannelLoad);
 
 		//set state
@@ -427,7 +428,7 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 		return;
 	}
 
-	int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+	int64_t nowTime = Utils::currentTime();
 	mBucket[ac]->flushQueue(nowTime);												//remove all packets that already expired
 	mBucket[ac]->increment();														//add token
 	mLogger->logDebug("AC " + to_string(ac) + ": added token -> available tokens: " + to_string(mBucket[ac]->availableTokens));
@@ -446,7 +447,7 @@ void DCC::addToken(const boost::system::error_code& ec, Channels::t_access_categ
 //sends queued packets from specified LeakyBucket to hardware until out of packets or tokens
 void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 	while(dataPackage::DATA* data = mBucket[ac]->dequeue()) { 		//true if packet and token available -> pop 1st packet from queue and remove token
-		int64_t nowTime = chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
+		int64_t nowTime = Utils::currentTime();
 		if(data->validuntil() >= nowTime) {							//message still valid
 			setMessageLimits(data);
 

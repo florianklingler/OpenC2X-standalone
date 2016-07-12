@@ -119,9 +119,7 @@ void DenService::logDelay(string serializedDenm) {
 	denmPackage::DENM denm;
 	denm.ParseFromString(serializedDenm);
 	int64_t createTime = denm.createtime();
-	int64_t receiveTime =
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1);
+	int64_t receiveTime = Utils::currentTime();
 	mLogger->logStats(denm.stationid() + "\t" + to_string(denm.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
@@ -173,7 +171,7 @@ denmPackage::DENM DenService::generateDenm(triggerPackage::TRIGGER trigger) {
 	denm.set_stationid(mGlobalConfig.mMac);
 	denm.set_id(mIdCounter++);
 	denm.set_content(trigger.content());
-	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	denm.set_createtime(Utils::currentTime());
 
 	mMutexLatestGps.lock();
 	if(mLatestGps.has_time()) {											//only add gps if valid data is available

@@ -7,6 +7,7 @@
 
 #include "Utils.h"
 #include <sstream>
+#include <chrono>
 
 using namespace std;
 
@@ -26,4 +27,8 @@ string Utils::readableTime(int64_t nanoTime) {
 	time << buffer << "." << ms;
 
 	return time.str();
+}
+
+int64_t Utils::currentTime() {
+	return chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1);
 }

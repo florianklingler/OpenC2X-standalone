@@ -26,6 +26,8 @@ public:
 	 * @return human readable format string
 	 */
 	static std::string readableTime(int64_t nanoTime);
+
+	static int64_t currentTime();
 };
 
 #endif /* UTILS_H_ */

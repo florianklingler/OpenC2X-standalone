@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <cmath>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -48,7 +49,7 @@ void Obd2Service::receiveData(const boost::system::error_code &ec, SerialPort* s
 	if (speed != -1) {		//valid speed
 		//write current data to protocol buffer
 		obd2Package::OBD2 obd2;
-		obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		obd2.set_time(Utils::currentTime());
 		obd2.set_speed(speed);
 		if (rpm != -1) {
 			obd2.set_rpm(rpm);
@@ -86,7 +87,7 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 
 	//write current speed to protocol buffer
 	obd2.set_speed(simulateSpeed());
-	obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	obd2.set_time(Utils::currentTime());
 
 	sendToServices(obd2);
 

@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cmath>
 #include <string>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -99,7 +100,7 @@ gpsPackage::GPS GpsService::gpsDataToBuffer(struct gps_data_t* gpsdata) {
 	}
 //	buffer.set_time(gpsdata->fix.time);	//FIXME: convert GPS time to epoch time
 //	buffer.set_online(gpsdata->online);
-	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_time(Utils::currentTime());
 	buffer.set_online(0);
 	if(gpsdata->satellites_visible != gpsdata->satellites_visible) { // set satellites visible to -1 in case of NaN
 		buffer.set_satellites(-1);
@@ -185,7 +186,7 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 	buffer.set_altitude(0);
 	buffer.set_epx(0);
 	buffer.set_epy(0);
-	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_time(Utils::currentTime());
 	buffer.set_online(0);
 	buffer.set_satellites(1);
 
@@ -224,7 +225,7 @@ gpsPackage::GPS GpsService::convertTrailDataToBuffer(string data) {
 	buffer.set_altitude(0);
 	buffer.set_epx(0);
 	buffer.set_epy(0);
-	buffer.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	buffer.set_time(Utils::currentTime());
 	buffer.set_online(0);
 	buffer.set_satellites(1);
 	return buffer;
