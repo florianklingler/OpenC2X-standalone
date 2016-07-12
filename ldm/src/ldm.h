@@ -52,7 +52,6 @@ public:
 	void insertCam(camPackage::CAM cam);
 	void insertDenm(denmPackage::DENM denm);
 
-	std::string readableTime(int64_t nanoTime);
 	void printGps(gpsPackage::GPS gps);
 	void printObd2(obd2Package::OBD2 obd2);
 	void printCam(camPackage::CAM cam);

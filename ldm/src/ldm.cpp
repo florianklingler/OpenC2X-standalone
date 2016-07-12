@@ -6,6 +6,7 @@
 #include <iostream>
 #include <config/config.h>
 #include <map>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -574,29 +575,12 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 
 }
 
-
-//////////log/print function
-//converts ns since epoch into human readable format (HH:MM:SS,ms)
-string LDM::readableTime(int64_t nanoTime) {
-	char buffer[9];
-	int64_t milliTime = nanoTime / (1*1000*1000);		//ns to ms (since epoch)
-	time_t epochTime = milliTime / 1000;				//ms to s (since epoch)
-	struct tm* timeinfo = localtime(&epochTime);
-	strftime(buffer, 9, "%T", timeinfo);				//buffer contains time HH:MM:SS
-	int ms = milliTime % epochTime;						//just the ms
-
-	stringstream time;								//convert to string
-	time << buffer << "," << ms;
-
-	return time.str();
-}
-
 void LDM::printGps(gpsPackage::GPS gps) {
 	stringstream stream;
 	// set decimal precision to 15
 	stream << setprecision(15);
 
-	stream << "GPS - " << readableTime(gps.time()) << ", lat: " << gps.latitude() << ", long: " << gps.longitude() << ", alt: " << gps.altitude();
+	stream << "GPS - " << Utils::readableTime(gps.time()) << ", lat: " << gps.latitude() << ", long: " << gps.longitude() << ", alt: " << gps.altitude();
 	//TODO: include epx, epy, ...?
 
 	mLogger->logInfo(stream.str());
@@ -607,7 +591,7 @@ void LDM::printObd2(obd2Package::OBD2 obd2) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "OBD2 - " << readableTime(obd2.time()) << ", speed: " << obd2.speed() << ", rpm: " << obd2.rpm();
+	stream << "OBD2 - " << Utils::readableTime(obd2.time()) << ", speed: " << obd2.speed() << ", rpm: " << obd2.rpm();
 	mLogger->logInfo(stream.str());
 }
 
@@ -616,13 +600,13 @@ void LDM::printCam(camPackage::CAM cam) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "CAM - " << readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
+	stream << "CAM - " << Utils::readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
 	if (cam.has_gps()) {
 
-		stream << "\n\tGPS - " << readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
+		stream << "\n\tGPS - " << Utils::readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
 	}
 	if (cam.has_obd2()) {
-		stream << "\n\tOBD2 - " << readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
+		stream << "\n\tOBD2 - " << Utils::readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
 	}
 	stream << ", heading: " << cam.heading();
 	mLogger->logInfo(stream.str());
@@ -633,13 +617,13 @@ void LDM::printDenm(denmPackage::DENM denm) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "DENM - " << readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
+	stream << "DENM - " << Utils::readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
 	if (denm.has_gps()) {
 
-		stream << "\n\tGPS - " << readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
+		stream << "\n\tGPS - " << Utils::readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
 	}
 	if (denm.has_obd2()) {
-		stream << "\n\tOBD2 - " << readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
+		stream << "\n\tOBD2 - " << Utils::readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
 	}
 	mLogger->logInfo(stream.str());
 }
