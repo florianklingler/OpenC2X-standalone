@@ -20,13 +20,43 @@
  * Struct that holds the latest information about the flush statistics for all hw queues.
  */
 struct PktStats {
+	/**
+	 * Number of times an older packet was found in the hardware AC_BE before adding a new one
+	 */
 	uint32_t be_flush_req;
+	/**
+	 * Number of times an older packet was not found in the hardware AC_BE before adding a new one
+	 */
 	uint32_t be_flush_not_req;
+
+	/**
+	 * Number of times an older packet was found in the hardware AC_BK before adding a new one
+	 */
 	uint32_t bk_flush_req;
+
+	/**
+	 * Number of times an older packet was not found in the hardware AC_BK before adding a new one
+	 */
 	uint32_t bk_flush_not_req;
+
+	/**
+	 * Number of times an older packet was found in the hardware AC_VI before adding a new one
+	 */
 	uint32_t vi_flush_req;
+
+	/**
+	 * Number of times an older packet was not found in the hardware AC_VI before adding a new one
+	 */
 	uint32_t vi_flush_not_req;
+
+	/**
+	 * Number of times an older packet was found in the hardware AC_VO before adding a new one
+	 */
 	uint32_t vo_flush_req;
+
+	/**
+	 * Number of times an older packet was not found in the hardware AC_VO before adding a new one
+	 */
 	uint32_t vo_flush_not_req;
 };
 
@@ -40,20 +70,69 @@ struct netinterface {
 
 /**
  * PktStatsCollector collects the statistics for the number of times when there was need to flush an outdated packet
- * in the hardware queues in NIC. This is specific to Ath9k chipset, with modified Linux Kernel 3.18.
+ * in the hardware queues in NIC. The Ath9k chip doesn't support on demand flushing of hardware queues. But there
+ * might be scenarios (e.g. for CAMs) where outdated packets, which could not make their way due to heavy channel load
+ * need to be flushed.
+ * This implementation is specific to Ath9k chipset, with modified Linux Kernel 3.18.
  */
 class PktStatsCollector {
 public:
 	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
 	virtual ~PktStatsCollector();
 
+	/**
+	 * Initializes PktStatsCollector.
+	 * Allocate a netlink socket, connect to it and start probing.
+	 */
 	void init();
+
+	/**
+	 * Starts collecting the statistics.
+	 * @param ec Boost error code
+	 */
 	void probe(const boost::system::error_code &ec);
+
+	/**
+	 * Send a netlink message via nl80211 module.
+	 * @param msgCmd The nl80211 command
+	 * @param payload Netlink data
+	 * @param length length of the payload
+	 * @param payloadType The nl80211 attribute
+	 * @param seq The sequence number for netlink
+	 * @param flags Netlink flags
+	 * @return 0 if success, < 0 otherwise.
+	 */
 	int sendNl80211(uint8_t msgCmd, void *payload, unsigned int length, int payloadType, unsigned int seq, int flags = 0);
+
+	/**
+	 * Creates a new netlink message, send it via nl80211 module.
+	 * @param msgCmd The nl80211 command
+	 * @param payload Netlink data
+	 * @param length Length of the payload
+	 * @param attrType The nl80211 attribute
+	 * @param seq The sequence number for netlink
+	 * @param protocolId The protocol id
+	 * @param flags Netlink flags
+	 * @param protocolVersion
+	 * @return 0 if success, < 0 otherwise.
+	 */
 	int send(uint8_t msgCmd, void *payload, unsigned int length, int attrType, unsigned int seq, int protocolId, int flags = 0, uint8_t protocolVersion = 0x01);
+
+	/** Receives the netlink message from the kernel.
+	 * The received message is parsed and the current information about the channel utilization is saved in the channelload struct.
+	 * @return 1
+	 */
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
+
+	/**
+	 * Get the statistics.
+	 * @return The measured statistics.
+	 */
 	PktStats getPktStats();
 
+	/**
+	 * Netlink socket
+	 */
 	nl_sock *mSocket;
 	static int mNl80211Id;
 

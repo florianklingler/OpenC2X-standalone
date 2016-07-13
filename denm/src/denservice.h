@@ -97,6 +97,9 @@ private:
 
 	LoggingUtility* mLogger;
 
+	/**
+	 * Id for DENM message.
+	 */
 	long mIdCounter;
 
 	gpsPackage::GPS mLatestGps;
