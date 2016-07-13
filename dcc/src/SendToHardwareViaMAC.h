@@ -22,10 +22,11 @@
 #include <net/if.h>
 
 /**
- * Sends messages to Hardware to be broadcasted on the MAC layer.
+ * Sends messages to Hardware to be broadcasted on the MAC layer. Uses RAW_SOCKET so root is needed.
  * Data is wrapped in a minimal Ethernet packet containing only a Ethernet header and the payload.
  * No IP header.
  * All data is broadcasted on the MAC layer.
+ *
  *
  * @nonStandard serialization is not standard conform. Uses protobuffer instead.
  */

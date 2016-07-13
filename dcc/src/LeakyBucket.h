@@ -17,14 +17,20 @@
 
 
 /**
- * LeakyBucket consists of a bucket for tokens, i.e. send-permits, and a queue
+ * LeakyBucket consists of a bucket for tokens (= send-permits) and a queue
  * for packets that need to be sent.
  */
 template<typename T> class LeakyBucket {
 private:
 	LoggingUtility* mLogger;
 public:
+	/**
+	 * Max. number of tokens
+	 */
 	size_t maxBucketSize;		//max. number of tokens
+	/**
+	 * Available number of tokens = send-permits.
+	 */
 	size_t availableTokens;		//available number of tokens = send-permits
 	std::mutex mutex_bucket;	//mutex to control access
 	std::mutex mutex_queue;
@@ -49,7 +55,10 @@ public:
 		delete mLogger;
 	}
 
-	//number of available tokens
+	/** Getter for number of available tokens.
+	 *
+	 * @return Number of available tokens
+	 */
 	int getAvailableTokens() {
 		mutex_bucket.lock();
 		int numTokens = availableTokens;
@@ -57,7 +66,10 @@ public:
 		return numTokens;
 	}
 
-	//number of queued packets
+	/**
+	 * Getter for number of queued packets.
+	 * @return Number of queued packets
+	 */
 	int getQueuedPackets() {
 		mutex_queue.lock();
 		int numQueuedPackets = queue.size();
@@ -65,7 +77,10 @@ public:
 		return numQueuedPackets;
 	}
 
-	//returns true iff queue is empty
+	/**
+	 *
+	 * @return true if and only if the queue is empty
+	 */
 	bool isQueueEmpty() {
 		mutex_queue.lock();
 		bool ret = queue.empty();
@@ -73,7 +88,10 @@ public:
 		return ret;
 	}
 
-	//adds a token to the bucket; returns false iff bucket is full
+	/**
+	 * Adds a token to the bucket if not full.
+	 * @return true if the token was added successfully
+	 */
 	bool increment() {
 		mutex_bucket.lock();
 		bool ret = false;
@@ -87,7 +105,12 @@ public:
 		return ret;
 	}
 
-	//adds packet to the queue; returns false if queue is full
+	/**
+	 * Adds a packet to the queue if not full.
+	 * @param p Packet to be enqueued
+	 * @param validUntil Life time of the packet
+	 * @return true if the packet was enqueued successfully
+	 */
 	bool enqueue(T* p, int64_t validUntil) {
 		mutex_queue.lock();
 		bool ret = false;
@@ -101,7 +124,10 @@ public:
 		return ret;
 	}
 
-	//removes token from the bucket; returns false if bucket is empty
+	/**
+	 * Removes a token from the bucket if there is any.
+	 * @return true if a token was removed successfully
+	 */
 	bool decrement() {
 		mutex_bucket.lock();
 		bool ret = false;
@@ -115,7 +141,10 @@ public:
 		return ret;
 	}
 
-	//removes and returns first packet from the queue; if queue is empty or no tokens are available, NULL is returned
+	/**
+	 * Removes and returns the first packet from the queue if there is any and there is a token available.
+	 * @return The first packet (or NULL if no packet or token available)
+	 */
 	T* dequeue() {
 		mutex_queue.lock();
 		T* ret = NULL;
@@ -133,7 +162,11 @@ public:
 		return ret;
 	}
 
-	//removes all packets that expire before a given time t (or removes all packets if eraseAll=true)
+	/**
+	 * Removes all packets that expire before a given time t.
+	 * @param t Expiration time
+	 * @param eraseAll If set to true, all packets are erased, regardless of their validity
+	 */
 	void flushQueue(int64_t t, bool eraseAll=false) {
 		mutex_queue.lock();
 		typename std::list<std::pair<int64_t, T*> >::iterator it = queue.begin();
@@ -153,7 +186,9 @@ public:
 		mutex_queue.unlock();
 	}
 
-	//prints the whole queue. for debugging
+	/**
+	 * Prints the whole queue (for debugging).
+	 */
 	void printQueue() {
 		mutex_queue.lock();
 		std::cout << "printing queue" << std::endl;

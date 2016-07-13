@@ -37,7 +37,8 @@ struct httpServerConfig {
 
 /** A Server that connects to LDMs via ZMQ and exposes it's Data via http.
  * Uses the Crow Framework (<a href="https://github.com/ipkn/crow"> git link</a>) for the http service.
- * @todo write about protobuf to json libary
+ * The received data/messages from LDM is serialized as Protobuffer and converted to JSON with the library pbjson.
+ * In addition to the serialized messages, the JSON string also includes the type and the number of the messages.
  */
 class httpServer {
 public:
