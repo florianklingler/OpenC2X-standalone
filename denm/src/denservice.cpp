@@ -139,16 +139,6 @@ void DenService::triggerAppDenm() {
 	}
 }
 
-void DenService::microSleep(double microSeconds) {
-	time_t sleep_sec = (time_t) (((int) microSeconds) / (1000 * 1000));
-	long sleep_nanosec = ((long) (microSeconds * 1000)) % (1000 * 1000 * 1000);
-
-	struct timespec time[1];
-	time[0].tv_sec = sleep_sec;
-	time[0].tv_nsec = sleep_nanosec;
-	nanosleep(time, NULL);
-}
-
 //generate DENM and send to LDM and DCC
 void DenService::send(triggerPackage::TRIGGER trigger) {
 	string serializedData;
