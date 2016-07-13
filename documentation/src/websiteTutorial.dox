@@ -47,8 +47,8 @@
  * The map uses offline data. Currently only the region of Paderborn is available in fine detail.
  * One way to extend the map data is to use the cache of the Application "marble". On Ubuntu install via
  * \verbatim sudo apt-get install marble \endverbatim
- * Once marble is running "Open Street Map" in the List in the bottom left
- * corner should be selected. Afterwards everything that is "looked at" is put into the cache of marble. So to get detailed
+ * Once marble is running select in the List in the bottom left corner of the window "Open Street Map".
+ * Afterwards everything that is *looked at* is put into the cache of marble. So to get detailed
  * map data for for example Bielefeld one needs to swipe slowly over Bielefeld on the map at the desired zoom level.
  * Then copy the folder \verbatim ~/.local/share/marble/maps/earth/openstreetmap \endverbatim
  * to

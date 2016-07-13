@@ -52,7 +52,7 @@
  * \verbatim setup_interfaces.sh \endverbatim
  * afterwards run
  * \verbatim scripts/runAllLocal.sh \endverbatim
- * on the remote also. Back on the local machine run
+ * on the remote. Back in a new terminal on the local machine run
  * \verbatim scripts/sshTunnel.sh ssh-configuration-name \endverbatim
  * (Replace "ssh-configuration-name" with the name of the remote target in the local ssh configuration eg. "alix6".)\n
  * and open the Monitor website at
