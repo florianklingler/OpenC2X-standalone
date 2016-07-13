@@ -235,8 +235,13 @@ bool CaService::isHeadingChanged() {
 	mMutexLatestGps.lock();
 	double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	if(currentHeading != -1) {
-		double deltaHeading = abs(currentHeading - mLastSentCam.heading());
-		if(deltaHeading > 4.0) {
+		double deltaHeading = currentHeading - mLastSentCam.heading();
+		if (deltaHeading > 180) {
+			deltaHeading -= 360;
+		} else if (deltaHeading < -180) {
+			deltaHeading += 360;
+		}
+		if(abs(deltaHeading) > 4.0) {
 			sendCamInfo("heading", deltaHeading);
 			mLogger->logInfo("deltaHeading: " + to_string(deltaHeading));
 			mMutexLatestGps.unlock();
