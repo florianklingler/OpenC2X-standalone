@@ -26,16 +26,16 @@
 #include <mutex>
 
 /**
- * Responsible for Data holding and maintainance.
+ * The Local Dynamic Map (LDM) is responsible for maintaining data that is part of ITS.
  *
- * Writes into a SQL database. Caches newest incoming data to answer
- * requests because sql querys are to slow.
+ * The data is written into a SQLite database. In addition, the latest data is cached in order to quickly answer requests.
+ * (Apparently, sql queries are too slow to answer requests with a high frequency.)
  *
- * @nonStandard deleting of old data. for debugging add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
+ * @nonStandard deletion of old data. for debugging add "deleted" flag and automatically "delete" entries that are eg. too old, too far away; only return non-delted entries
  *
  * @nonStandard no security checks for requests
  *
- * @nonStandard no registration of dataProviders, dataRecievers
+ * @nonStandard no registration of dataProviders, dataReceivers
  */
 class LDM {
 public:
@@ -43,28 +43,120 @@ public:
 	~LDM();
 	void init();
 
+	/** Creates the database schema.
+	 *	Creates tables for storing CAM, DENM, GPS, OBD2, DccInfo and CamInfo if they do not exist already
+	 */
 	void createTables();
 
+	/** Queries GPS from the database.
+	 * 	Executes a SELECT query with a specified condition on the GPS table and returns the result.
+	 * @param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * @return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData gpsSelect(std::string condition);	//TODO: only return latest GPS? useful?
+
+	/** Queries OBD2 from the database.
+	 * 	Executes a SELECT query with a specified condition on the OBD2 table and returns the result.
+	 * @param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * @return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData obd2Select(std::string condition);
+
+	/** Queries CAM from the database.
+	 * 	Executes a SELECT query with a specified condition on the CAM table and returns the result.
+	 * @param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * @return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData camSelect(std::string condition);
+
+	/** Queries DENM from the database.
+	 * 	Executes a SELECT query with a specified condition on the DENM table and returns the result.
+	 * 	@param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * 	@return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData denmSelect(std::string condition);
+
+	/** Queries DccInfo from the database.
+	 * 	Executes a SELECT query with a specified condition on the DccInfo table and returns the result.
+	 *	@param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * 	@return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData dccInfoSelect(std::string condition);
+
+	/** Queries CamInfo from the database.
+	 * 	Executes a SELECT query with a specified condition on the CamInfo table and returns the result.
+	 * 	@param condition Some condition for restricting the returned data (e.g. a WHERE clause).
+	 * 	@return A ldmData package containing the queried data.
+	 */
 	dataPackage::LdmData camInfoSelect(std::string condition);
 
+	/**	Inserts arbitrary data into the database.
+	 * 	Executes the specified INSERT command on the database.
+	 * 	@param sqlCommand The SQL insert command to be executed.
+	 */
 	void insert(std::string sqlCommand);
+
+	/**	Inserts CAM into the database.
+	 * 	Constructs and executes queries for inserting the specified CAM data
+	 * 	and if available also included GPS and OBD2 data into the corresponding tables.
+	 *	@param cam The CAM to be inserted.
+	 */
 	void insertCam(camPackage::CAM cam);
+
+	/**	Inserts DENM into the database.
+	 * 	Constructs and executes queries for inserting the specified DENM data
+	 * 	and if available also included GPS and OBD2 data into the corresponding tables.
+	 *	@param denm The DENM to be inserted.
+	 */
 	void insertDenm(denmPackage::DENM denm);
 
+	/**	Logs GPS.
+	 * 	Constructs a human-readable representation of the specified GPS and logs it.
+	 *	@param gps The GPS to be logged.
+	 */
 	void printGps(gpsPackage::GPS gps);
+
+	/**	Logs OBD2.
+	 * 	Constructs a human-readable representation of the specified OBD2 and logs it.
+	 *	@param obd2 The OBD2 to be logged.
+	 */
 	void printObd2(obd2Package::OBD2 obd2);
+
+	/**	Logs CAM.
+	 * 	Constructs a human-readable representation of the specified CAM with included GPS and OBD2 if available and logs it.
+	 *	@param cam The CAM to be logged.
+	 */
 	void printCam(camPackage::CAM cam);
+
+	/**	Logs DENM.
+	 * 	Constructs a human-readable representation of the specified DENM with included GPS and OBD2 if available and logs it.
+	 *	@param denm The DENM to be logged.
+	 */
 	void printDenm(denmPackage::DENM denm);
 
+	/**	Receives CAM.
+	 *  Receives CAM from the local or a remote machine, caches the data and inserts it into the database.
+	 */
 	void receiveFromCa();
+
+	/**	Receives DENM.
+	 *  Receives DENM from the local or a remote machine, caches the data and inserts it into the database.
+	 */
 	void receiveFromDen();
+
+	/**	Receives and answers requests.
+	 *  Receives requests for querying data from a specified table, calls the corresponding select and finally replies to the request.
+	 */
 	void receiveRequest();
+
+	/**	Receives DccInfo.
+	 *  Receives DccInfo from the local machine, caches the data and inserts it into the database.
+	 */
 	void receiveDccInfo();
+
+	/**	Receives CamInfo.
+	 *  Receives CamInfo from the local machine, caches the data and inserts it into the database.
+	 */
 	void receiveCamInfo();
 
 private:
@@ -91,9 +183,24 @@ private:
 
 	sqlite3* mDb;
 
+	/**
+	 * Cache for storing the latest CAM for each stationId
+	 */
 	std::map<std::string,camPackage::CAM> camCache;
+
+	/**
+	 * Cache for storing the latest CamInfo
+	 */
 	infoPackage::CamInfo camInfoCache;
+
+	/**
+	 * Cache for storing the latest DccInfo for each access category
+	 */
 	std::map<std::string,infoPackage::DccInfo>  dccInfoCache;
+
+	/**
+	 * Cache for storing the latest DENM for each stationId
+	 */
 	std::map<std::string,denmPackage::DENM> denmCache;
 };
 
