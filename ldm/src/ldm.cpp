@@ -6,6 +6,7 @@
 #include <iostream>
 #include <config/config.h>
 #include <map>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -95,7 +96,7 @@ void LDM::createTables() {
 
 	//create CAM table
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
-			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, heading DOUBLE, " \
 			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
@@ -263,6 +264,8 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 					obd2->ParseFromString(ldmData.data(0));
 					cam.set_allocated_obd2(obd2);
 				}
+
+				cam.set_heading(sqlite3_column_double(stmt, 7));
 
 				//add result
 				camCache[cam.stationid()]=cam;
@@ -449,6 +452,8 @@ void LDM::insertCam(camPackage::CAM cam) {
 	sSql  << setprecision(15);
 	int64_t gpsRowId = -1;
 	int64_t obd2RowId = -1;
+	sqlite3_stmt *stmt;
+	char* errmsg = 0;
 
 	//insert GPS if available
 	if (cam.has_gps()) {
@@ -457,9 +462,25 @@ void LDM::insertCam(camPackage::CAM cam) {
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
-		gpsRowId = sqlite3_last_insert_rowid(mDb);
+		sSql << "SELECT key FROM GPS ORDER BY key DESC LIMIT 1;";
+
+		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				// get last inserted row id in gps
+				gpsRowId = (sqlite3_column_int64(stmt, 0));
+			}
+			sqlite3_finalize(stmt);
+		}
+		else {
+			gpsRowId = -1;
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
 		mGpsMutex.unlock();
 	}
+	sSql.str("");
+	sSql.clear();
 
 	//insert OBD2 if available
 	if (cam.has_obd2()) {
@@ -468,22 +489,36 @@ void LDM::insertCam(camPackage::CAM cam) {
 		insert(sSql.str());
 		sSql.str("");
 		sSql.clear();
-		obd2RowId = sqlite3_last_insert_rowid(mDb);
+		sSql << "SELECT key FROM OBD2 ORDER BY key DESC LIMIT 1;";
+		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
+			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
+				// get last inserted row id in obd2
+				obd2RowId = (sqlite3_column_int64(stmt, 0));
+			}
+			sqlite3_finalize(stmt);
+		}
+		else {
+			obd2RowId = -1;
+			string error(errmsg);
+			mLogger->logError("SQL error: " + error);
+			sqlite3_free(errmsg);
+		}
 		mObd2Mutex.unlock();
 	}
-
-	//insert CAM with foreign keys to reference GPS, OBD2
+	sSql.str("");
+	sSql.clear();
+	//insert CAM with foreign keys to reference GPS, OBD2 //TODO: always include heading? might be invalid/not set; just include if has_heading=true?
 	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << ", " << cam.heading() << " );";
 	}
 	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << cam.heading() << " );";
 	}
 	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2, heading) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << ", " << cam.heading() << " );";
 	}
 	else {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << " );";
+		sSql << "INSERT INTO CAM (stationId, id, content, createTime, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << cam.heading() << " );";
 	}
 	mCamMutex.lock();
 	insert(sSql.str());
@@ -540,29 +575,12 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 
 }
 
-
-//////////log/print function
-//converts ns since epoch into human readable format (HH:MM:SS,ms)
-string LDM::readableTime(int64_t nanoTime) {
-	char buffer[9];
-	int64_t milliTime = nanoTime / (1*1000*1000);		//ns to ms (since epoch)
-	time_t epochTime = milliTime / 1000;				//ms to s (since epoch)
-	struct tm* timeinfo = localtime(&epochTime);
-	strftime(buffer, 9, "%T", timeinfo);				//buffer contains time HH:MM:SS
-	int ms = milliTime % epochTime;						//just the ms
-
-	stringstream time;								//convert to string
-	time << buffer << "," << ms;
-
-	return time.str();
-}
-
 void LDM::printGps(gpsPackage::GPS gps) {
 	stringstream stream;
 	// set decimal precision to 15
 	stream << setprecision(15);
 
-	stream << "GPS - " << readableTime(gps.time()) << ", lat: " << gps.latitude() << ", long: " << gps.longitude() << ", alt: " << gps.altitude();
+	stream << "GPS - " << Utils::readableTime(gps.time()) << ", lat: " << gps.latitude() << ", long: " << gps.longitude() << ", alt: " << gps.altitude();
 	//TODO: include epx, epy, ...?
 
 	mLogger->logInfo(stream.str());
@@ -573,7 +591,7 @@ void LDM::printObd2(obd2Package::OBD2 obd2) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "OBD2 - " << readableTime(obd2.time()) << ", speed: " << obd2.speed() << ", rpm: " << obd2.rpm();
+	stream << "OBD2 - " << Utils::readableTime(obd2.time()) << ", speed: " << obd2.speed() << ", rpm: " << obd2.rpm();
 	mLogger->logInfo(stream.str());
 }
 
@@ -582,14 +600,15 @@ void LDM::printCam(camPackage::CAM cam) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "CAM - " << readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
+	stream << "CAM - " << Utils::readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
 	if (cam.has_gps()) {
 
-		stream << "\n\tGPS - " << readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
+		stream << "\n\tGPS - " << Utils::readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
 	}
 	if (cam.has_obd2()) {
-		stream << "\n\tOBD2 - " << readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
+		stream << "\n\tOBD2 - " << Utils::readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
 	}
+	stream << ", heading: " << cam.heading();
 	mLogger->logInfo(stream.str());
 }
 
@@ -598,13 +617,13 @@ void LDM::printDenm(denmPackage::DENM denm) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "DENM - " << readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
+	stream << "DENM - " << Utils::readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
 	if (denm.has_gps()) {
 
-		stream << "\n\tGPS - " << readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
+		stream << "\n\tGPS - " << Utils::readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
 	}
 	if (denm.has_obd2()) {
-		stream << "\n\tOBD2 - " << readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
+		stream << "\n\tOBD2 - " << Utils::readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
 	}
 	mLogger->logInfo(stream.str());
 }
@@ -708,7 +727,6 @@ void LDM::receiveDccInfo() {
 		//TODO: OPTIMIZATION: use pointers instead of copying dccInfos.
 		dccInfoCache[dccInfo.accesscategory()]=dccInfo;
 
-		mLogger->logDebug("received dccInfo");
 	}
 }
 
@@ -730,7 +748,6 @@ void LDM::receiveCamInfo() {
 		insert(sSql.str());
 		mCamInfoMutex.unlock();
 
-		mLogger->logDebug("received camInfo");
 	}
 }
 

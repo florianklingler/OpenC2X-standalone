@@ -1,11 +1,28 @@
 #ifndef UTILITY_LOGGINGUTILITY_H_
 #define UTILITY_LOGGINGUTILITY_H_
 
-#include <string>
-#include "easylogging++.h"
 
+#include <string>
+#include "external/easylogging++.h"
+
+
+/**
+ * A wrapper class for the easylogging++ libary.
+ *
+ * @todo explain logging config
+ *
+ * @ingroup common
+ */
 class LoggingUtility {
 public:
+	/**
+	 * If the module name is not unique all logger with the same
+	 * name will log into the same file.
+	 * Experiment Number will be put into the logging file name.
+	 *
+	 * @param moduleName Module name
+	 * @param expNo Experiment Number
+	 */
 	LoggingUtility(std::string moduleName, int expNo);
 	virtual ~LoggingUtility();
 

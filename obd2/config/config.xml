@@ -1,5 +1,5 @@
 <obd2>
-	<SimulateData>false</SimulateData>
+	<SimulateData>true</SimulateData>
 	<Device>/dev/ttyUSB0</Device>
-	<Frequency>100</Frequency> <!-- in milliseconds -->
+	<Frequency>500</Frequency> <!-- in milliseconds -->
 </obd2>

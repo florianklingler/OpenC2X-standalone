@@ -26,7 +26,7 @@ tmux new-window -t $SESSION:1 -n 'App'
 tmux set-option -g mouse
 
 
-for APP in ldm ldmWebApplication cam gps denm
+for APP in ldm httpServer cam gps denm
 do
     echo "Starting $APP"
     # C-m semms to equal to pressing enter -> line is executed
@@ -64,6 +64,6 @@ tmux send-keys "cd ../dcc/Debug" C-m
 tmux send-keys "sudo ./dcc" C-m
 
 
-firefox "./../ldmWebSite/index.html"&
+firefox "./../webSite/index.html"&
 
 tmux -2 attach-session -t $SESSION

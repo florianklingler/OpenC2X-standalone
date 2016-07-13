@@ -3,11 +3,23 @@
 
 #include <string>
 #include <zmq.hpp>
-#include "zhelpers.hpp"
+#include "external/zhelpers.hpp"
 #include "LoggingUtility.h"
 
+
+/**
+ * Sender of zmq broadcasts to be received by CommunicationReceiver.
+ *
+ * @ingroup communication
+ */
 class CommunicationSender {
 public:
+	/**
+	 * ownerModule and expNo forwarded to LoggingUtility constructor
+	 * @param ownerModule Module Name
+	 * @param expNo Experiment Number
+	 * @param portOut port used for broadcasting
+	 */
 	CommunicationSender(std::string ownerModule, std::string portOut, int expNo);
 	~CommunicationSender();
 	void send(std::string envelope, std::string message);

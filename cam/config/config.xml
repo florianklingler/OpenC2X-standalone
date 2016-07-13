@@ -3,4 +3,5 @@
 	<expirationTime>1</expirationTime> <!-- in seconds ! -->
 	<maxGpsAge>10</maxGpsAge> <!-- in seconds ! -->
 	<maxObd2Age>10</maxObd2Age> <!-- in seconds ! -->
+	<thresholdRadiusForHeading>0.30</thresholdRadiusForHeading> <!-- in metres ! -->
 </cam>

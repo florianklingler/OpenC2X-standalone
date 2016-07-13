@@ -9,6 +9,7 @@
 #include <chrono>
 #include <string>
 #include <stdlib.h>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -32,6 +33,7 @@ DenService::DenService() {
 	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2", mGlobalConfig.mExpNo);
 
 	mLogger = new LoggingUtility("DenService", mGlobalConfig.mExpNo);
+	mLogger->logStats("Station Id \tDENM id \tCreate Time \tReceive Time");
 
 	mIdCounter = 0;
 }
@@ -117,11 +119,8 @@ void DenService::logDelay(string serializedDenm) {
 	denmPackage::DENM denm;
 	denm.ParseFromString(serializedDenm);
 	int64_t createTime = denm.createtime();
-	int64_t receiveTime =
-			chrono::high_resolution_clock::now().time_since_epoch()
-					/ chrono::nanoseconds(1);
-	int64_t delay = receiveTime - createTime;
-	mLogger->logStats(to_string(denm.id()) + "\t" + to_string(delay));
+	int64_t receiveTime = Utils::currentTime();
+	mLogger->logStats(denm.stationid() + "\t" + to_string(denm.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
 //trigger generation/send of DENM by external application
@@ -172,7 +171,7 @@ denmPackage::DENM DenService::generateDenm(triggerPackage::TRIGGER trigger) {
 	denm.set_stationid(mGlobalConfig.mMac);
 	denm.set_id(mIdCounter++);
 	denm.set_content(trigger.content());
-	denm.set_createtime(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	denm.set_createtime(Utils::currentTime());
 
 	mMutexLatestGps.lock();
 	if(mLatestGps.has_time()) {											//only add gps if valid data is available

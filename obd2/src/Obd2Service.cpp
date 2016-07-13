@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <cmath>
+#include <utility/Utils.h>
 
 using namespace std;
 
@@ -23,34 +24,13 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 	mConfig = config;
 	mSender = new CommunicationSender("Obd2Service", "2222", mGlobalConfig.mExpNo);
 	mLogger = new LoggingUtility("Obd2Service", mGlobalConfig.mExpNo);
+	mLogger->logStats("speed (m/sec)");
 	
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
 	mUniform = uniform_real_distribution<double>(-0.01, 0.01);
 
-	if (!mConfig.mSimulateData) {	//use real Obd2 data
-		SerialPort* serial = new SerialPort();
-		if (serial->connect(mConfig.mDevice) != -1) {
-			mLogger->logInfo("Connected to serial port successfully");
-
-			serial->init();
-
-			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
-			mTimer->async_wait(boost::bind(&Obd2Service::receiveData, this, boost::asio::placeholders::error, serial));
-			mIoService.run();
-
-			serial->disconnect();
-		}
-		else {
-			mLogger->logError("Cannot open serial port -> plug in OBD2 and run with sudo");
-		}
-	}
-	else {				//use simulated Obd2 data
-		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
-		mTimer->async_wait(boost::bind(&Obd2Service::simulateData, this, boost::asio::placeholders::error));
-		mIoService.run();
-	}
 }
 
 Obd2Service::~Obd2Service() {
@@ -69,7 +49,7 @@ void Obd2Service::receiveData(const boost::system::error_code &ec, SerialPort* s
 	if (speed != -1) {		//valid speed
 		//write current data to protocol buffer
 		obd2Package::OBD2 obd2;
-		obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+		obd2.set_time(Utils::currentTime());
 		obd2.set_speed(speed);
 		if (rpm != -1) {
 			obd2.set_rpm(rpm);
@@ -107,7 +87,7 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 
 	//write current speed to protocol buffer
 	obd2.set_speed(simulateSpeed());
-	obd2.set_time(chrono::high_resolution_clock::now().time_since_epoch() / chrono::nanoseconds(1));
+	obd2.set_time(Utils::currentTime());
 
 	sendToServices(obd2);
 
@@ -121,7 +101,32 @@ void Obd2Service::sendToServices(obd2Package::OBD2 obd2) {
 	string serializedObd2;
 	obd2.SerializeToString(&serializedObd2);
 	mSender->sendData("OBD2", serializedObd2);
-	mLogger->logInfo("Sent OBD2 with speed: " + to_string(obd2.speed()*3.6) + " km/h");
+	mLogger->logStats(to_string(obd2.speed())); // In csv, we log speed in m/sec
+}
+
+void Obd2Service::init() {
+	if (!mConfig.mSimulateData) {	//use real Obd2 data
+		SerialPort* serial = new SerialPort();
+		if (serial->connect(mConfig.mDevice) != -1) {
+			mLogger->logInfo("Connected to serial port successfully");
+
+			serial->init();
+
+			mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
+			mTimer->async_wait(boost::bind(&Obd2Service::receiveData, this, boost::asio::placeholders::error, serial));
+			mIoService.run();
+
+			serial->disconnect();
+		}
+		else {
+			mLogger->logError("Cannot open serial port -> plug in OBD2 and run with sudo");
+		}
+	}
+	else {				//use simulated Obd2 data
+		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.mFrequency));
+		mTimer->async_wait(boost::bind(&Obd2Service::simulateData, this, boost::asio::placeholders::error));
+		mIoService.run();
+	}
 }
 
 int main() {
@@ -134,6 +139,7 @@ int main() {
 		return EXIT_FAILURE;
 	}
 	Obd2Service obd2(config);
+	obd2.init();
 
 	return 0;
 }

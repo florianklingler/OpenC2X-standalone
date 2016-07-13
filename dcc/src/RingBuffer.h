@@ -1,6 +1,11 @@
 #ifndef RINGBUFFER_H_
 #define RINGBUFFER_H_
 
+/**
+ * @addtogroup dcc
+ * @{
+ */
+
 #include <assert.h>
 #include <list>
 #include <cstdlib>
@@ -56,5 +61,8 @@ public:
 	}
 };
 
+/**
+ * @}
+ */
 
 #endif /* RINGBUFFER_H_ */

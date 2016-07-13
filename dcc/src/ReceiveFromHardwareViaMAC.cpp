@@ -24,11 +24,6 @@ ReceiveFromHardwareViaMAC::~ReceiveFromHardwareViaMAC() {
 	close(mSocket);
 }
 
-/**
- * receives packages till a CAR Communication package is found and returns its payload
- *
- * @return <MAC address of sender,payload>
- */
 pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 
 	while(1){

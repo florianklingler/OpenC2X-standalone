@@ -1,6 +1,11 @@
 #ifndef DENSERVICE_H_
 #define DENSERVICE_H_
 
+/**
+ * @addtogroup denm
+ * @{
+ */
+
 #include <boost/thread.hpp>
 #include <config/config.h>
 #include <utility/CommunicationReceiver.h>
@@ -13,6 +18,11 @@
 #include <buffers/build/trigger.pb.h>
 #include <mutex>
 
+/**
+ * Class that handles the receiving, creating and sending of DEN Messages.
+ *
+ * @nonStandard DENM REPETITION/KEEP ALIVE PROTOCOL IS NOT IMPLEMENTED!
+ */
 class DenService {
 public:
 	DenService();
@@ -58,4 +68,5 @@ private:
 	std::mutex mMutexLatestObd2;
 };
 
+/** @} */ //end group
 #endif

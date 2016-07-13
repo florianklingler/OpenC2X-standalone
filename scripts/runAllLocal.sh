@@ -24,7 +24,7 @@ tmux new-window -t $SESSION:1 -n 'App'
 tmux split-window -h
 tmux select-pane -t 0
 
-for APP in ldm ldmWebApplication cam 
+for APP in ldm httpServer cam 
 do
     tmux send-keys "cd ../$APP/Debug" C-m
     tmux send-keys "./$APP" C-m

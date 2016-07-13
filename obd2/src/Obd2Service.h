@@ -1,6 +1,11 @@
 #ifndef OBD2SERVICE_H_
 #define OBD2SERVICE_H_
 
+/**
+ * @addtogroup obd2
+ * @{
+ */
+
 #include "SerialPort.h"
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -11,6 +16,9 @@
 #include <string>
 #include <config/config.h>
 
+/** Struct that hold the configuration for Obd2Service.
+ * The configuration is defined in <a href="../../obd2/config/config.xml">obd2/config/config.xml</a>
+ */
 struct Obd2Config {
 	bool mSimulateData;
 	char* mDevice;
@@ -27,6 +35,9 @@ struct Obd2Config {
 	}
 };
 
+/**
+ * Class that connects to the opd2 deamon and offers its data to the other modules via zmq.
+ */
 class Obd2Service {
 public:
 	Obd2Service(Obd2Config &config);
@@ -36,6 +47,7 @@ public:
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec);
 	void sendToServices(obd2Package::OBD2 obd2);
+	void init();
 
 private:
 	Obd2Config mConfig;
@@ -52,5 +64,7 @@ private:
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
+
+/** @} */ //end group
 
 #endif

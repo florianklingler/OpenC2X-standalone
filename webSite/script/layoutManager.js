@@ -1,3 +1,8 @@
+/**  
+ * @addtogroup layoutManager
+ *  @{
+ */
+
 //each container class div needs and unique id
 
 containers = [];
@@ -17,7 +22,7 @@ function saveLayout(){
 			height: $("#"+con.id).height(),
 			width: $("#"+con.id).width()
 		}
-		console.log(con);
+		//console.log(con);
 		containerLayouts["ids"].push(con.id);
 		containerLayouts[con.id] =config;
 	}
@@ -59,14 +64,23 @@ function loadLayout(){
 	loadLayoutFromJSON(containerLayoutsJSON);
 }
 
+/**
+ * disables dragging and resizing of containers
+ */
 function lockLayout(){
 	$(".container").draggable("disable").resizable("disable");
 }
 
+/**
+ * enables dragging and resizing of containers
+ */
 function unlockLayout(){
 	$(".container").draggable("enable").resizable("enable");
 }
 
+/**
+ * switches between locked and unlocked Layout
+ */
 function toggleLayoutLock(){
 	if(layoutLocked){
 		unlockLayout();
@@ -113,3 +127,5 @@ function createDccInfoContainer(){
 		}, color="#FF7700"));
 	}
 }
+
+/**  @} */// end of group

@@ -1,6 +1,11 @@
 #ifndef PKT_STATS_COLLECTOR_H_
 #define PKT_STATS_COLLECTOR_H_
 
+/**
+ * @addtogroup dccHardware
+ * @{
+ */
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
@@ -11,6 +16,9 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/mngt.h>
 
+/**
+ * Struct that holds the latest information about the flush statistics for all hw queues.
+ */
 struct PktStats {
 	uint32_t be_flush_req;
 	uint32_t be_flush_not_req;
@@ -21,11 +29,19 @@ struct PktStats {
 	uint32_t vo_flush_req;
 	uint32_t vo_flush_not_req;
 };
+
+/**
+ * Netlink interface for collecting packet stats.
+ */
 struct netinterface {
 	unsigned int ifindex;
 	PktStats stats;
 };
 
+/**
+ * PktStatsCollector collects the statistics for the number of times when there was need to flush an outdated packet
+ * in the hardware queues in NIC. This is specific to Ath9k chipset, with modified Linux Kernel 3.18.
+ */
 class PktStatsCollector {
 public:
 	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
@@ -51,5 +67,9 @@ private:
 	boost::asio::io_service* mIoService;
 	boost::asio::deadline_timer* mTimer;
 };
+
+/**
+ * @}
+ */
 
 #endif

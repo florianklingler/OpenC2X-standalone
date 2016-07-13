@@ -1,6 +1,10 @@
 #ifndef GPSSERVICE_H_
 #define GPSSERVICE_H_
 
+/**
+ * @addtogroup gps
+ * @{
+ */
 #include <gps.h>
 #include <utility/CommunicationSender.h>
 #include <utility/LoggingUtility.h>
@@ -9,20 +13,32 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
 #include <config/config.h>
+#include <fstream>
 
+/** Struct that hold the configuration for GpsService.
+ * The configuration is defined in <a href="../../gps/config/config.xml">gps/config/config.xml</a>
+ */
 struct GpsConfig {
 	bool mSimulateData;
+	std::string mGpsDataFile;
+	int mMode;
+
 
 	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
 
 		mSimulateData = pt.get("gps.SimulateData", true);
+		mGpsDataFile = pt.get("gps.DataFile", "");
+		mMode = pt.get("gps.SimulationMode", 0);
 	}
 };
 
 typedef struct std::pair<double, double> position;
 
+/**
+ * Class that connects to the gps deamon and offers its data to the other modules via zmq.
+ */
 class GpsService {
 public:
 	GpsService(GpsConfig &config);
@@ -36,11 +52,15 @@ public:
 	double simulateSpeed();
 	void simulateData(const boost::system::error_code &ec, position currentPosition);
 	position simulateNewPosition(position start, double offsetN, double offsetE);
+	void simulateFromDemoTrail(const boost::system::error_code &ec);
+	gpsPackage::GPS convertTrailDataToBuffer(std::string data);
 
 	void sendToServices(gpsPackage::GPS gps);
 	static void closeGps();
 	void startStreaming();
 	static void stopStreaming();
+
+	void init();
 
 private:
 	GpsConfig mConfig;
@@ -58,6 +78,11 @@ private:
 
 	boost::asio::io_service mIoService;
 	boost::asio::deadline_timer* mTimer;
+
+	std::ifstream mFile;
 };
 
 #endif
+
+
+/** @} */ //end group
