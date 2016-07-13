@@ -28,20 +28,58 @@ public:
 	DenService();
 	~DenService();
 
+	/**
+	 * Initializes DenService to receive DENMs from app (e.g. web interface)
+	 */
 	void init();
+
+	/**
+	 * Receives DENM from DCC and forwards it to LDM
+	 */
 	void receive();
+
+	/** Logs the delay of the specified (serialized) DENM between its creation time and the current time.
+	 * @param byteMessage senrialized DENM message
+	 */
 	void logDelay(std::string byteMessage);
-	void triggerPeriodicDenm();
+
+	/**
+	 * Triggers generation/ sending of DENM message by an external application.
+	 */
 	void triggerAppDenm();
+
+	/**
+	 * Sends a new DENM to LDM and DCC.
+	 * @param trigger The data that the external application wants to include in the DENM.
+	 */
 	void send(triggerPackage::TRIGGER trigger);
+
+	/**
+	 * Generates a new DENM.
+	 * @param trigger The data that the external application wants to include in the DENM.
+	 * @return The newly generated Denm package.
+	 */
 	denmPackage::DENM generateDenm(triggerPackage::TRIGGER trigger);
+
+	/** Generates a new data package that includes the specified DENM.
+	 * The specified DENM is serialized and included in the data package.
+	 * Additionally, the station id, priority, creation time of the DENM are included.
+	 * @param denm The DENM to be included in the data package
+	 * @return The newly generated data package.
+	 */
 	dataPackage::DATA generateData(denmPackage::DENM denm);
+
+	/**
+	 * Receives new GPS data from the GPS module.
+	 */
 	void receiveGpsData();
+
+	/**
+	 * Receives new OBD2 data from the OBD2 module.
+	 */
 	void receiveObd2Data();
 
 private:
-	void microSleep(double us_sleep); // in us
-
 	GlobalConfig mGlobalConfig;
 
 	CommunicationReceiver* mReceiverFromApp;
