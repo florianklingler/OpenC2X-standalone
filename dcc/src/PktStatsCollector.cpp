@@ -89,7 +89,6 @@ void PktStatsCollector::init() {
 		mLogger->logError("Could not get NL80211 id");
 		exit(1);
 	}
-	mLogger->logStats("BE flush required \tBE flush not required \tBK flush required \tBK flush not required \tVI flush required \tVI flush not required \tVO flush required \tVO flush not required");
 	mTimer->async_wait(boost::bind(&PktStatsCollector::probe, this, boost::asio::placeholders::error));
 }
 
