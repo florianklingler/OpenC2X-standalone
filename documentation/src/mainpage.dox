@@ -9,7 +9,7 @@
  *
  * \section compile_sec Compiling the source
  * To fulfill the package dependencies, run the following command in the terminal.
- * \verbatim sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev \endverbatim
+ * \verbatim sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev tmux \endverbatim
  *
  * To compile, run the script.
  * \verbatim ./scripts/compileAll.sh \endverbatim
@@ -97,6 +97,5 @@
  * - leaflet.js
  * - open street map
  * - installed packages
- *
  *
  */

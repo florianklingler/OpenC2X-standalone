@@ -14,7 +14,8 @@
 
 /**
  * @addtogroup dcc DCC Module
- * Decentralized Congestion Control.
+ * Decentralized Congestion Control (DCC) module plays an important role in shaping the network traffic. All the broadcasted and
+ * received messages pass via DCC. 
  * @{
  * 		@addtogroup dccHardware DCC Hardware Communication
  * 		Communication between DCC and Ath9k WiFi Card
@@ -23,12 +24,26 @@
  
  /**
  * @addtogroup cam CA Service Module
- * Responsible for Cooperative Awareness Messages.
+ * The Cooperative Awareness Service Module is responsible for triggering of Cooperative Awareness Messages (CAMs).
+ * A CAM is triggered if one of the following conditions hold:
+ * - Position has changed more than 5 metres.
+ * - Heading has changed more than 4 degrees.
+ * - Speed has changed more than 1 m/sec.
+ * - Time since last CAM is more than 1 second.
+ 
+ * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the CAMs. 
+ * The service communicates with DCC to send and receive CAMs from other stations. All the messages (sent and received) are  
+ * stored in LDM as well.
  */
  
  /**
  * @addtogroup denm DEN Service Module
- * Responsible for Decentralized Environmental Notification Messages.
+ * The Decentralized Environmental Notification Service Module is responsible for creating DENMs when triggered by external 
+ * applications (web interface in the implemented stack). The created DENMs are forwarded to DCC for broadcasting to other stations.
+ * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the DENMs.
+ * stations. All the messages (sent and received) are stored in LDM as well.
+ * 
+ * _Note:_ The repitition of DENMs to keep a notification alive has not been implemented yet.
  */
  
  /**
