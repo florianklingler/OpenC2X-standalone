@@ -2,13 +2,17 @@
 
 /**
  * @addtogroup sensor Sensor Connectors
- * Modules that make sensor data available to the internal zmq network.
+ * Modules that make sensor data (GPS and OBD2) available to the other modules via zmq.
  * @{ 
  * 		@addtogroup gps GPS Service Module
- * 		gets GPS data.
+ * 		The GPS module can connect to GPSd to measure real GPS data. If such data is available, it publishes it via zmq. 
+ *		Alternatively, the GPS module can simulate GPS data using one of two modes: It either simulates a vehicle driving towards north on a straight line or uses previously recorded GPS traces.
+ *		The GpsConfig allows to specify whether or not to simulate and which simulation mode to use.
  * 	
  * 		@addtogroup obd2 OBD2 Service Module
- * 		gets OBD2 data.
+ * 		The OBD2 module can connect to a car's OBD2 port via serial communication. It periodically queries the vehicle speed (and RPM) and publishes it via zmq.
+ *		It also allows to simulate speed, in case no vehicle is avaiable.
+ *		Whether or not to simulate and the rate of querying data can be set in the Obd2Config.
  * @}
  */
 
@@ -17,7 +21,7 @@
  * Decentralized Congestion Control (DCC) module plays an important role in shaping the network traffic. All the broadcasted and
  * received messages pass via DCC.
  *
- * @highlight The DCC is standard conform.
+ * @highlight The DCC is standard conform (except for multiple active states).
  * @{
  * 		@addtogroup dccHardware DCC Hardware Communication
  * 		Communication between DCC and Ath9k WiFi Card
@@ -36,6 +40,8 @@
  * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the CAMs. 
  * The service communicates with DCC to send and receive CAMs from other stations. All the messages (sent and received) are  
  * stored in LDM as well.
+ * @highlight CAM triggering is standard conform.
+ * 
  */
  
  /**
@@ -84,6 +90,7 @@
  * 		@addtogroup communication Inter-module communication.
  * 		Communication between modules via zmq.
  * 	@}
+ * @highlight Dedicated classes for communication via zmq, logging, and utilities.
  */
 
 
