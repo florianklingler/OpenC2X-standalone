@@ -1,5 +1,0 @@
-<map id="ChannelProber" name="ChannelProber">
-<area shape="rect" id="node2" href="$classLoggingUtility.html" title="A wrapper class for the easylogging++ libary. " alt="" coords="5,95,107,121"/>
-<area shape="rect" id="node3" href="$structChannelProber_1_1netinterface.html" title="Struct for latest channel load specific to an interface. " alt="" coords="131,95,315,121"/>
-<area shape="rect" id="node4" href="$structChannelProber_1_1channelload.html" title="Struct that holds the latest information for channel load. " alt="" coords="130,5,315,32"/>
-</map>

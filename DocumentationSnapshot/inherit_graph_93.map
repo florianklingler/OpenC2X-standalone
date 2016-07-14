@@ -1,7 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classcrow_1_1BaseRule.html" title="crow::BaseRule" alt="" coords="37,71,152,98"/>
-<area shape="rect" id="node2" href="$classcrow_1_1DynamicRule.html" title="crow::DynamicRule" alt="" coords="253,45,390,71"/>
-<area shape="rect" id="node3" href="$classcrow_1_1TaggedRule.html" title="crow::TaggedRule\&lt; Args \&gt;" alt="" coords="232,99,411,126"/>
-<area shape="rect" id="node4" href="$structcrow_1_1RuleParameterTraits.html" title="crow::RuleParameterTraits\l\&lt; DynamicRule \&gt;" alt="" coords="5,5,184,47"/>
-<area shape="rect" id="node5" href="$structcrow_1_1RuleParameterTraits.html" title="crow::RuleParameterTraits\l\&lt; TaggedRule\&lt; Args... \&gt; \&gt;" alt="" coords="5,123,184,164"/>
-</map>

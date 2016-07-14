@@ -1,4 +1,0 @@
-<map id="Sensor Connectors" name="Sensor Connectors">
-<area shape="rect" id="node1" href="$group__gps.html" title="The GPS module can connect to GPSd to measure real GPS data. " alt="" coords="192,5,336,32"/>
-<area shape="rect" id="node2" href="$group__obd2.html" title="The OBD2 module can connect to a car&#39;s OBD2 port via serial communication. " alt="" coords="188,56,340,83"/>
-</map>

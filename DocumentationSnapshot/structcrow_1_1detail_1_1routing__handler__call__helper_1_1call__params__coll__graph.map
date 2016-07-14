@@ -1,7 +1,0 @@
-<map id="crow::detail::routing_handler_call_helper::call_params&lt; H1 &gt;" name="crow::detail::routing_handler_call_helper::call_params&lt; H1 &gt;">
-<area shape="rect" id="node2" href="$structcrow_1_1request.html" title="crow::request" alt="" coords="30,95,131,121"/>
-<area shape="rect" id="node3" href="$classcrow_1_1query__string.html" title="crow::query_string" alt="" coords="5,5,135,32"/>
-<area shape="rect" id="node4" href="$structcrow_1_1response.html" title="crow::response" alt="" coords="163,95,273,121"/>
-<area shape="rect" id="node5" href="$classcrow_1_1json_1_1wvalue.html" title="crow::json::wvalue" alt="" coords="158,5,289,32"/>
-<area shape="rect" id="node6" href="$structcrow_1_1routing__params.html" title="crow::routing_params" alt="" coords="298,95,445,121"/>
-</map>

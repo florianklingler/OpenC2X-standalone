@@ -1,5 +1,0 @@
-<map id="LDM" name="LDM">
-<area shape="rect" id="node2" href="$classLoggingUtility.html" title="A wrapper class for the easylogging++ libary. " alt="" coords="105,5,207,32"/>
-<area shape="rect" id="node3" href="$classCommunicationServer.html" title="Replys to ZMQ requests from CommunicationClient. " alt="" coords="81,95,231,121"/>
-<area shape="rect" id="node4" href="$classCommunicationReceiver.html" title="Receiver of zmq broadcasts send by CommunicationSender. " alt="" coords="256,95,421,121"/>
-</map>
