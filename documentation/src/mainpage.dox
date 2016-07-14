@@ -7,7 +7,7 @@
  * \section high_level_arch High level architecture 
  * ![High Level Architecture Diagram](../res/architecture.png "High Level Architecture Diagram")
  * Available modules and their communication.
- * For more information on the modules, see @ref modules "Modules".
+ * For more information on the modules, see <a href="modules.html"> Modules</a>.
  * 
  * \section compile_sec Compiling the source
  * To fulfill the package dependencies, run the following command in the terminal.

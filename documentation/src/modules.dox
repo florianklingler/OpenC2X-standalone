@@ -66,8 +66,8 @@
  */
  
  /** @addtogroup website Website
- * 	Displays information about the application status.
- *  A monitoring website which connects via http to httpServer over Port 1188 and displays information about the application.
+ * 	Displays information about the application status, messages, other applications in the network and allows triggering of DENMs.
+ *  Uses the http api of httpServer over Port 1188 for its services.
  *  @{
  *  
  *  	@addtogroup layoutManager Layout Manager
