@@ -17,7 +17,7 @@
  * \verbatim ./scripts/compileAll.sh \endverbatim
  * Modified Linux kernel 3.18 can be found on:
  * \verbatim git@git.ccs-labs.org:ath9k-ocb-kernel, branch: gurjashan.pannu/pg2015w and hash: 4ef14d9fde435824af5e736bed3dfe9f9193bf65 \endverbatim
- * All code was written to be compiled and run on Debian Jessie 8 i386 (currently on apu, alix, and gericom).
+ * All code was written to be compiled and run on Debian Jessie 8 i386 (currently (14.07.16) on apu, alix, and gericom).
  * 
  * \section config_sec Setting configuration
  * There are 2 types of config files in the system.
@@ -67,6 +67,11 @@
  * If the ssh connection is lost simply restart the ssh tunnel and run on the remote machine
  * \verbatim tmux attach \endverbatim
  * 
+ * \subsection run_sec_3 (manual execution)
+ * It's also possible to start all modules by hand. The executables may be found at
+ * \verbatim <module_dir>/Debug/<module> \endverbatim
+ * @highlight The startup order of the modules may be arbitrarily chosen.
+ * @highlight Ruining modules may be stopped at will and restarted without further disruptions.
  *
  * \section gui_sec Web Interface
  * See @ref websiteTutorial "Website Tutorial"

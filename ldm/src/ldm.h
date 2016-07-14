@@ -36,6 +36,8 @@
  * @nonStandard no security checks for requests
  *
  * @nonStandard no registration of dataProviders, dataReceivers
+ *
+ * @nonStandard no way of general data requests, only latest data available
  */
 class LDM {
 public:
