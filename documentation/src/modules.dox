@@ -37,7 +37,7 @@
  * - Heading has changed more than 4 degrees.
  * - Speed has changed more than 1 m/sec.
  * - Time since last CAM is more than 1 second.
- 
+ *
  * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the CAMs. 
  * The service communicates with DCC to send and receive CAMs from other stations. All the messages (sent and received) are  
  * stored in LDM as well.
@@ -57,7 +57,8 @@
  
  /**
   * @addtogroup ldm LDM Module
-  * Local Dynamic Map, Responsible for Data holding and maintainance.
+  * Local Dynamic Map is responsible for maintenance of all the data that has been broadcasted by the host or received from external stations.
+  * It also serves the requests from the Http Server for displaying the data. 
   */
  
  /**
@@ -69,6 +70,7 @@
  /** @addtogroup website Website
  * 	Displays information about the application status, messages, other applications in the network and allows triggering of DENMs.
  *  Uses the http api of httpServer over Port 1188 for its services.
+*  @highlight Real time monitoring of CAMs, DENMs, DCC and host's GPS position.
  *  @{
  *  
  *  	@addtogroup layoutManager Layout Manager
@@ -87,11 +89,12 @@
  * @addtogroup common Common Libary
  * Functionality all other modules use bundled in a common library.
  * This Project needs to be build first.
+ * @highlight Dedicated classes for communication via zmq, logging, and utilities.
  * 	@{
  * 		@addtogroup communication Inter-module communication.
  * 		Communication between modules via zmq.
  * 	@}
- * @highlight Dedicated classes for communication via zmq, logging, and utilities.
+ * 
  */
 
 

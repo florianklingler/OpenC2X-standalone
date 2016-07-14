@@ -15,6 +15,8 @@
  *
  * To compile, run the script.
  * \verbatim ./scripts/compileAll.sh \endverbatim
+ * Modified Linux kernel 3.18 can be found on:
+ * \verbatim git@git.ccs-labs.org:ath9k-ocb-kernel, branch: gurjashan.pannu/pg2015w and hash: 4ef14d9fde435824af5e736bed3dfe9f9193bf65 \endverbatim
  * All code was written to be compiled and run on Debian Jessie 8 i386 (currently on apu, alix, and gericom).
  * 
  * \section config_sec Setting configuration
@@ -105,5 +107,4 @@
  * jQuery		| jQuery Foundation projects are released under the terms of the license specified in the project's repository or if not specified, under the MIT license.
  * Leaflet		| Include copyright notice: https://github.com/Leaflet/Leaflet/blob/master/LICENSE
  * OpenStreetMap| OpenStreetMap® is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation (OSMF).
-
  */
