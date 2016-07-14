@@ -6,7 +6,9 @@
  *
  * \section high_level_arch High level architecture 
  * ![High Level Architecture Diagram](../res/architecture.png "High Level Architecture Diagram")
- *
+ * Available modules and their communication.
+ * For more information on the modules, see @ref modules "Modules".
+ * 
  * \section compile_sec Compiling the source
  * To fulfill the package dependencies, run the following command in the terminal.
  * \verbatim sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev tmux \endverbatim
@@ -88,20 +90,6 @@
  * ![Diagram of used Ports](../res/portDiagram.png "Diagram of used Ports")
  *
  * \section license_sec Licenses
-<<<<<<< HEAD
- * @todo license information  
- * - crow
- * - zmq
- * - pbjson
- * - rapidjson
- * - protobuffer
- * - boost
- * - jquery.js
- * - leaflet.js
- * - open street map
- * - installed packages
- *
-=======
  * Brief license information of used software.
  * Software		| License information
  * ------------ | -----------------
@@ -117,5 +105,5 @@
  * jQuery		| jQuery Foundation projects are released under the terms of the license specified in the project's repository or if not specified, under the MIT license.
  * Leaflet		| Include copyright notice: https://github.com/Leaflet/Leaflet/blob/master/LICENSE
  * OpenStreetMap| OpenStreetMap® is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation (OSMF).
->>>>>>> origin/master
+
  */
