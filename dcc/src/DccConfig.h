@@ -66,13 +66,18 @@ namespace Channels {
 
 const Channels::t_access_category mAccessCategories[4] = {Channels::AC_VI, Channels::AC_VO, Channels::AC_BE, Channels::AC_BK};	//all used ACs
 
-//NDL value from the config.xml
+/**
+ * Template class to hold a NDL value from the config.
+ */
 template<typename T> class DCC_NDL_value {
 	public:
 		bool isRef;
 		T val;
 };
 
+/**
+ * Template class to hold a NDL parameter from the config.
+ */
 template<typename T> class DCC_NDL_Param {
 	public:
 		std::map<Channels::t_access_category, DCC_NDL_value<T> > ac;
@@ -83,6 +88,9 @@ template<typename T> class DCC_NDL_Param {
 		~DCC_NDL_Param() {};
 };
 
+/**
+ * Class that holds the config of a state such as the corresponding DCC-mechanism, TX power, token interval, data rate, carrier sense, etc.
+ */
 class DCC_State_Config {
 	public:
 		size_t asStateId;
@@ -136,11 +144,24 @@ class DCC_State_Config {
 		}
 };
 
+/**
+ * Struct that holds the config of DCC such as the size of the leaky buckets and constants concerning TRC, TPC, TDC, and DSC.
+ */
 struct DccConfig {
 	// General
 	std::string xml_file;
+	/**
+	 * Specifies whether own sent messages should be ignored or received like messages from any other station (looped back).
+	 */
 	bool ignoreOwnMessages;
+	/**
+	 * Specifies whether the channel load should be simulated or measured (only works with ath9k).
+	 */
 	bool simulateChannelLoad;	//set to true to simulate channel load, false to use real data
+
+	/**
+	 * Interval in which dccInfo/network is sent to LDM (default: 1000ms = 1s).
+	 */
 	int dccInfoInterval;		//interval in which dccInfo/network info is sent to LDM (default: 1000ms = 1s)
 
 	// Leaky Bucket
