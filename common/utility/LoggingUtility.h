@@ -9,7 +9,6 @@
 /**
  * A wrapper class for the easylogging++ libary.
  *
- * @todo explain logging config
  *
  * @ingroup common
  */

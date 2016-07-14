@@ -159,6 +159,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	}
 
 	if(send_to_socket != -1){
+		/** @todo record/put into dcc info/extend to fixed size packetsize */
 		if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
 						sizeof(struct sockaddr_ll))) == -1)
 		{
