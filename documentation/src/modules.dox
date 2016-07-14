@@ -15,7 +15,9 @@
 /**
  * @addtogroup dcc DCC Module
  * Decentralized Congestion Control (DCC) module plays an important role in shaping the network traffic. All the broadcasted and
- * received messages pass via DCC. 
+ * received messages pass via DCC.
+ *
+ * @highlight The DCC is standard conform.
  * @{
  * 		@addtogroup dccHardware DCC Hardware Communication
  * 		Communication between DCC and Ath9k WiFi Card

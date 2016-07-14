@@ -13,6 +13,7 @@
  *
  * To compile, run the script.
  * \verbatim ./scripts/compileAll.sh \endverbatim
+ * All code was written to be compiled and run on Debian Jessie 8 i386 (currently on apu, alix, and gericom).
  * 
  * \section config_sec Setting configuration
  * There are 2 types of config files in the system.
@@ -61,12 +62,13 @@
  * \verbatim tmux kill-session \endverbatim
  * If the ssh connection is lost simply restart the ssh tunnel and run on the remote machine
  * \verbatim tmux attach \endverbatim
- *
  * 
+ *
  * \section gui_sec Web Interface
  * See @ref websiteTutorial "Website Tutorial"
  *
- *
+ * \section highlights_sec Feature Highlights
+ *	For a list of feature Highlights see @ref highlight "Feature Highlights List"
  * \section standard_sec Standard Conformity
  * Everything we know of which is not conform to the ETSI ITS standard and influences the external behavior of the Application
  * is listed in @ref nonStandard "Not conform to ETSI ITS standard list"
@@ -86,6 +88,7 @@
  * ![Diagram of used Ports](../res/portDiagram.png "Diagram of used Ports")
  *
  * \section license_sec Licenses
+<<<<<<< HEAD
  * @todo license information  
  * - crow
  * - zmq
@@ -98,4 +101,21 @@
  * - open street map
  * - installed packages
  *
+=======
+ * Brief license information of used software.
+ * Software		| License information
+ * ------------ | -----------------
+ * ZMQ			| LGPLv3 with a static linking exception including for iPhone apps
+ * Boost		| Include copyright notice http://www.boost.org/users/license.html
+ * Protobuffer	| Include copyright notice https://github.com/google/protobuf/blob/master/LICENSE 
+ * GPSd			| Most of GPSD is under the permissive BSD license. Some portions are under other permissive licenses, including the MIT/X license and the ISC license. 
+ * Netlink		| LGPL: https://github.com/tgraf/libnl/blob/master/COPYING 
+ * SQLite		| Public domain: https://www.sqlite.org/copyright.html 
+ * Easylogging++| MIT license, include copyright notice: https://github.com/easylogging/easyloggingpp#licence 
+ * Pbjson		| Include copyright notice: https://github.com/yinqiwen/pbjson/blob/master/LICENSE 
+ * Crow			| Include copyright notice: https://github.com/ipkn/crow/blob/master/LICENSE 
+ * jQuery		| jQuery Foundation projects are released under the terms of the license specified in the project's repository or if not specified, under the MIT license.
+ * Leaflet		| Include copyright notice: https://github.com/Leaflet/Leaflet/blob/master/LICENSE
+ * OpenStreetMap| OpenStreetMap® is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation (OSMF).
+>>>>>>> origin/master
  */
