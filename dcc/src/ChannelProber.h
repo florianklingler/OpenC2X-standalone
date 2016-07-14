@@ -22,6 +22,13 @@
  */
 class ChannelProber {
 public:
+	/**
+	 * Constructor.
+	 * @param ifname WLan interface name
+	 * @param probeInterval time interval between two consecutive probes
+	 * @param io boost io service
+	 * @param expNo experiment number
+	 */
 	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
 	virtual ~ChannelProber();
 
@@ -58,7 +65,7 @@ public:
 	 * @param seq The sequence number for netlink
 	 * @param protocolId The protocol id
 	 * @param flags Netlink flags
-	 * @param protocolVersion
+	 * @param protocolVersion protocol version
 	 * @return 0 if success, < 0 otherwise.
 	 */
 	int send(uint8_t msgCmd, void *payload, unsigned int length, int attrType, unsigned int seq, int protocolId, int flags = 0, uint8_t protocolVersion = 0x01);
@@ -71,6 +78,8 @@ public:
 
 	/** Receives the netlink message from the kernel.
 	 * The received message is parsed and the current information about the channel utilization is saved in the channelload struct.
+	 * @param msg Received netlink message corresponding to the probe
+	 * @param arg Pointer to ChannelProber
 	 * @return 1
 	 */
 	static int receivedNetlinkMsg(nl_msg *msg, void *arg);
