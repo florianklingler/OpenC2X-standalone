@@ -54,6 +54,9 @@ camData = {
 		}
 	},
 	
+	/**
+	 * if the last update is old enougth this functions triggers a new update and a new request is send to httpServer.
+	 */
 	updateCams: function(){
 		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
 			requestCam(this.digestCams);

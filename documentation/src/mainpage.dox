@@ -61,12 +61,13 @@
  * \verbatim tmux kill-session \endverbatim
  * If the ssh connection is lost simply restart the ssh tunnel and run on the remote machine
  * \verbatim tmux attach \endverbatim
- *
  * 
+ *
  * \section gui_sec Web Interface
  * See @ref websiteTutorial "Website Tutorial"
  *
- *
+ * \section highlights_sec Feature Highlights
+ *	For a list of feature Highlights see @ref highlight "Feature Highlights List"
  * \section standard_sec Standard Conformity
  * Everything we know of which is not conform to the ETSI ITS standard and influences the external behavior of the Application
  * is listed in @ref nonStandard "Not conform to ETSI ITS standard list"
