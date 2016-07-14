@@ -20,7 +20,7 @@
  */
 struct GpsConfig {
 	/**
-	 * Specifies whether real or simulated GPS data should be used.
+	 * Specifies whether real or simulated GPS data should be used (default: true).
 	 */
 	bool mSimulateData;
 	/**
@@ -28,7 +28,7 @@ struct GpsConfig {
 	 */
 	std::string mGpsDataFile;
 	/**
-	 * If GPS data is simulated, mode specifies how the GPS data is generated.
+	 * If GPS data is simulated, mode specifies how the GPS data is generated (default: 0).
 	 * Mode 0 means, it is randomly generated (moving straight towards north).
 	 * Mode 1 means, the recored GPS traces are used.
 	 */
