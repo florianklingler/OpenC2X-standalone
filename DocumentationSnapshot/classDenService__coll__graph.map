@@ -1,0 +1,6 @@
+<map id="DenService" name="DenService">
+<area shape="rect" id="node2" href="$classCommunicationSender.html" title="Sender of zmq broadcasts to be received by CommunicationReceiver. " alt="" coords="78,95,233,121"/>
+<area shape="rect" id="node3" href="$classLoggingUtility.html" title="A wrapper class for the easylogging++ libary. " alt="" coords="105,5,206,32"/>
+<area shape="rect" id="node5" href="$classCommunicationReceiver.html" title="Receiver of zmq broadcasts send by CommunicationSender. " alt="" coords="257,95,422,121"/>
+<area shape="rect" id="node4" href="$structGlobalConfig.html" title="Struct that hold the global configuration. " alt="" coords="447,95,544,121"/>
+</map>

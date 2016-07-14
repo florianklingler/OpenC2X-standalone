@@ -1,0 +1,6 @@
+<map id="httpServer" name="httpServer">
+<area shape="rect" id="node2" href="$structGlobalConfig.html" title="Struct that hold the global configuration. " alt="" coords="5,95,103,121"/>
+<area shape="rect" id="node3" href="$classLoggingUtility.html" title="A wrapper class for the easylogging++ libary. " alt="" coords="162,5,263,32"/>
+<area shape="rect" id="node5" href="$classCommunicationClient.html" title="Send ZMQ request to CommunicationServer and waits a specified time for an answer. ..." alt="" coords="243,95,390,121"/>
+<area shape="rect" id="node4" href="$structhttpServerConfig.html" title="Struct that hold the configuration for httpServer. " alt="" coords="414,95,534,121"/>
+</map>

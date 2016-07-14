@@ -1,0 +1,6 @@
+<map id="Server" name="Server">
+<area shape="rect" id="node2" href="$structGlobalConfig.html" title="GlobalConfig" alt="" coords="5,95,103,121"/>
+<area shape="rect" id="node3" href="$classLoggingUtility.html" title="LoggingUtility" alt="" coords="162,5,263,32"/>
+<area shape="rect" id="node4" href="$classCommunicationClient.html" title="CommunicationClient" alt="" coords="243,95,390,121"/>
+<area shape="rect" id="node5" href="$structWebApplicationConfig.html" title="WebApplicationConfig" alt="" coords="415,95,565,121"/>
+</map>

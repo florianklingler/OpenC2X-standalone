@@ -1,0 +1,5 @@
+<map id="PktStatsCollector" name="PktStatsCollector">
+<area shape="rect" id="node2" href="$structnetinterface.html" title="Netlink interface for collecting packet stats. " alt="" coords="5,95,96,121"/>
+<area shape="rect" id="node3" href="$structPktStats.html" title="Struct that holds the latest information about the flush statistics for all hw queues. " alt="" coords="14,5,87,32"/>
+<area shape="rect" id="node4" href="$classLoggingUtility.html" title="A wrapper class for the easylogging++ libary. " alt="" coords="120,95,221,121"/>
+</map>

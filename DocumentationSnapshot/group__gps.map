@@ -1,0 +1,3 @@
+<map id="GPS Service Module" name="GPS Service Module">
+<area shape="rect" id="node2" href="$group__sensor.html" title="Modules that make sensor data (GPS and OBD2) available to the other modules via zmq. " alt="" coords="5,5,140,32"/>
+</map>
