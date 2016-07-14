@@ -69,6 +69,7 @@
  /** @addtogroup website Website
  * 	Displays information about the application status.
  *  A monitoring website which connects via http to httpServer over Port 1188 and displays information about the application.
+ *  @highlight Real time monitoring of CAMs, DENMs, DCC and host's GPS position.
  *  @{
  *  
  *  	@addtogroup layoutManager Layout Manager
@@ -87,11 +88,12 @@
  * @addtogroup common Common Libary
  * Functionality all other modules use bundled in a common library.
  * This Project needs to be build first.
+ * @highlight Dedicated classes for communication via zmq, logging, and utilities.
  * 	@{
  * 		@addtogroup communication Inter-module communication.
  * 		Communication between modules via zmq.
  * 	@}
- * @highlight Dedicated classes for communication via zmq, logging, and utilities.
+ * 
  */
 
 
