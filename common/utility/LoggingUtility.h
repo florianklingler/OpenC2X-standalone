@@ -9,7 +9,6 @@
 /**
  * A wrapper class for the easylogging++ libary.
  *
- * @todo explain logging config
  *
  * @ingroup common
  */
@@ -19,6 +18,9 @@ public:
 	 * If the module name is not unique all logger with the same
 	 * name will log into the same file.
 	 * Experiment Number will be put into the logging file name.
+	 *
+	 * @todo unify all configs into a singel global conifg.
+	 * Shouldn't be that hard as the individual configs use their owners name in the root xmltag.
 	 *
 	 * @param moduleName Module name
 	 * @param expNo Experiment Number

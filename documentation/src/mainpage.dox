@@ -73,6 +73,11 @@
  * If the ssh connection is lost simply restart the ssh tunnel and run on the remote machine
  * \verbatim tmux attach \endverbatim
  * 
+ * \subsection run_sec_3 (manual execution)
+ * It's also possible to start all modules by hand. The executables may be found at
+ * \verbatim <module_dir>/Debug/<module> \endverbatim
+ * @highlight The startup order of the modules may be arbitrarily chosen.
+ * @highlight Ruining modules may be stopped at will and restarted without further disruptions.
  *
  * \section gui_sec Web Interface
  * See @ref websiteTutorial "Website Tutorial"
