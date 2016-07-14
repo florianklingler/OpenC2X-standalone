@@ -36,7 +36,7 @@
  * - Heading has changed more than 4 degrees.
  * - Speed has changed more than 1 m/sec.
  * - Time since last CAM is more than 1 second.
- 
+ *
  * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the CAMs. 
  * The service communicates with DCC to send and receive CAMs from other stations. All the messages (sent and received) are  
  * stored in LDM as well.
@@ -56,7 +56,8 @@
  
  /**
   * @addtogroup ldm LDM Module
-  * Local Dynamic Map, Responsible for Data holding and maintainance.
+  * Local Dynamic Map is responsible for maintenance of all the data that has been broadcasted by the host or received from external stations.
+  * It also serves the requests from the Http Server for displaying the data. 
   */
  
  /**
