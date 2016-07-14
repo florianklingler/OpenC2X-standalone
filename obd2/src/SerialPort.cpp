@@ -7,8 +7,6 @@
 
 using namespace std;
 
-//TODO: test configuration in connect and init
-
 //connect to serial device at specified port, return file descriptor (-1 = cannot open)
 int SerialPort::connect(char *device) {
 	struct termios terminalAttributes;
@@ -23,19 +21,18 @@ int SerialPort::connect(char *device) {
 	 *
 	 */
 	mFileDescriptor = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_FSYNC );
-//	mFileDescriptor = open(device, O_RDWR | O_NOCTTY | O_SYNC );				//pg2014
 
 	// clear terminalAttributes data
 	memset(&terminalAttributes, 0, sizeof(struct termios));
 
 	/*	http://linux.die.net/man/3/termios
 	 *
-	 *  control modes: c_cflag flag constants:
+	 * 	control modes: c_cflag flag constants:
 	 *
-	 * 38400 bauds
-	 * 8 bits per word
-	 * Ignore modem control lines.
-	 * Enable receiver.
+	 * 	38400 bauds
+	 * 	8 bits per word
+	 * 	Ignore modem control lines.
+	 * 	Enable receiver.
 	 */
 
 	terminalAttributes.c_cflag = B38400 | CS8 | CLOCAL | CREAD;
@@ -46,17 +43,9 @@ int SerialPort::connect(char *device) {
 	 * Ignore framing errors and parity errors.
 	 * (XSI) Map NL to CR-NL on output.
 	 */
-//	terminalAttributes.c_iflag = IGNPAR |  ONLCR;
-	terminalAttributes.c_iflag = IGNBRK;	//pg2014
+	terminalAttributes.c_iflag = IGNBRK;
 
-	/*
-	 * output modes: flag constants defined in POSIX.1
-	 *
-	 * Enable implementation-defined output processing.
-	 */
-
-//	terminalAttributes.c_oflag = OPOST;
-	terminalAttributes.c_oflag = 0;		//pg2014
+	terminalAttributes.c_oflag = 0;
 
 	/*
 	 * Canonical and noncanonical mode
@@ -64,12 +53,8 @@ int SerialPort::connect(char *device) {
 	 * min time
 	 * min bytes to read
 	 */
-
-	//terminalAttributes.c_lflag = ICANON;
-//	terminalAttributes.c_cc[VTIME] = 0;
-//	terminalAttributes.c_cc[VMIN] = 1;
-	terminalAttributes.c_cc[VMIN] = 0;		//pg2014
-	terminalAttributes.c_cc[VTIME] = 5;		//pg2014
+	terminalAttributes.c_cc[VMIN] = 0;
+	terminalAttributes.c_cc[VTIME] = 5;
 
 	/*
 	 * http://linux.die.net/man/3/tcsetattr
@@ -138,7 +123,7 @@ double SerialPort::readSpeed() {
 }
 
 //reads and returns RPM (not included in ETSI standard)
-int SerialPort::readRpm() {
+int SerialPort::readRpm() {	//TODO: reading RPM did not work during the outdoor test, check response format again
 	int rpm = -1;
 	stringstream stream;
 
