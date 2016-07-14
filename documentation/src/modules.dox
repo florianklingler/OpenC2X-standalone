@@ -6,8 +6,9 @@
  * @{ 
  * 		@addtogroup gps GPS Service Module
  * 		The GPS module can connect to GPSd to measure real GPS data. If such data is available, it publishes it via zmq. 
- *		Alternatively, the GPS module can simulate GPS data using one of two modes: It either simulates a vehicle driving towards north on a straight line or uses previously recorded GPS traces.
- *		The GpsConfig allows to specify whether or not to simulate and which simulation mode to use.
+ *		@highlight Alternatively, the GPS module can simulate GPS data using one of two modes:
+ *		It either simulates a vehicle driving towards north on a straight line or uses previously recorded GPS traces.
+ *		 The GpsConfig allows to specify whether or not to simulate and which simulation mode to use.
  * 	
  * 		@addtogroup obd2 OBD2 Service Module
  * 		The OBD2 module can connect to a car's OBD2 port via serial communication. It periodically queries the vehicle speed (and RPM) and publishes it via zmq.
