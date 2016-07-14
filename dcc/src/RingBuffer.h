@@ -11,6 +11,9 @@
 #include <cstdlib>
 #include <algorithm>
 
+/**
+ * Template class to hold channel load measurements (or anything else) in a ring buffer.
+ */
 template<typename T> class RingBuffer {
 public:
 	size_t maxSize;

@@ -8,6 +8,9 @@
 #include "DccConfig.h"
 #include <map>
 
+/**
+ * Class that defines a state of DCC with characteristics such as DCC-mechanism, TX power, token interval, data rate, carrier sense, etc.
+ */
 class State {
 public:
 	size_t asStateId;
@@ -15,7 +18,7 @@ public:
 
 	DCC_NDL_Param<dcc_Mechanism_t> asDcc;
 	DCC_NDL_Param<double> asTxPower;
-	DCC_NDL_Param<double> asPacketInterval;
+	DCC_NDL_Param<double> asPacketInterval;	//token interval
 	DCC_NDL_Param<double> asDatarate;
 	DCC_NDL_Param<double> asCarrierSense;
 
