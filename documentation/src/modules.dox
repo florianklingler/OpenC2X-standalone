@@ -41,7 +41,7 @@
  * The received sensor data like latest GPS position, speed, rpm of the car from GPS, OBD2 modules is included in the CAMs. 
  * The service communicates with DCC to send and receive CAMs from other stations. All the messages (sent and received) are  
  * stored in LDM as well.
- * @highlight CAM triggering is standard conform.
+ * @highlight CAM triggering is standard conform (except flushing of outdated CAMs from ath9k hardware).
  * 
  */
  

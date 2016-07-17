@@ -21,8 +21,20 @@
  * To compile, run the script (from within the scripts folder).
  * \verbatim ./compileAll.sh \endverbatim
  * All code was written to be compiled and run on Debian Jessie 8 i386 (currently on apu, alix, and gericom). If you want to compile on a different system, you need to comment out line no. 4 in the script.
+ *
+ * \section kernel_sec Kernel
+ * The transmission path in the Kernel has been modified to enable all the access categories. 
  * Modified Linux kernel 3.18 can be found on:
- * \verbatim git@git.ccs-labs.org:ath9k-ocb-kernel, branch: gurjashan.pannu/pg2015w and hash: 4ef14d9fde435824af5e736bed3dfe9f9193bf65 \endverbatim
+ * \verbatim repo: git@git.ccs-labs.org:ath9k-ocb-kernel
+   branch: gurjashan.pannu/pg2015w 
+   hash: 4ef14d9fde435824af5e736bed3dfe9f9193bf65 \endverbatim
+ * Details on compiling and setting up the kernel can be found on <a href="https://intern.ccs-labs.org/wiki/hardware/alix#compile_your_own_kernel">CCS wiki</a>
+ * 
+ * An new netlink command to collect statistics for ath9k queue flushing scenarios has also been patched. It is disabled by default. To enable, execute the command:
+ * \verbatim sudo echo 1 > /sys/kernel/debug/ieee80211/phy0/ath9k/flush_hw_q_pending \endverbatim
+ * To disable it again, execute the command:
+ * \verbatim sudo echo 0 > /sys/kernel/debug/ieee80211/phy0/ath9k/flush_hw_q_pending \endverbatim
+ * 
  * 
  * \section config_sec Setting configuration
  * There are 2 types of config files in the system.

@@ -74,6 +74,11 @@ struct netinterface {
  * might be scenarios (e.g. for CAMs) where outdated packets, which could not make their way due to heavy channel load
  * need to be flushed.
  * This implementation is specific to Ath9k chipset, with modified Linux Kernel 3.18.
+ *
+ * @todo When spamming the channel to 100% channel load, the kernel debug stats (e.g. TX-Pkts-All, HW-tx-start,
+ * HW-put-tx-buf etc.) for transmission keep on increasing and TX-Failed is 0. This is unexpected. Due to this and
+ * the unknown implementation logic in kernel, PktStatCollector gives wrong results. The kernel behaviour under heavy
+ * channel utilizations need to be analyzed.
  */
 class PktStatsCollector {
 public:

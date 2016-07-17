@@ -44,6 +44,21 @@ struct CaServiceConfig {
 
 /**
  * Class that handles the receiving, creating and sending of CA Messages.
+ *
+ * @nonStandard Outdated CAMs queued in ath9k hardware can not be flushed.
+ * <div>
+ * Ath9k driver developer, Adrian Chadd says:
+ * <div>
+ * "Once they're in the hardware queue then they're there. You'd have to
+ * stop the TX queue (which if it fails, means you have to reset the
+ * chip) before you can fiddle with the TX queue. But with TX FIFO chips
+ * (AR9380 and later), you're pushing TX entries into the FIFO, and you
+ * can't remove them. AND, the pre-FIFO chips (AR928x and earlier) the
+ * MAC doesn't always re-read TXDP when you start TX - it only is
+ * guaranteed to read it once, after a reset, and after that you
+ * shouldn't overwrite it or it occasionally ignores you."
+ * </div>
+ * </div>
  */
 class CaService {
 public:
