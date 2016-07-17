@@ -70,15 +70,15 @@ struct netinterface {
 
 /**
  * PktStatsCollector collects the statistics for the number of times when there was need to flush an outdated packet
- * in the hardware queues in NIC. The Ath9k chip doesn't support on demand flushing of hardware queues. But there
+ * in the hardware queues in NIC. The Ath9k chip does not support on demand flushing of hardware queues. But there
  * might be scenarios (e.g. for CAMs) where outdated packets, which could not make their way due to heavy channel load
  * need to be flushed.
  * This implementation is specific to Ath9k chipset, with modified Linux Kernel 3.18.
  *
- * @todo When spamming the channel to 100% channel load, the kernel debug stats (e.g. TX-Pkts-All, HW-tx-start,
- * HW-put-tx-buf etc.) for transmission keep on increasing and TX-Failed is 0. This is unexpected. Due to this and
- * the unknown implementation logic in kernel, PktStatCollector gives wrong results. The kernel behaviour under heavy
- * channel utilizations need to be analyzed.
+ * @todo When spamming the channel to 100% utilization, the kernel debug stats (e.g. TX-Pkts-All, HW-tx-start,
+ * HW-put-tx-buf etc.) for transmission keep on increasing and TX-Failed stays 0. Because of insufficient documentation,
+ * the reason behind such behavior is still unknown. So, at present, PktStatCollector results could not be verified. The
+ * ath9k behavior under heavy channel utilizations need to be analyzed.
  */
 class PktStatsCollector {
 public:

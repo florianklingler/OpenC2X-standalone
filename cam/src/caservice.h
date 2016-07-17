@@ -45,9 +45,7 @@ struct CaServiceConfig {
 /**
  * Class that handles the receiving, creating and sending of CA Messages.
  *
- * @nonStandard Outdated CAMs queued in ath9k hardware can not be flushed.
- * <div>
- * Ath9k driver developer, Adrian Chadd says:
+ * @nonStandard Outdated CAMs queued in ath9k hardware can not be flushed. Ath9k driver developer, Adrian Chadd says:
  * <div>
  * "Once they're in the hardware queue then they're there. You'd have to
  * stop the TX queue (which if it fails, means you have to reset the
@@ -57,7 +55,6 @@ struct CaServiceConfig {
  * MAC doesn't always re-read TXDP when you start TX - it only is
  * guaranteed to read it once, after a reset, and after that you
  * shouldn't overwrite it or it occasionally ignores you."
- * </div>
  * </div>
  */
 class CaService {
