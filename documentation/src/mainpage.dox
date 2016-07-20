@@ -1,6 +1,6 @@
 /*! \mainpage Documentation
  * \section Overview
- * The ITS Protocol Stack implementation includes Decentralized Congestion Control (DCC), services like Cooperative Awareness Service (CaService), 
+ * The OpenC2X implementation includes Decentralized Congestion Control (DCC), services like Cooperative Awareness Service (CaService), 
  * Decentralized Environmental Notification Service (DenService), modifications in the transmission path in the Linux kernel 3.18 and a web interface to 
  * view the current position and monitor the incoming or outgoing CAMs, DENMs and DCC states.
  *
@@ -119,6 +119,7 @@
  * Software		| License information
  * ------------ | -----------------
  * ZMQ			| LGPLv3 with a static linking exception including for iPhone apps
+ * zhelpers		| The examples are copyright their respective authors and licensed under MIT/X11 as follows: http://zguide.zeromq.org/
  * Boost		| Include copyright notice http://www.boost.org/users/license.html
  * Protobuffer	| Include copyright notice https://github.com/google/protobuf/blob/master/LICENSE 
  * GPSd			| Most of GPSD is under the permissive BSD license. Some portions are under other permissive licenses, including the MIT/X license and the ISC license. 
