@@ -1,6 +1,6 @@
 /*! \mainpage Documentation
  * \section Overview
- * The ITS Protocol Stack implementation includes Decentralized Congestion Control (DCC), services like Cooperative Awareness Service (CaService), 
+ * The OpenC2X implementation includes Decentralized Congestion Control (DCC), services like Cooperative Awareness Service (CaService), 
  * Decentralized Environmental Notification Service (DenService), modifications in the transmission path in the Linux kernel 3.18 and a web interface to 
  * view the current position and monitor the incoming or outgoing CAMs, DENMs and DCC states.
  *
@@ -28,13 +28,13 @@
  * \verbatim repo: git@git.ccs-labs.org:ath9k-ocb-kernel
    branch: gurjashan.pannu/pg2015w 
    hash: 4ef14d9fde435824af5e736bed3dfe9f9193bf65 \endverbatim
- * Details on compiling and setting up the kernel can be found on <a href="https://intern.ccs-labs.org/wiki/hardware/alix#compile_your_own_kernel">CCS wiki</a>
+ * Details on compiling and setting up the kernel can be found on CCS Wiki (<a href="https://intern.ccs-labs.org/wiki/hardware/alix#compile_your_own_kernel">compile</a>, 
+ * <a href="https://intern.ccs-labs.org/wiki/hardware/alix#enjoy_your_ocb-enabled_alix_box">enable ocb mode</a>)
  * 
  * A new netlink command to collect statistics for ath9k queue flushing scenarios has also been patched. It is disabled by default. To enable, execute the command:
  * \verbatim sudo echo 1 > /sys/kernel/debug/ieee80211/phy0/ath9k/flush_hw_q_pending \endverbatim
  * To disable it again, execute the command:
  * \verbatim sudo echo 0 > /sys/kernel/debug/ieee80211/phy0/ath9k/flush_hw_q_pending \endverbatim
- * 
  * 
  * \section config_sec Setting configuration
  * There are 2 types of config files in the system.
@@ -119,6 +119,7 @@
  * Software		| License information
  * ------------ | -----------------
  * ZMQ			| LGPLv3 with a static linking exception including for iPhone apps
+ * zhelpers		| The examples are copyright their respective authors and licensed under MIT/X11 as follows: http://zguide.zeromq.org/
  * Boost		| Include copyright notice http://www.boost.org/users/license.html
  * Protobuffer	| Include copyright notice https://github.com/google/protobuf/blob/master/LICENSE 
  * GPSd			| Most of GPSD is under the permissive BSD license. Some portions are under other permissive licenses, including the MIT/X license and the ISC license. 
