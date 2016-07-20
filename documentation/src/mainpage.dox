@@ -20,7 +20,9 @@
  *
  * To compile, run the script (from within the scripts folder).
  * \verbatim ./compileAll.sh \endverbatim
- * All code was written to be compiled and run on Debian Jessie 8 i386 (currently on apu, alix, and gericom). If you want to compile on a different system, you need to comment out line no. 4 in the script.
+ * All code was written to be compiled and run on Debian Jessie 8 i386 with our modified kernel (currently on apu, alix, and gericom). 
+ * **Important:** If you want to compile on a different system, you need to comment out line no. 4 in the script before running it. 
+ * Otherwise, you have to manually set '#define IGNORE_STATS true' in PktStatsCollector.cpp, comment out line no. 4 in the compile script, and run it again.
  *
  * \section kernel_sec Kernel
  * The transmission path in the Kernel has been modified to enable all the access categories. 
