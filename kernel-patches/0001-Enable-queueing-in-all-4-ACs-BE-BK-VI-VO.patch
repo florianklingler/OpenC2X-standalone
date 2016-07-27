@@ -1,0 +1,30 @@
+From 1206412b9915c9d895d855c42b5f8c84ebd0b896 Mon Sep 17 00:00:00 2001
+From: "Gurjashan S. Pannu" <gspannu@mail.uni-paderborn.de>
+Date: Wed, 27 Jul 2016 14:20:08 +0200
+Subject: [PATCH 1/2] Enable queueing in all 4 ACs BE, BK, VI, VO
+
+---
+ net/mac80211/wme.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/net/mac80211/wme.c b/net/mac80211/wme.c
+index 9eb0aee..b91b7ee 100644
+--- a/net/mac80211/wme.c
++++ b/net/mac80211/wme.c
+@@ -214,9 +214,10 @@ u16 ieee80211_select_queue(struct ieee80211_sub_if_data *sdata,
+ 
+ 	/* use the data classifier to determine what 802.1d tag the
+ 	 * data frame has */
+-	qos_map = rcu_dereference(sdata->qos_map);
+-	skb->priority = cfg80211_classify8021d(skb, qos_map ?
+-					       &qos_map->qos_map : NULL);
++// Quick workaround to enable queueing in different AC (BE, BK, VO, VI)
++//	qos_map = rcu_dereference(sdata->qos_map);
++//	skb->priority = cfg80211_classify8021d(skb, qos_map ?
++//					       &qos_map->qos_map : NULL);
+ 
+  downgrade:
+ 	ret = ieee80211_downgrade_queue(sdata, sta, skb);
+-- 
+2.7.4
+
