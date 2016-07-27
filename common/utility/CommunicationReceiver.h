@@ -41,6 +41,7 @@ public:
 	 * @param ownerModule Module Name
 	 * @param expNo Experiment Number
 	 * @param portIn port to listen on for broadcasts
+	 * @param envelope Type of messages to subscribe to, "" for subscribing to all messages
 	 */
 	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo);
 	~CommunicationReceiver();
