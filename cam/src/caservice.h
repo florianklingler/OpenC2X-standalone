@@ -41,6 +41,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
+#include <asn1/CAM.h>
 
 /** Struct that hold the configuration for CaService.
  * The configuration is defined in <a href="../../cam/config/config.xml">cam/config/config.xml</a>
@@ -141,6 +142,12 @@ private:
 	 * @return The newly generated CAM.
 	 */
 	camPackage::CAM generateCam();
+
+	/** Generates a new unaligned PER compliant CAM.
+	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
+	 * @return The newly generated CAM.
+	 */
+	CAM* generateCam2();
 
 	/** Generates a new data package that includes the specified CAM.
 	 * The specified CAM is serialized and included in the new data package.

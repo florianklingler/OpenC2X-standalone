@@ -332,6 +332,7 @@ void CaService::send() {
 	dataPackage::DATA data;
 
 	cam = generateCam();
+	generateCam2();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
@@ -369,6 +370,21 @@ camPackage::CAM CaService::generateCam() {
 	}
 	mMutexLatestObd2.unlock();
 
+	return cam;
+}
+
+CAM* CaService::generateCam2() {
+	cout << "generateCAM2  " << sizeof(unsigned long) << endl;
+	CAM_t* cam = new CAM_t;
+	if(!cam) {
+		mLogger->logError("Could not allocate memory for new CAM");
+		return NULL;
+	}
+//	cam->header.stationID = mGlobalConfig.mMac;
+	cam->header.messageID = mIdCounter++;
+	cam->header.protocolVersion = 1;
+
+//	cam->cam.camParameters.basicContainer;
 	return cam;
 }
 

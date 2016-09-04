@@ -14,6 +14,23 @@ struct GlobalConfig {
 	/** MAC address of mEthernetDevice*/
 	std::string mMac;
 
+	uint64_t string_to_mac(std::string const& s) {
+	    unsigned char a[6];
+	    int last = -1;
+	    int rc = sscanf(s.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%n",
+	                    a + 0, a + 1, a + 2, a + 3, a + 4, a + 5,
+	                    &last);
+	    if(rc != 6 || s.size() != last)
+	        throw std::runtime_error("invalid mac address format " + s);
+	    return
+	        uint64_t(a[0]) << 40 |
+	        uint64_t(a[1]) << 32 |
+	        uint64_t(a[2]) << 24 |
+	        uint64_t(a[3]) << 16 |
+	        uint64_t(a[4]) << 8 |
+	        uint64_t(a[5]);
+	}
+
 	void loadConfigXML(const std::string &filename) {
 		boost::property_tree::ptree pt;
 		read_xml(filename, pt);
@@ -30,6 +47,7 @@ struct GlobalConfig {
 		int i = 0;
 		int s = 0;
 		const char* mac = mMac.c_str();
+		std::cout <<"The identified mac: "<< mMac.c_str() << std::endl;
 		while (*mac) {
 		   if (isxdigit(*mac)) {
 			  i++;
@@ -46,6 +64,9 @@ struct GlobalConfig {
 		}
 		if (!(i == 12 && (s == 5 || s == 0))){
 			mMac = "invalid MAC";
+			std::cerr << "Invalid MAC" << std::endl;
+			exit(1);
 		}
+		std::cout << "string mac to int: " << string_to_mac(mMac) << std::endl;
 	}
 };
