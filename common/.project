@@ -11,6 +11,16 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
+					<value>&lt;project&gt;/.externalToolBuilders/compile_asn.launch</value>
+				</dictionary>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
+			<triggers>full,incremental,</triggers>
+			<arguments>
+				<dictionary>
+					<key>LaunchConfigHandle</key>
 					<value>&lt;project&gt;/.externalToolBuilders/build_protobuffers.launch</value>
 				</dictionary>
 			</arguments>
