@@ -52,6 +52,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.313908305.301858591" name="libcommon.a" rcbsApplicability="disable" resourcePath="Debug/libcommon.a" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="asn1"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="buffers/build"/>

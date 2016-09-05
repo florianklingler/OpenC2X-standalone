@@ -233,7 +233,9 @@ private:
 	bool mObd2Valid;
 	std::mutex mMutexLatestObd2;
 
+	// TODO: GSP: Get rid of last sent cam
 	camPackage::CAM mLastSentCam;
+	uint64_t mLastCamTime;
 };
 
 /** @} */ //end group

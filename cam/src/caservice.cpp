@@ -46,6 +46,7 @@ CaService::CaService(CaServiceConfig &config) {
 	}
 
 	mConfig = config;
+	mLastCamTime = Utils::currentTime();
 	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
 	mLogger->logStats("Station Id \tCAM id \tCreate Time \tReceive Time");
 
@@ -373,18 +374,55 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
+//static int write_out(const void *buffer, size_t size, void *app_key) {
+//    FILE *out_fp = app_key;
+//    size_t wrote = fwrite(buffer, 1, size, out_fp);
+//    return (wrote == size) ? 0 : -1;
+//}
+
 CAM* CaService::generateCam2() {
-	cout << "generateCAM2  " << sizeof(unsigned long) << endl;
+	cout << "generateCAM2  " << mGlobalConfig.mStationID << endl;
 	CAM_t* cam = new CAM_t;
 	if(!cam) {
 		mLogger->logError("Could not allocate memory for new CAM");
 		return NULL;
 	}
-//	cam->header.stationID = mGlobalConfig.mMac;
-	cam->header.messageID = mIdCounter++;
-	cam->header.protocolVersion = 1;
+	// ITS pdu header
+	// TODO: GSP: station id is 0..4294967295
+	cam->header.stationID = mGlobalConfig.mStationID;
+	cam->header.messageID = messageID_cam;
+	cam->header.protocolVersion = protocolVersion_currentVersion;
 
-//	cam->cam.camParameters.basicContainer;
+	// generation delta time
+//	cam->cam.generationDeltaTime =
+
+	// Basic container
+	cam->cam.camParameters.basicContainer.stationType = StationType_unknown;
+//	cam->cam.camParameters.basicContainer.referencePosition.latitude =
+//	cam->cam.camParameters.basicContainer.referencePosition.longitude
+//	cam->cam.camParameters.basicContainer.referencePosition.altitude
+//	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse
+
+	// High frequency container
+	// Could be basic vehicle or RSU and have corresponding details
+	cam->cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_NOTHING;
+
+	// Optional part
+//	cam->cam.camParameters.lowFrequencyContainer->present =
+//	cam->cam.camParameters.specialVehicleContainer->present =
+
+//asn_enc_rval_t erv; // encoder return value
+//erv = uper_encode(&asn_DEF_CAM, cam, write_out, stdout);
+//fprintf(stdout, "\n");
+//if(erv.encoded == -1) {
+//	fprintf(stderr, "Cannot encode %s: %s\n", erv.failed_type->name, strerror(errno));
+//}
+//
+//// print structure
+//asn_fprint(stdout, &asn_DEF_CAM, cam);
+//int bytes = erv.encoded / 8;
+//bytes += !!(erv.encoded % 8);
+//fprintf(stdout, "Total size: %zu bits   %d bytes\n", erv.encoded, bytes);
 	return cam;
 }
 

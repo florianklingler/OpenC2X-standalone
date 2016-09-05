@@ -1,0 +1,6 @@
+COMMON
+- Remove mMac from GlobalConfig when mStationID is used everywhere as ID
+
+CAM
+- Get rid of mLastSentCam in CaService
+- Config for high frequency container: basic vehicle/ RSU
