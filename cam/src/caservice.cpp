@@ -32,6 +32,8 @@
 #include <cmath>
 #include <string>
 #include <utility/Utils.h>
+#include <messages/MessageUtils.h>
+#include <asn1/per_encoder.h>
 
 using namespace std;
 
@@ -374,14 +376,18 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
-//static int write_out(const void *buffer, size_t size, void *app_key) {
-//    FILE *out_fp = app_key;
-//    size_t wrote = fwrite(buffer, 1, size, out_fp);
-//    return (wrote == size) ? 0 : -1;
-//}
+static int
+write_out(const void *buffer, size_t size, void *app_key) {
+    FILE *out_fp = static_cast<FILE*>(app_key);
+    size_t wrote;
+
+    wrote = fwrite(buffer, 1, size, out_fp);
+
+    return (wrote == size) ? 0 : -1;
+}
 
 CAM* CaService::generateCam2() {
-	cout << "generateCAM2  " << mGlobalConfig.mStationID << endl;
+	cout << "generateCAM2  " << endl; //<< mGlobalConfig.mStationID << endl;
 	CAM_t* cam = new CAM_t;
 	if(!cam) {
 		mLogger->logError("Could not allocate memory for new CAM");
@@ -389,40 +395,44 @@ CAM* CaService::generateCam2() {
 	}
 	// ITS pdu header
 	// TODO: GSP: station id is 0..4294967295
-	cam->header.stationID = mGlobalConfig.mStationID;
+	cam->header.stationID = mIdCounter;//mGlobalConfig.mStationID;
 	cam->header.messageID = messageID_cam;
 	cam->header.protocolVersion = protocolVersion_currentVersion;
 
 	// generation delta time
-//	cam->cam.generationDeltaTime =
+	//	cam->cam.generationDeltaTime =
 
 	// Basic container
 	cam->cam.camParameters.basicContainer.stationType = StationType_unknown;
-//	cam->cam.camParameters.basicContainer.referencePosition.latitude =
-//	cam->cam.camParameters.basicContainer.referencePosition.longitude
-//	cam->cam.camParameters.basicContainer.referencePosition.altitude
-//	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse
+	//	cam->cam.camParameters.basicContainer.referencePosition.latitude =
+	//	cam->cam.camParameters.basicContainer.referencePosition.longitude
+	//	cam->cam.camParameters.basicContainer.referencePosition.altitude
+	//	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse
 
 	// High frequency container
 	// Could be basic vehicle or RSU and have corresponding details
-	cam->cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_NOTHING;
+	cam->cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
+    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingConfidence = 1;
+    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence = 1;
+    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue = 1;
+    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;//1;
 
 	// Optional part
-//	cam->cam.camParameters.lowFrequencyContainer->present =
-//	cam->cam.camParameters.specialVehicleContainer->present =
+	//	cam->cam.camParameters.lowFrequencyContainer->present =
+	//	cam->cam.camParameters.specialVehicleContainer->present =
 
-//asn_enc_rval_t erv; // encoder return value
-//erv = uper_encode(&asn_DEF_CAM, cam, write_out, stdout);
-//fprintf(stdout, "\n");
-//if(erv.encoded == -1) {
-//	fprintf(stderr, "Cannot encode %s: %s\n", erv.failed_type->name, strerror(errno));
-//}
-//
-//// print structure
-//asn_fprint(stdout, &asn_DEF_CAM, cam);
-//int bytes = erv.encoded / 8;
-//bytes += !!(erv.encoded % 8);
-//fprintf(stdout, "Total size: %zu bits   %d bytes\n", erv.encoded, bytes);
+
+	// Encode message
+	MessageUtils mu("CaService", mGlobalConfig.mExpNo);
+	mu.encodeMessage(&asn_DEF_CAM, cam);
+	asn_enc_rval_t erv; // encoder return value
+//	erv = uper_encode(&asn_DEF_CAM, cam, write_out, stdout);
+	if(erv.encoded == -1) {
+		stringstream ss;
+		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno);
+		mLogger->logError(ss.str());
+		exit(1);
+	}
 	return cam;
 }
 

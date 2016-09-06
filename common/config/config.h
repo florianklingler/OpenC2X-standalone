@@ -13,15 +13,20 @@ struct GlobalConfig {
 	std::string mEthernetDevice;
 	/** MAC address of mEthernetDevice*/
 	std::string mMac;
+	// TODO: GSP: Remove mMac once mStationID is used as ID everywhere.
+	uint64_t mStationID;
 
-	uint64_t string_to_mac(std::string const& s) {
+	// Taken from http://stackoverflow.com/questions/7326123/convert-mac-address-stdstring-into-uint64-t
+	uint64_t stringToMac(std::string const& s) {
 	    unsigned char a[6];
-	    int last = -1;
+	    uint last = -1;
 	    int rc = sscanf(s.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%n",
 	                    a + 0, a + 1, a + 2, a + 3, a + 4, a + 5,
 	                    &last);
-	    if(rc != 6 || s.size() != last)
-	        throw std::runtime_error("invalid mac address format " + s);
+	    if(rc != 6 || s.size() != last) {
+	    	std::cerr << "Invalid MAC" << std::endl;
+			exit(1);
+	    }
 	    return
 	        uint64_t(a[0]) << 40 |
 	        uint64_t(a[1]) << 32 |
@@ -67,6 +72,6 @@ struct GlobalConfig {
 			std::cerr << "Invalid MAC" << std::endl;
 			exit(1);
 		}
-		std::cout << "string mac to int: " << string_to_mac(mMac) << std::endl;
+		mStationID = stringToMac(mMac);
 	}
 };
