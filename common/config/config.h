@@ -13,7 +13,7 @@ struct GlobalConfig {
 	std::string mEthernetDevice;
 	/** MAC address of mEthernetDevice*/
 	std::string mMac;
-	// TODO: GSP: Remove mMac once mStationID is used as ID everywhere.
+	//TODO: GSP: Remove mMac once mStationID is used as ID everywhere.
 	uint64_t mStationID;
 
 	// Taken from http://stackoverflow.com/questions/7326123/convert-mac-address-stdstring-into-uint64-t

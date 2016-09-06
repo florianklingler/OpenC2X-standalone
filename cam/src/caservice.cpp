@@ -32,7 +32,6 @@
 #include <cmath>
 #include <string>
 #include <utility/Utils.h>
-#include <messages/MessageUtils.h>
 #include <asn1/per_encoder.h>
 
 using namespace std;
@@ -49,6 +48,7 @@ CaService::CaService(CaServiceConfig &config) {
 
 	mConfig = config;
 	mLastCamTime = Utils::currentTime();
+	mMsgUtils = new MessageUtils("CaService", mGlobalConfig.mExpNo);
 	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
 	mLogger->logStats("Station Id \tCAM id \tCreate Time \tReceive Time");
 
@@ -82,6 +82,7 @@ CaService::~CaService() {
 	mThreadReceive->join();
 	mThreadGpsDataReceive->join();
 	mThreadObd2DataReceive->join();
+
 	delete mThreadReceive;
 	delete mThreadGpsDataReceive;
 	delete mThreadObd2DataReceive;
@@ -94,6 +95,8 @@ CaService::~CaService() {
 	delete mReceiverObd2;
 
 	delete mLogger;
+
+	delete mMsgUtils;
 
 	mTimer->cancel();
 	delete mTimer;
@@ -376,16 +379,6 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
-static int
-write_out(const void *buffer, size_t size, void *app_key) {
-    FILE *out_fp = static_cast<FILE*>(app_key);
-    size_t wrote;
-
-    wrote = fwrite(buffer, 1, size, out_fp);
-
-    return (wrote == size) ? 0 : -1;
-}
-
 CAM* CaService::generateCam2() {
 	cout << "generateCAM2  " << endl; //<< mGlobalConfig.mStationID << endl;
 	CAM_t* cam = new CAM_t;
@@ -394,7 +387,7 @@ CAM* CaService::generateCam2() {
 		return NULL;
 	}
 	// ITS pdu header
-	// TODO: GSP: station id is 0..4294967295
+	//TODO: GSP: station id is 0..4294967295
 	cam->header.stationID = mIdCounter;//mGlobalConfig.mStationID;
 	cam->header.messageID = messageID_cam;
 	cam->header.protocolVersion = protocolVersion_currentVersion;
@@ -415,7 +408,7 @@ CAM* CaService::generateCam2() {
     cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingConfidence = 1;
     cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence = 1;
     cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue = 1;
-    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;//1;
+    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;
 
 	// Optional part
 	//	cam->cam.camParameters.lowFrequencyContainer->present =
@@ -423,16 +416,7 @@ CAM* CaService::generateCam2() {
 
 
 	// Encode message
-	MessageUtils mu("CaService", mGlobalConfig.mExpNo);
-	mu.encodeMessage(&asn_DEF_CAM, cam);
-	asn_enc_rval_t erv; // encoder return value
-//	erv = uper_encode(&asn_DEF_CAM, cam, write_out, stdout);
-	if(erv.encoded == -1) {
-		stringstream ss;
-		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno);
-		mLogger->logError(ss.str());
-		exit(1);
-	}
+	mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
 	return cam;
 }
 

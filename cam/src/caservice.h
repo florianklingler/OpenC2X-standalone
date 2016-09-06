@@ -42,6 +42,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
 #include <asn1/CAM.h>
+#include <messages/MessageUtils.h>
 
 /** Struct that hold the configuration for CaService.
  * The configuration is defined in <a href="../../cam/config/config.xml">cam/config/config.xml</a>
@@ -200,10 +201,10 @@ private:
 	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
 
-	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationSender* mSenderToDcc;
 	CommunicationSender* mSenderToLdm;
 
+	CommunicationReceiver* mReceiverFromDcc;
 	CommunicationReceiver* mReceiverGps;
 	CommunicationReceiver* mReceiverObd2;
 
@@ -211,6 +212,7 @@ private:
 	boost::thread* mThreadGpsDataReceive;
 	boost::thread* mThreadObd2DataReceive;
 
+	MessageUtils* mMsgUtils;
 	LoggingUtility* mLogger;
 
 	boost::asio::io_service mIoService;

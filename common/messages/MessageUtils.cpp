@@ -26,7 +26,9 @@ MessageUtils::MessageUtils(string moduleName, int expNo) {
 	mLogger = new LoggingUtility(moduleName, expNo);
 }
 
-MessageUtils::~MessageUtils() {}
+MessageUtils::~MessageUtils() {
+	delete mLogger;
+}
 
 int MessageUtils::write_out(const void *buffer, size_t size, void *app_key) {
     auto message = static_cast<vector<uint8_t>*>(app_key);
@@ -36,15 +38,12 @@ int MessageUtils::write_out(const void *buffer, size_t size, void *app_key) {
 }
 
 asn_enc_rval_t MessageUtils::encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr) {
-	asn_enc_rval_t erv;
 	vector<uint8_t> message;
-//	erv = uper_encode(type_descriptor, struct_ptr, write_out, stdout);
-	erv = uper_encode(type_descriptor, const_cast<void*>(struct_ptr), &MessageUtils::write_out, &message);
+	asn_enc_rval_t erv = uper_encode(type_descriptor, const_cast<void*>(struct_ptr), &MessageUtils::write_out, &message);
 	if(erv.encoded == -1) {
 		stringstream ss;
-		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno);
+		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno) << endl;
 		mLogger->logError(ss.str());
-		exit(1);
 	}
 	return erv;
 }
