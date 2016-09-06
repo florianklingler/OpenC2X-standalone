@@ -148,7 +148,7 @@ private:
 	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
 	 * @return The newly generated CAM.
 	 */
-	CAM* generateCam2();
+	std::vector<uint8_t> generateCam2();
 
 	/** Generates a new data package that includes the specified CAM.
 	 * The specified CAM is serialized and included in the new data package.

@@ -31,19 +31,24 @@ MessageUtils::~MessageUtils() {
 }
 
 int MessageUtils::write_out(const void *buffer, size_t size, void *app_key) {
-    auto message = static_cast<vector<uint8_t>*>(app_key);
-//    memcpy(&message, buffer, size);
-    std::copy_n(static_cast<const uint8_t*>(buffer), size, std::back_inserter(*message));
+    vector<uint8_t>* payload = static_cast<vector<uint8_t>*>(app_key);
+    // memcpy(&message, buffer, size);
+    // http://en.cppreference.com/w/cpp/algorithm/copy_n
+    copy_n(static_cast<const uint8_t*>(buffer), size, std::back_inserter(*payload));
     return 0;
 }
 
-asn_enc_rval_t MessageUtils::encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr) {
-	vector<uint8_t> message;
-	asn_enc_rval_t erv = uper_encode(type_descriptor, const_cast<void*>(struct_ptr), &MessageUtils::write_out, &message);
+vector<uint8_t> MessageUtils::encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr) {
+	vector<uint8_t> payload;
+	asn_enc_rval_t erv = uper_encode(type_descriptor, const_cast<void*>(struct_ptr), &MessageUtils::write_out, &payload);
 	if(erv.encoded == -1) {
 		stringstream ss;
 		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno) << endl;
 		mLogger->logError(ss.str());
 	}
-	return erv;
+	return payload;
+}
+
+void MessageUtils::decodeMessage() {
+
 }

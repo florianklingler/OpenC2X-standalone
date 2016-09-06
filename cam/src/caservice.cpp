@@ -379,7 +379,7 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
-CAM* CaService::generateCam2() {
+vector<uint8_t> CaService::generateCam2() {
 	cout << "generateCAM2  " << endl; //<< mGlobalConfig.mStationID << endl;
 	CAM_t* cam = new CAM_t;
 	if(!cam) {
@@ -416,8 +416,9 @@ CAM* CaService::generateCam2() {
 
 
 	// Encode message
-	mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
-	return cam;
+	vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
+	cout << "Encoded message size: " << encodedCam.size() << endl;
+	return encodedCam;
 }
 
 dataPackage::DATA CaService::generateData(camPackage::CAM cam) {

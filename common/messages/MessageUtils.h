@@ -20,9 +20,10 @@
 #ifndef MESSAGE_UTILS_H_
 #define MESSAGE_UTILS_H_
 
+#include "../utility/LoggingUtility.h"
 #include <asn_application.h>
 #include <string>
-#include "../utility/LoggingUtility.h"
+#include <vector>
 
 /**
  * Contains message utility functions (encoding/ decoding) used by other modules.
@@ -35,7 +36,7 @@ public:
 	virtual ~MessageUtils();
 
 	static int write_out(const void *buffer, size_t size, void *app_key);
-	asn_enc_rval_t encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr);
+	std::vector<uint8_t> encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr);
 	void decodeMessage();
 
 	LoggingUtility* mLogger;
