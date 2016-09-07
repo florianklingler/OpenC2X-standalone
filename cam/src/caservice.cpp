@@ -338,7 +338,6 @@ void CaService::send() {
 	dataPackage::DATA data;
 
 	cam = generateCam();
-	generateCam2();
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
@@ -346,6 +345,24 @@ void CaService::send() {
 	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 
 	mLastSentCam = cam;
+
+	// Standard compliant CAM
+	vector<uint8_t> encodedCam = generateCam2();
+	cout << "Encoded CAM size " << encodedCam.size() << endl;
+
+	zmq::message_t message(encodedCam.size());
+	cout << 1;
+	memcpy (message.data(), &encodedCam, encodedCam.size());
+	cout << 2;
+	zmq::context_t* mContext = new zmq::context_t(1);
+	cout << 3;
+	zmq::socket_t* socket = new zmq::socket_t(*mContext, ZMQ_SUB);
+	cout << 4;
+	socket->connect("tcp://localhost:3036");
+	cout << 5;
+
+	bool rc = socket->send (message);
+	cout << "result for sending encoded cam: " << rc << endl;
 }
 
 //generate new CAM with increasing ID, current timestamp and latest gps data
@@ -384,7 +401,7 @@ vector<uint8_t> CaService::generateCam2() {
 	CAM_t* cam = new CAM_t;
 	if(!cam) {
 		mLogger->logError("Could not allocate memory for new CAM");
-		return NULL;
+		return (vector<uint8_t>)NULL;
 	}
 	// ITS pdu header
 	//TODO: GSP: station id is 0..4294967295
@@ -416,9 +433,8 @@ vector<uint8_t> CaService::generateCam2() {
 
 
 	// Encode message
-	vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
-	cout << "Encoded message size: " << encodedCam.size() << endl;
-	return encodedCam;
+    vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
+    return encodedCam;
 }
 
 dataPackage::DATA CaService::generateData(camPackage::CAM cam) {

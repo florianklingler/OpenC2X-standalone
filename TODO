@@ -4,3 +4,6 @@ COMMON
 CAM
 - Get rid of mLastSentCam in CaService
 - Config for high frequency container: basic vehicle/ RSU
+- Send to encoded cam to dcc
+- receive encoded cam from dcc
+- 
