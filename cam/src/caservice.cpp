@@ -341,7 +341,7 @@ void CaService::send() {
 	data = generateData(cam);
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
-	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
+//	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
 	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 
 	mLastSentCam = cam;
@@ -349,20 +349,9 @@ void CaService::send() {
 	// Standard compliant CAM
 	vector<uint8_t> encodedCam = generateCam2();
 	cout << "Encoded CAM size " << encodedCam.size() << endl;
-
-	zmq::message_t message(encodedCam.size());
-	cout << 1;
-	memcpy (message.data(), &encodedCam, encodedCam.size());
-	cout << 2;
-	zmq::context_t* mContext = new zmq::context_t(1);
-	cout << 3;
-	zmq::socket_t* socket = new zmq::socket_t(*mContext, ZMQ_SUB);
-	cout << 4;
-	socket->connect("tcp://localhost:3036");
-	cout << 5;
-
-	bool rc = socket->send (message);
-	cout << "result for sending encoded cam: " << rc << endl;
+	string str(encodedCam.begin(), encodedCam.end());
+	cout << str << endl;
+	mSenderToDcc->send("CAM", str);
 }
 
 //generate new CAM with increasing ID, current timestamp and latest gps data
