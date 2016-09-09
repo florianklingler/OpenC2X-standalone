@@ -1,1 +1,2 @@
- doxygen documentation.doxyfile
+#!/bin/sh
+doxygen documentation.doxyfile
