@@ -21,7 +21,7 @@
 #define MESSAGE_UTILS_H_
 
 #include "../utility/LoggingUtility.h"
-#include <asn_application.h>
+#include "../asn1/asn_application.h"
 #include <string>
 #include <vector>
 
@@ -35,9 +35,9 @@ public:
 	MessageUtils(std::string moduleName, int expNo);
 	virtual ~MessageUtils();
 
-	static int write_out(const void *buffer, size_t size, void *app_key);
-	std::vector<uint8_t> encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr);
-	void decodeMessage();
+	static int writeOut(const void *buffer, size_t size, void *app_key);
+	std::vector<uint8_t> encodeMessage(asn_TYPE_descriptor_t *td, void *structPtr);
+	bool decodeMessage(asn_TYPE_descriptor_t* td, void** t, std::string buffer);
 
 	LoggingUtility* mLogger;
 };

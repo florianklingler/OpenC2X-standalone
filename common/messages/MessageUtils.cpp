@@ -30,7 +30,7 @@ MessageUtils::~MessageUtils() {
 	delete mLogger;
 }
 
-int MessageUtils::write_out(const void *buffer, size_t size, void *app_key) {
+int MessageUtils::writeOut(const void *buffer, size_t size, void *app_key) {
     vector<uint8_t>* payload = static_cast<vector<uint8_t>*>(app_key);
     // memcpy(&message, buffer, size);
     // http://en.cppreference.com/w/cpp/algorithm/copy_n
@@ -38,17 +38,24 @@ int MessageUtils::write_out(const void *buffer, size_t size, void *app_key) {
     return 0;
 }
 
-vector<uint8_t> MessageUtils::encodeMessage(struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr) {
+vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *structPtr) {
 	vector<uint8_t> payload;
-	asn_enc_rval_t erv = uper_encode(type_descriptor, const_cast<void*>(struct_ptr), &MessageUtils::write_out, &payload);
+	asn_enc_rval_t erv = uper_encode(td, const_cast<void*>(structPtr), &MessageUtils::writeOut, &payload);
+	cout << "Encoded bytes: " << erv.encoded << endl;
 	if(erv.encoded == -1) {
-		stringstream ss;
-		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno) << endl;
-		mLogger->logError(ss.str());
+//		stringstream ss;
+//		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno) << endl;
+//		mLogger->logError(ss.str());
+		throw runtime_error("Encoding failed");
 	}
 	return payload;
 }
 
-void MessageUtils::decodeMessage() {
-
+bool MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buffer) {
+	asn_codec_ctx_t context;
+	cout << "data: " << buffer.data() << " and len: " << buffer.length() << endl;
+	asn_dec_rval_t drv = uper_decode_complete(&context, td, t, buffer.data(), buffer.length());
+//	asn_dec_rval_t drv = uper_decode(&context, td, t, buffer.data(), buffer.length(), 0, 0);
+	cout << "Decoded bytes:: " << drv.consumed << " and returning code: " << drv.code << endl;
+	return drv.code;// == RC_OK;
 }
