@@ -31,6 +31,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <signal.h>
 #include <utility/Utils.h>
+#include <messages/MessageUtils.h>
+#include <asn1/CAM.h>
+#include <asn1/ItsPduHeader.h>
+#include <asn1/per_decoder.h>
 
 using namespace std;
 
@@ -138,7 +142,7 @@ void DCC::init() {
 	mPktStatsCollector->init();
 
 	//create and start threads
-	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa, this);
+	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa2, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
 	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
 
@@ -187,6 +191,44 @@ void DCC::receiveFromCa() {
 
 		data = new dataPackage::DATA();
 		data->ParseFromString(serializedData);		//deserialize DATA
+
+		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
+		int64_t nowTime = Utils::currentTime();
+		mBucket[ac]->flushQueue(nowTime);
+
+		mLogger->logInfo("");						//for readability
+		bool enqueued = mBucket[ac]->enqueue(data, data->validuntil());
+		if (enqueued) {
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and enqueued CAM " + to_string(data->id()) + ", queue length: " + to_string(mBucket[ac]->getQueuedPackets()));
+			sendQueuedPackets(ac);
+		}
+		else {
+			mLogger->logInfo("AC "+ to_string(ac) + ": received and dropped CAM " + to_string(data->id()) + ", queue full -> length: " + to_string(mBucket[ac]->getQueuedPackets()));
+		}
+	}
+}
+
+void DCC::receiveFromCa2() {
+	string encodedCam;					//serialized DATA
+	dataPackage::DATA* data;			//deserialized DATA
+
+	while (1) {
+		pair<string, string> received = mReceiverFromCa->receive();
+		encodedCam = received.second;
+
+		data = new dataPackage::DATA();
+		data->ParseFromString(encodedCam);		//deserialize DATA
+
+
+		// Test to decode the received CAM [
+		MessageUtils mu("DCC", mGlobalConfig.mExpNo);
+		CAM_t* cam = 0;//new CAM_t;
+		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
+		bool res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, data->content());
+//		asn_fprint(stdout, &asn_DEF_CAM, cam);
+		cout << "Decoding result " << res << endl;
+		cout << "HEADER: " << cam->header.stationID << endl;
+		// ]
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = Utils::currentTime();
