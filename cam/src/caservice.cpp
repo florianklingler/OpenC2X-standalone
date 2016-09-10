@@ -47,6 +47,7 @@ CaService::CaService(CaServiceConfig &config) {
 	}
 
 	mConfig = config;
+
 	mLastCamTime = Utils::currentTime();
 	mMsgUtils = new MessageUtils("CaService", mGlobalConfig.mExpNo);
 	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
@@ -336,22 +337,41 @@ void CaService::send() {
 	string serializedData;
 	camPackage::CAM cam;
 	dataPackage::DATA data;
-
+//  Project group sending CAM[
 	cam = generateCam();
-	data = generateData(cam);
-	data.SerializeToString(&serializedData);
-	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
+//	data = generateData(cam);
+//	data.SerializeToString(&serializedData);
+//	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
 //	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
-	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
-
+//	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
+//
 	mLastSentCam = cam;
+//]
 
 	// Standard compliant CAM
 	vector<uint8_t> encodedCam = generateCam2();
-	cout << "Encoded CAM size " << encodedCam.size() << endl;
-	string str(encodedCam.begin(), encodedCam.end());
-	cout << str << endl;
-	mSenderToDcc->send("CAM", str);
+	string strCam(encodedCam.begin(), encodedCam.end());
+	cout << "Encoded CAM size " << encodedCam.size() << " and string len: " << strCam.length() << endl;
+
+	data.set_id(cam.id());
+	data.set_type(dataPackage::DATA_Type_CAM);
+	data.set_priority(dataPackage::DATA_Priority_BE);
+
+	data.set_createtime(cam.createtime());
+	data.set_validuntil(cam.createtime() + mConfig.mExpirationTime*1000*1000*1000);
+	data.set_content(strCam);
+
+	data.SerializeToString(&serializedData);
+	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
+
+	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
+	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
+//
+//	mLastSentCam = cam;
+//
+//	CAM_t* decodedcam = 0;
+//	mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&decodedcam, strCam);
+////	asn_fprint(stdout, &asn_DEF_CAM, decodedcam);
 }
 
 //generate new CAM with increasing ID, current timestamp and latest gps data
@@ -387,59 +407,93 @@ camPackage::CAM CaService::generateCam() {
 
 vector<uint8_t> CaService::generateCam2() {
 	cout << "generateCAM2  " << endl; //<< mGlobalConfig.mStationID << endl;
-	CAM_t* cam = new CAM_t;
-	if(!cam) {
-		mLogger->logError("Could not allocate memory for new CAM");
-		return (vector<uint8_t>)NULL;
+	CAM_t* cam = static_cast<CAM_t*>( calloc(1, sizeof(CAM_t)) );
+	if (!cam) {
+		throw runtime_error("could not allocate CAM_t");
 	}
+	cout << " local " << cam << " and size : " << sizeof(*cam) << endl;
 	// ITS pdu header
 	//TODO: GSP: station id is 0..4294967295
-	cam->header.stationID = mIdCounter;//mGlobalConfig.mStationID;
+	cam->header.stationID = mIdCounter; //mGlobalConfig.mStationID;
 	cam->header.messageID = messageID_cam;
 	cam->header.protocolVersion = protocolVersion_currentVersion;
 
 	// generation delta time
-	//	cam->cam.generationDeltaTime =
+	cam->cam.generationDeltaTime = 0;
 
 	// Basic container
 	cam->cam.camParameters.basicContainer.stationType = StationType_unknown;
-	//	cam->cam.camParameters.basicContainer.referencePosition.latitude =
-	//	cam->cam.camParameters.basicContainer.referencePosition.longitude
-	//	cam->cam.camParameters.basicContainer.referencePosition.altitude
-	//	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse
+	cam->cam.camParameters.basicContainer.referencePosition.latitude = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.longitude = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeValue = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeConfidence = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorConfidence = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorOrientation = 0;
+	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMinorConfidence = 0;
 
 	// High frequency container
 	// Could be basic vehicle or RSU and have corresponding details
 	cam->cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
-    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingConfidence = 1;
-    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence = 1;
-    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue = 1;
-    cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvature.curvatureValue = CurvatureValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvature.curvatureConfidence = CurvatureConfidence_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvatureCalculationMode = CurvatureCalculationMode_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.driveDirection = DriveDirection_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingValue = HeadingValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingConfidence = HeadingConfidence_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationValue = LongitudinalAccelerationValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationConfidence = AccelerationConfidence_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue = SpeedValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence = SpeedConfidence_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue = VehicleLengthValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthConfidenceIndication = VehicleLengthConfidenceIndication_unavailable;
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;
+
+
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateValue = YawRateValue_unavailable;
+	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateConfidence = YawRateConfidence_unavailable;
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.accelerationControl->
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.cenDsrcTollingZone->
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.verticalAcceleration
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.steeringWheelAngle
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.performanceClass
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.lanePosition->
+	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.lateralAcceleration
 
 	// Optional part
 	//	cam->cam.camParameters.lowFrequencyContainer->present =
 	//	cam->cam.camParameters.specialVehicleContainer->present =
 
-
 	// Encode message
     vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
+
+    // Printing the cam structure
+    // asn_fprint(stdout, &asn_DEF_CAM, cam);
+
+    //TODO: Free the allocated structure for cam. Is this enough?
+    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
     return encodedCam;
 }
 
-dataPackage::DATA CaService::generateData(camPackage::CAM cam) {
+dataPackage::DATA CaService::generateData(string encodedCam) {
 	dataPackage::DATA data;
 	string serializedCam;
 
-	//serialize CAM
-	cam.SerializeToString(&serializedCam);
-
 	//create DATA
-	data.set_id(cam.id());
+	data.set_id(/*cam.id()*/1);
 	data.set_type(dataPackage::DATA_Type_CAM);
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
-	data.set_createtime(cam.createtime());
-	data.set_validuntil(cam.createtime() + mConfig.mExpirationTime*1000*1000*1000);
+	uint64_t time = Utils::currentTime();
+	data.set_createtime(time);
+	data.set_validuntil(time + mConfig.mExpirationTime*1000*1000*1000);
 	data.set_content(serializedCam);
 
 	return data;

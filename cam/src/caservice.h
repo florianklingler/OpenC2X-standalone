@@ -156,7 +156,7 @@ private:
 	 * @param cam The CAM to be included in the data package.
 	 * @return The newly generated data package.
 	 */
-	dataPackage::DATA generateData(camPackage::CAM cam);
+	dataPackage::DATA generateData(std::string encodedCam);
 
 	/** Receives new GPS data from the GPS module.
 	 *
@@ -238,6 +238,8 @@ private:
 	// TODO: GSP: Get rid of last sent cam
 	camPackage::CAM mLastSentCam;
 	uint64_t mLastCamTime;
+
+//	CAM_t* mCamStructure;
 };
 
 /** @} */ //end group
