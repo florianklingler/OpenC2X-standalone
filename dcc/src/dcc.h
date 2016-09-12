@@ -102,6 +102,11 @@ public:
 	 */
 	void receiveFromHw();
 
+	/** Receives standard compliant CAMs or DENMs from hardware and forwards them to the corresponding module (CaService or DenService).
+	 * The messages are contained in a serialized data protobuf packet.
+	 */
+	void receiveFromHw2();
+
 
 	/** Periodically sends network info in form of four protobuf packets (one for each AC).
 	 * Includes the current time, channel load, state, available tokens, queued packets, DCC-mechanism, TX power,

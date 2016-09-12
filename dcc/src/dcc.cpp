@@ -144,7 +144,7 @@ void DCC::init() {
 	//create and start threads
 	mThreadReceiveFromCa = new boost::thread(&DCC::receiveFromCa2, this);
 	mThreadReceiveFromDen = new boost::thread(&DCC::receiveFromDen, this);
-	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw, this);
+	mThreadReceiveFromHw = new boost::thread(&DCC::receiveFromHw2, this);
 
 	//start timers
 	mTimerMeasureChannel->async_wait(mStrand.wrap(boost::bind(&DCC::measureChannel, this, boost::asio::placeholders::error)));
@@ -224,10 +224,10 @@ void DCC::receiveFromCa2() {
 		MessageUtils mu("DCC", mGlobalConfig.mExpNo);
 		CAM_t* cam = 0;//new CAM_t;
 		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
-		bool res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, data->content());
+		int res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, data->content());
 //		asn_fprint(stdout, &asn_DEF_CAM, cam);
 		cout << "Decoding result " << res << endl;
-		cout << "HEADER: " << cam->header.stationID << endl;
+		cout << "HEADER: " << cam->header.stationID << " speed: " << cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue << endl;
 		// ]
 
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
@@ -297,6 +297,45 @@ void DCC::receiveFromHw() {
 			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
 			default:	break;
 		}
+	}
+}
+
+
+void DCC::receiveFromHw2() {
+	pair<string,string> receivedData;		//MAC Sender, serialized DATA
+	string* senderMac = &receivedData.first;
+	string* serializedData = &receivedData.second;
+	dataPackage::DATA data;
+	mLogger->logInfo("start receiving via Hardware");
+	while (1) {
+		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
+
+
+		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages
+		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac) == 0){
+			mLogger->logDebug("received own Message, discarding");
+			continue;
+		}
+
+		//TODO: Check if received packet is CAM or DENM
+		MessageUtils mu("DCC", mGlobalConfig.mExpNo);
+		CAM_t* cam = 0;//new CAM_t;
+		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
+		int res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, *serializedData);
+//		asn_fprint(stdout, &asn_DEF_CAM, cam);
+		if (cam->header.messageID == messageID_cam)
+			mSenderToServices->send("CAM", *serializedData);
+
+
+//
+//		data.ParseFromString(*serializedData);		//deserialize DATA
+//		//processing...
+//		mLogger->logInfo("forward message from "+*senderMac +" from HW to services");
+//		switch(data.type()) {								//send serialized DATA to corresponding module
+//			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", *serializedData);	break;
+//			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
+//			default:	break;
+//		}
 	}
 }
 
@@ -515,8 +554,10 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 			setMessageLimits(data);
 
 			string byteMessage;
-			data->SerializeToString(&byteMessage);
-			mSenderToHw->send(&byteMessage,ac);
+//			data->SerializeToString(&byteMessage);
+//			mSenderToHw->send(&byteMessage,ac);
+			byteMessage = data->content();
+			mSenderToHw->send(&byteMessage, ac);
 			mLogger->logInfo("AC " + to_string(ac) + ": Sent data " + to_string(data->id()) + " to HW -> queue length: " + to_string(mBucket[ac]->getQueuedPackets()) + ", tokens: " + to_string(mBucket[ac]->availableTokens));
 			delete data;
 		}
