@@ -51,7 +51,7 @@ vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *str
 	return payload;
 }
 
-bool MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buffer) {
+int MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buffer) {
 	asn_codec_ctx_t context;
 	cout << "data: " << buffer.data() << " and len: " << buffer.length() << endl;
 	asn_dec_rval_t drv = uper_decode_complete(&context, td, t, buffer.data(), buffer.length());

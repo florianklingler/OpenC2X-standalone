@@ -37,7 +37,7 @@ public:
 
 	static int writeOut(const void *buffer, size_t size, void *app_key);
 	std::vector<uint8_t> encodeMessage(asn_TYPE_descriptor_t *td, void *structPtr);
-	bool decodeMessage(asn_TYPE_descriptor_t* td, void** t, std::string buffer);
+	int decodeMessage(asn_TYPE_descriptor_t* td, void** t, std::string buffer);
 
 	LoggingUtility* mLogger;
 };
