@@ -114,11 +114,13 @@ void CaService::receive() {
 		envelope = received.first;
 		serializedData = received.second;			//serialized DATA
 
-		data.ParseFromString(serializedData);	//deserialize DATA
-		serializedData = data.content();		//serialized CAM
-		logDelay(serializedData);
+//		data.ParseFromString(serializedData);	//deserialize DATA
+//		serializedData = data.content();		//serialized CAM
+//		logDelay(serializedData);
+		CAM_t* cam = 0;//new CAM_t;
+		mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, serializedData);
 
-		mLogger->logInfo("Forward incoming CAM " + to_string(data.id()) + " to LDM");
+		mLogger->logInfo("Forward incoming CAM " + to_string(cam->header.stationID) + " to LDM");
 		mSenderToLdm->send(envelope, serializedData);	//send serialized CAM to LDM
 	}
 }
