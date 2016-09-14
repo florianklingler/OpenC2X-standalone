@@ -31,7 +31,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <signal.h>
 #include <utility/Utils.h>
-#include <messages/MessageUtils.h>
 #include <asn1/CAM.h>
 #include <asn1/ItsPduHeader.h>
 #include <asn1/per_decoder.h>
@@ -50,6 +49,9 @@ DCC::DCC(DccConfig &config) : mStrand(mIoService) {
 
 	string module = "Dcc";
 	mConfig = config;
+
+	mMsgUtils = new MessageUtils(module, mGlobalConfig.mExpNo);
+
 	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM", mGlobalConfig.mExpNo);
 	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM", mGlobalConfig.mExpNo);
 	mSenderToHw = new SendToHardwareViaMAC(module,mGlobalConfig.mEthernetDevice, mGlobalConfig.mExpNo);
@@ -128,6 +130,8 @@ DCC::~DCC() {
 	if(!mConfig.simulateChannelLoad) {
 		delete mChannelProber;
 	}
+
+	delete mMsgUtils;
 
 	delete mLogger;
 }
@@ -209,24 +213,24 @@ void DCC::receiveFromCa() {
 }
 
 void DCC::receiveFromCa2() {
-	string encodedCam;					//serialized DATA
+	string encodedData;					//serialized DATA
 	dataPackage::DATA* data;			//deserialized DATA
 
 	while (1) {
 		pair<string, string> received = mReceiverFromCa->receive();
-		encodedCam = received.second;
+		encodedData = received.second;
 
 		data = new dataPackage::DATA();
-		data->ParseFromString(encodedCam);		//deserialize DATA
+		data->ParseFromString(encodedData);		//deserialize DATA
 
+		string encodedCam = data->content();
 
 		// Test to decode the received CAM [
-		MessageUtils mu("DCC", mGlobalConfig.mExpNo);
 		CAM_t* cam = 0;//new CAM_t;
-		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
-		int res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, data->content());
+		int res = mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, encodedCam);
 //		asn_fprint(stdout, &asn_DEF_CAM, cam);
 		cout << "Decoding result " << res << endl;
+		cout << "decoded cam: " << cam << endl;
 		cout << "HEADER: " << cam->header.stationID << " speed: " << cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue << endl;
 		// ]
 
@@ -318,10 +322,9 @@ void DCC::receiveFromHw2() {
 		}
 
 		//TODO: Check if received packet is CAM or DENM
-		MessageUtils mu("DCC", mGlobalConfig.mExpNo);
 		CAM_t* cam = 0;//new CAM_t;
 		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
-		int res = mu.decodeMessage(&asn_DEF_CAM, (void **)&cam, *serializedData);
+		int res = mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, *serializedData);
 //		asn_fprint(stdout, &asn_DEF_CAM, cam);
 		if (cam->header.messageID == messageID_cam)
 			mSenderToServices->send("CAM", *serializedData);

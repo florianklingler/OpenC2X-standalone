@@ -46,6 +46,7 @@
 #include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
 #include "PktStatsCollector.h"
+#include <messages/MessageUtils.h>
 #include <random>
 
 /**
@@ -232,6 +233,8 @@ private:
 	boost::asio::deadline_timer* mTimerMeasurePktStats;
 	boost::asio::deadline_timer* mTimerStateUpdate;
 	boost::asio::deadline_timer* mTimerDccInfo;
+
+	MessageUtils* mMsgUtils;
 
 	/**
 	 * Timers to periodically add tokens for all four ACs.

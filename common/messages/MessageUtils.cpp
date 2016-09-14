@@ -52,9 +52,9 @@ vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *str
 }
 
 int MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buffer) {
-	asn_codec_ctx_t context;
+	asn_codec_ctx_t ctx{};
 	cout << "data: " << buffer.data() << " and len: " << buffer.length() << endl;
-	asn_dec_rval_t drv = uper_decode_complete(&context, td, t, buffer.data(), buffer.length());
+	asn_dec_rval_t drv = uper_decode_complete(&ctx, td, t, buffer.data(), buffer.length());
 //	asn_dec_rval_t drv = uper_decode(&context, td, t, buffer.data(), buffer.length(), 0, 0);
 	cout << "Decoded bytes:: " << drv.consumed << " and returning code: " << drv.code << endl;
 	return drv.code;// == RC_OK;

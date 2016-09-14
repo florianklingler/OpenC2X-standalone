@@ -362,6 +362,7 @@ void CaService::send() {
 	data.set_createtime(cam.createtime());
 	data.set_validuntil(cam.createtime() + mConfig.mExpirationTime*1000*1000*1000);
 	data.set_content(strCam);
+	cout << "encoded string: " << strCam << endl;
 
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
@@ -413,7 +414,7 @@ vector<uint8_t> CaService::generateCam2() {
 	if (!cam) {
 		throw runtime_error("could not allocate CAM_t");
 	}
-	cout << " local " << cam << " and size : " << sizeof(*cam) << endl;
+	cout << " local " << cam << " and size : " << sizeof(*cam) << " " << sizeof(CAM_t) << endl;
 	// ITS pdu header
 	//TODO: GSP: station id is 0..4294967295
 	cam->header.stationID = mIdCounter; //mGlobalConfig.mStationID;
@@ -487,6 +488,9 @@ vector<uint8_t> CaService::generateCam2() {
 dataPackage::DATA CaService::generateData(string encodedCam) {
 	dataPackage::DATA data;
 	string serializedCam;
+
+	//serialize CAM
+	//	encodedCam.SerializeToString(&serializedCam);
 
 	//create DATA
 	data.set_id(/*cam.id()*/1);
