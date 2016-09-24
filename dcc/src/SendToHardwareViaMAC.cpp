@@ -36,7 +36,6 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 		exit(1);
 	}
 
-
 	// Sender MAC Address
 	string file = string("/sys/class/net/")+ ethernetDevice + "/address";
 	std::ifstream infile(file);
@@ -190,4 +189,93 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	} else {
 		mLogger->logInfo("No packet priority/queue set");
 	}
+}
+
+void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority) {
+
+	unsigned int packetsize = sizeof(struct ether_header) + sizeof(struct GeoNetworkAndBTPHeader) + msg->size();
+	unsigned char packet[packetsize];
+	unsigned char* payload = packet + sizeof(struct ether_header) + sizeof(GeoNetworkAndBTPHeader);
+	unsigned char* geoNetHdr = packet + sizeof(struct ether_header);
+
+	//copy header to packet
+	memcpy(&packet,&mEth_hdr,sizeof(struct ether_header));
+
+	// Fill in geo networking and btp header
+	fillGeoNetBTPheaderForCam(msg->size());
+	uint8_t* geoHdr = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
+	memcpy(geoNetHdr, geoHdr, sizeof(struct GeoNetworkAndBTPHeader));
+
+	//copy payload to packet
+	memcpy(payload,msg->c_str(),msg->size());
+
+	//send Packet
+	mLogger->logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
+
+	int send_to_socket = -1;
+	switch(priority){
+		case PRIORITY_VI:
+			send_to_socket = mSocket_VI;
+			break;
+		case PRIORITY_VO:
+			send_to_socket = mSocket_VO;
+			break;
+		case PRIORITY_BE:
+			send_to_socket = mSocket_BE;
+			break;
+		case PRIORITY_BK:
+			send_to_socket = mSocket_BK;
+			break;
+	}
+
+	if(send_to_socket != -1){
+		/** @todo record/put into dcc info/extend to fixed size packetsize */
+		if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
+						sizeof(struct sockaddr_ll))) == -1)
+		{
+				mLogger->logPError("Sendto() failed");
+		}
+	} else {
+		mLogger->logInfo("No packet priority/queue set");
+	}
+}
+
+void SendToHardwareViaMAC::fillGeoNetBTPheaderForCam(int payloadLen) {
+	// GeoNetwork Header
+	mGeoBtpHdrForCam.mGeoNetHdr.basicHeader.versionAndNH = 1;
+	mGeoBtpHdrForCam.mGeoNetHdr.basicHeader.reserved = 0;
+	mGeoBtpHdrForCam.mGeoNetHdr.basicHeader.lifetime = 241;
+	mGeoBtpHdrForCam.mGeoNetHdr.basicHeader.remainingHopLimit = 1;
+
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.nhAndReserved = 32;
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.htAndHst = 80;
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.tc = 2;
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.payload = htons(payloadLen);
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.maxHop = 1;
+	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.reserved = 0;
+
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.assignmentTypeCountryCode = htons(38393);
+//	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
+	memcpy(&mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr, ether_aton(mOwnMac.c_str()), ETH_ALEN);
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.timestamp = htonl(2810450329);
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.latitude = htonl(424937722);
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.longitude = htonl(3460636913);
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.speed = htons(496);
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.heading = htons(1996);
+
+	mGeoBtpHdrForCam.mGeoNetHdr.tsb.reserved = htonl(0);
+
+	// BTP Header
+	mGeoBtpHdrForCam.mBTPHdr.mDestinationPort = htons(2001);
+	mGeoBtpHdrForCam.mBTPHdr.mSourcePort = htons(0);
+	uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
+	dumpBuffer(temp, sizeof(mGeoBtpHdrForCam));
+}
+
+void SendToHardwareViaMAC::dumpBuffer(uint8_t* buffer, int size) {
+	for (int i = 0; i < size; i++) {
+		if (i > 0) printf(":");
+		printf("%02X", buffer[i]);
+	}
+	printf("\n");
 }

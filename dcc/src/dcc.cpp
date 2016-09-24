@@ -560,7 +560,8 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 //			data->SerializeToString(&byteMessage);
 //			mSenderToHw->send(&byteMessage,ac);
 			byteMessage = data->content();
-			mSenderToHw->send(&byteMessage, ac);
+//			mSenderToHw->send(&byteMessage, ac);
+			mSenderToHw->sendWithGeoNet(&byteMessage, ac);
 			mLogger->logInfo("AC " + to_string(ac) + ": Sent data " + to_string(data->id()) + " to HW -> queue length: " + to_string(mBucket[ac]->getQueuedPackets()) + ", tokens: " + to_string(mBucket[ac]->availableTokens));
 			delete data;
 		}

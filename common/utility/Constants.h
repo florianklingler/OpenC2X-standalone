@@ -37,7 +37,7 @@
 #include <cstdint>
 
 /**ethertype for ethernet header used in wifi commuication*/
-static const uint16_t ETHERTYPE_CAR = 0x0CA4;
+static const uint16_t ETHERTYPE_CAR = 0x8947;
 
 /** Corresponding Hardware queue number for Priority */
 static const int PRIORITY_VO =6;

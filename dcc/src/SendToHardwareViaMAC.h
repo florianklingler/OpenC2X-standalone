@@ -62,12 +62,32 @@ public:
 	 */
 	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice, int expNo);
 	virtual ~SendToHardwareViaMAC();
+
 	/**
 	 * Sends msg to the hardware queue with the corresponding priority.
 	 * @param msg
 	 * @param priority
 	 */
 	void send(std::string* msg, int priority);
+
+	/**
+	 * Sends standard compliant packet to the hardware queue with the corresponding priority.
+	 * @param msg
+	 * @param priority
+	 */
+	void sendWithGeoNet(std::string* msg, int priority);
+
+	/**
+	 * Fills simple GeoNetworking and BTP header for CAM
+	 * @returns geonetwork and BTP header
+	 */
+	void fillGeoNetBTPheaderForCam(int payloadLen);
+
+	/**
+	 * Dumps the content in the buffer in hex format
+	 */
+	void dumpBuffer(uint8_t* buffer, int size);
+
 	std::string mOwnMac;
 private:
 	LoggingUtility* mLogger;
@@ -83,6 +103,61 @@ private:
 	//socket address data structure for PACKET sockets
 	struct sockaddr_ll mTo_sock_addr;
 
+	// Basic structs for geo-networking and BTP headers
+	// Hard-coded for interoperability
+	struct GeoNetBasicHeader {
+		uint8_t versionAndNH;
+		uint8_t reserved;
+		uint8_t lifetime;
+		uint8_t remainingHopLimit;
+	};
+
+	struct GeoNetCommonHeader {
+		uint8_t nhAndReserved;
+		uint8_t htAndHst;
+		uint8_t tc;
+		uint8_t flags;
+		uint16_t payload;
+		uint8_t maxHop;
+		uint8_t reserved;
+	};
+
+	struct GeoNetAddress {
+		uint16_t assignmentTypeCountryCode;
+		uint8_t llAddr[ETH_ALEN];
+	};
+
+	struct SourcePositionVector {
+		GeoNetAddress addr;
+		uint32_t timestamp;
+		uint32_t latitude;
+		uint32_t longitude;
+		uint16_t speed;
+		uint16_t heading;
+	};
+
+	struct GeoNetTSB {
+		SourcePositionVector spv;
+		uint32_t reserved;
+	};
+
+	struct GeoNetHeader {
+		GeoNetBasicHeader basicHeader;
+		GeoNetCommonHeader commonHeader;
+		GeoNetTSB tsb;
+	};
+
+	struct BTPHeader {
+		uint16_t mDestinationPort;
+		uint16_t mSourcePort;
+	};
+
+	struct GeoNetworkAndBTPHeader {
+		GeoNetHeader mGeoNetHdr;
+		BTPHeader mBTPHdr;
+	};
+
+	struct GeoNetworkAndBTPHeader mGeoBtpHdrForCam;
 };
 
 /**
