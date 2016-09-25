@@ -312,7 +312,7 @@ void DCC::receiveFromHw2() {
 	dataPackage::DATA data;
 	mLogger->logInfo("start receiving via Hardware");
 	while (1) {
-		receivedData = mReceiverFromHw->receive();	//receive serialized DATA
+		receivedData = mReceiverFromHw->receiveWithGeoNetHeader();	//receive serialized DATA
 
 
 		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages

@@ -36,7 +36,7 @@
 
 #include <cstdint>
 
-/**ethertype for ethernet header used in wifi commuication*/
+/**ethertype for GeoNetworking*/
 static const uint16_t ETHERTYPE_CAR = 0x8947;
 
 /** Corresponding Hardware queue number for Priority */

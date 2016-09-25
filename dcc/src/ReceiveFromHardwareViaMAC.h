@@ -59,6 +59,13 @@ public:
 	 */
 	std::pair<std::string,std::string> receive();
 
+	/**
+	 * Looks for geonetworking ethertype in all the received packets and returns their ITS PDU.
+	 *
+	 * @return <MAC address of sender, ITSPDU>
+	 */
+	std::pair<std::string, std::string> receiveWithGeoNetHeader();
+
 private:
 	LoggingUtility* mLogger;
 
