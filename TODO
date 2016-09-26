@@ -4,6 +4,14 @@ COMMON
 CAM
 - Get rid of mLastSentCam in CaService
 - Config for high frequency container: basic vehicle/ RSU
-- Send to encoded cam to dcc
-- receive encoded cam from dcc
-- 
+
+
+Meeting:
+1) Hardcoded GeoNetworking header: Only look for very specific bits to identify CAM or DENM and that is it. Even geo location sent in header is not accurate.
+2) Separate config for CAMs from RSU and OBU. 
+3) Hardcoded CAMs. Link them to GPS, OBD2
+4) Internally everything works with protobuffers.
+5) DENM
+6) Cmake
+
+Any specific TODOs before mid/ end of November?
