@@ -88,7 +88,7 @@ public:
 	/**
 	 * Dumps the content in the buffer in hex format
 	 */
-	void dumpBuffer(uint8_t* buffer, int size);
+	void dumpBuffer(const uint8_t* buffer, int size);
 
 	std::string mOwnMac;
 private:
