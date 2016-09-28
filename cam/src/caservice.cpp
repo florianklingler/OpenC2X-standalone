@@ -106,22 +106,25 @@ CaService::~CaService() {
 //receive CAM from DCC and forward to LDM
 void CaService::receive() {
 	string envelope;		//envelope
-	string serializedData;	//byte string (serialized)
-	dataPackage::DATA data;
+	string serializedAsnCam;	//byte string (serialized)
+	string serializedProtoCam;
 
 	while (1) {
 		pair<string, string> received = mReceiverFromDcc->receive();
 		envelope = received.first;
-		serializedData = received.second;			//serialized DATA
+		serializedAsnCam = received.second;			//serialized DATA
 
-//		data.ParseFromString(serializedData);	//deserialize DATA
-//		serializedData = data.content();		//serialized CAM
-//		logDelay(serializedData);
-		CAM_t* cam = 0;//new CAM_t;
-		mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, serializedData);
+		CAM_t* cam = 0;
+		int res = mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, serializedAsnCam);
+		if (res != 0) {
+			mLogger->logError("Failed to decode received CAM. Error code: " + to_string(res));
+			continue;
+		}
+		camPackage::CAM camProto = convertAsn1toProtoBuf(cam);
+		camProto.SerializeToString(&serializedProtoCam);
 
 		mLogger->logInfo("Forward incoming CAM " + to_string(cam->header.stationID) + " to LDM");
-		mSenderToLdm->send(envelope, serializedData);	//send serialized CAM to LDM
+		mSenderToLdm->send(envelope, serializedProtoCam);	//send serialized CAM to LDM
 	}
 }
 
@@ -503,6 +506,17 @@ dataPackage::DATA CaService::generateData(string encodedCam) {
 	data.set_content(serializedCam);
 
 	return data;
+}
+
+camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
+	camPackage::CAM camProto;
+	camProto.set_stationid(to_string(cam->header.stationID));
+	camProto.set_id(messageID_cam);
+	camProto.set_content("CAM from " + to_string(cam->header.stationID));
+
+	// TODO: add gps and obd2 data
+
+	return camProto;
 }
 
 int main() {

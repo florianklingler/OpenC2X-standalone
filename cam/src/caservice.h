@@ -158,6 +158,11 @@ private:
 	 */
 	dataPackage::DATA generateData(std::string encodedCam);
 
+	/** Converts ASN1 CAM structure into CAM protocol buffer.
+	 * @return The newly generated CAM protocol buffer.
+	 */
+	camPackage::CAM convertAsn1toProtoBuf(CAM_t* cam);
+
 	/** Receives new GPS data from the GPS module.
 	 *
 	 */

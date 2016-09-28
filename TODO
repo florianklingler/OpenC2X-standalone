@@ -12,6 +12,8 @@ Meeting:
 3) Hardcoded CAMs. Link them to GPS, OBD2
 4) Internally everything works with protobuffers.
 5) DENM
-6) Cmake
+6) Cmake projects
+7) Wiki article for using ETSI stack on cohda
 
 Any specific TODOs before mid/ end of November?
+
