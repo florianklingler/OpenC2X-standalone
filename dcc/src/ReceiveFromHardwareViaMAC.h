@@ -30,6 +30,7 @@
 
 #include <utility/Constants.h>
 #include <utility/LoggingUtility.h>
+#include <buffers/build/data.pb.h>
 #include <string>
 #include <unistd.h> // Std. Fct.  getuid() and read()
 #include <netinet/in.h> // Socket Fct. (incl. <sys/socket.h>)
@@ -37,6 +38,12 @@
 // (ETH_P_ALL or ether_ntoa())
 // (struct in_addr or inet_ntoa())
 #include <net/ethernet.h> // Ethernet Header Structure
+
+struct ReceivedPacketInfo {
+	std::string mSenderMac;
+	dataPackage::DATA_Type mType;
+};
+
 
 /**
  * Receives Ethernet Packets from Hardware MAC Layer.
@@ -64,7 +71,7 @@ public:
 	 *
 	 * @return <MAC address of sender, ITSPDU>
 	 */
-	std::pair<std::string, std::string> receiveWithGeoNetHeader();
+	std::pair<ReceivedPacketInfo, std::string> receiveWithGeoNetHeader();
 
 private:
 	LoggingUtility* mLogger;

@@ -47,7 +47,7 @@ ReceiveFromHardwareViaMAC::~ReceiveFromHardwareViaMAC() {
 	close(mSocket);
 }
 
-pair<string,string> ReceiveFromHardwareViaMAC::receive(){
+pair<string,string> ReceiveFromHardwareViaMAC::receive() {
 
 	while(1){
 		//receive package, blocking
@@ -57,13 +57,14 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 			exit(1);
 		}
 
-		if(ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR){ // TODO: optimization: put this check into hw by creating the socets with ethertype_car instead of ALL ??
+		if(ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR) { // TODO: optimization: put this check into hw by creating the socets with ethertype_car instead of ALL ??
 			//not Car communication package, ignore! restart while loop and read next package
 			continue;
 		}
 
-		 /** not needed right now
-		 * get time of package arrival
+		 /**
+		  * not needed right now
+		  * get time of package arrival
 			time_t curtime;
 			struct timeval tv;
 			int milliseconds;
@@ -79,47 +80,48 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive(){
 
 		int payloadLength = mBytes - mLinkLayerLength;
 		//convert sender Mac from network byte order to char
-		string senderMac = ether_ntoa((struct ether_addr* )mEth_hdr->ether_shost);
+		string senderMac = ether_ntoa((struct ether_addr*)mEth_hdr->ether_shost);
 		string msg = string(mPayload,payloadLength);
 
 		return make_pair(senderMac,msg);
 	}
 }
 
-pair<string, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHeader() {
+pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHeader() {
 	while(1) {
-		//receive package, blocking
+		// receive package, blocking
 		mBytes = read(mSocket, mPacket, sizeof(mPacket));
-		if (mBytes == -1){
+		if (mBytes == -1) {
 			mLogger->logPError("reading from Socket failed");
 			exit(1);
 		}
-		if(ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR){ // TODO: optimization
-			//not GeoNetworking ethertype, ignore! Read next package
+		if (ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR) { // TODO: optimization
+			// not GeoNetworking ethertype, ignore! Read next package
 			continue;
 		}
 		mLogger->logInfo("GeoNetworking PDU");
 		int geoNetPDULen = mBytes - mLinkLayerLength;
-		//convert sender Mac from network byte order to char
+		// convert sender Mac from network byte order to char
 		string senderMac = ether_ntoa((struct ether_addr*)mEth_hdr->ether_shost);
 		// Hack! As of now, we are looking for very specific bits in the GeoNetworking header
 		char* geoNetPDU = mPacket + mLinkLayerLength;
-		if ((geoNetPDU[5]) == 80) {
+		if (geoNetPDU[5] == 80) {
 			// CAM
 			int camPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeader);
 			char* camPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeader);
 			string msg(camPDU, camPDULen);
 			mLogger->logInfo("Received CAM of size: " + to_string(camPDULen) + ", forwarding it to the CAM service");
-			return make_pair(senderMac, msg);
+			ReceivedPacketInfo info;
+			info.mSenderMac = senderMac;
+			info.mType = dataPackage::DATA_Type_CAM;
+			return make_pair(info, msg);
 		} else if (geoNetPDU[5] == 66) {
 			// DENM
-			mLogger->logInfo("Received DENM but we do not support standard compliant DENM support");
+			mLogger->logInfo("Received DENM but we do not handle standard compliant DENMs at the moment.");
 			continue;
 		} else {
 			// TODO: Possible cases?
 			continue;
 		}
 	}
-
-
 }

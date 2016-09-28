@@ -306,39 +306,31 @@ void DCC::receiveFromHw() {
 
 
 void DCC::receiveFromHw2() {
-	pair<string,string> receivedData;		//MAC Sender, serialized DATA
-	string* senderMac = &receivedData.first;
+	pair<ReceivedPacketInfo, string> receivedData;		//MAC Sender, serialized DATA
+	ReceivedPacketInfo* pktInfo = &receivedData.first;
 	string* serializedData = &receivedData.second;
-	dataPackage::DATA data;
 	mLogger->logInfo("start receiving via Hardware");
 	while (1) {
 		receivedData = mReceiverFromHw->receiveWithGeoNetHeader();	//receive serialized DATA
 
 
 		//check whether the mac of the sender and our own mac are the same and discard the package if we want to ignore those packages
-		if(mConfig.ignoreOwnMessages && senderMac->compare(mSenderToHw->mOwnMac) == 0){
+		if(mConfig.ignoreOwnMessages && pktInfo->mSenderMac.compare(mSenderToHw->mOwnMac) == 0) {
 			mLogger->logDebug("received own Message, discarding");
 			continue;
 		}
 
-		//TODO: Check if received packet is CAM or DENM
-		CAM_t* cam = 0;//new CAM_t;
-		// vector<uint8_t> vec(encodedCam.begin(), encodedCam.end());
-		int res = mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, *serializedData);
-//		asn_fprint(stdout, &asn_DEF_CAM, cam);
-		if (cam->header.messageID == messageID_cam)
-			mSenderToServices->send("CAM", *serializedData);
-
-
-//
-//		data.ParseFromString(*serializedData);		//deserialize DATA
-//		//processing...
-//		mLogger->logInfo("forward message from "+*senderMac +" from HW to services");
-//		switch(data.type()) {								//send serialized DATA to corresponding module
-//			case dataPackage::DATA_Type_CAM: 		mSenderToServices->send("CAM", *serializedData);	break;
-//			case dataPackage::DATA_Type_DENM:		mSenderToServices->send("DENM", *serializedData);	break;
-//			default:	break;
-//		}
+		mLogger->logInfo("forward packet from "+ pktInfo->mSenderMac +" from HW to services");
+		switch(pktInfo->mType) {								//send serialized DATA to corresponding module
+			case dataPackage::DATA_Type_CAM:
+				mSenderToServices->send("CAM", *serializedData);
+				break;
+			case dataPackage::DATA_Type_DENM:
+				mSenderToServices->send("DENM", *serializedData);
+				break;
+			default:
+				break;
+		}
 	}
 }
 
