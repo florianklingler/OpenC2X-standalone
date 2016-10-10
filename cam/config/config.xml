@@ -14,6 +14,7 @@
 	
 	<!-- Basic Container in CAM -->
 	<stationType>5</stationType> <!-- Passenger Car -->
+	<isRSU>0</isRSU> <!-- 0 for Vehicle, 1 for RSU -->
 	
 	
 	
