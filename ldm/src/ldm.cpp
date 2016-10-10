@@ -622,7 +622,7 @@ void LDM::printCam(camPackage::CAM cam) {
 	// set decimal precision to 15
 	stream  << setprecision(15);
 
-	stream << "CAM - " << Utils::readableTime(cam.createtime()) << ", MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
+	stream << "CAM - " << "MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
 	if (cam.has_gps()) {
 
 		stream << "\n\tGPS - " << Utils::readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
@@ -702,7 +702,7 @@ void LDM::receiveFromCa() {
 		serializedCam = received.second;
 		cam.ParseFromString(serializedCam);
 
-		printCam(cam);
+//		printCam(cam);
 		//ASSUMPTION: received cam is the newer than all cams that were received before.
 		//TODO: OPTIMIZATION: use pointers instead of copying cams.
 		camCache[cam.stationid()]=cam;

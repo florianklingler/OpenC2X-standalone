@@ -48,7 +48,6 @@ CaService::CaService(CaServiceConfig &config) {
 
 	mConfig = config;
 
-	mLastCamTime = Utils::currentTime();
 	mMsgUtils = new MessageUtils("CaService", mGlobalConfig.mExpNo);
 	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo);
 	mLogger->logStats("Station Id \tCAM id \tCreate Time \tReceive Time");
@@ -71,7 +70,7 @@ CaService::CaService(CaServiceConfig &config) {
 
 	if (mConfig.mGenerateMsgs) {
 		mTimer = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(100));
-		mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
+		mTimer->async_wait(boost::bind(&CaService::alarm, this, boost::asio::placeholders::error));
 		mIoService.run();
 	}
 	else {
@@ -120,6 +119,7 @@ void CaService::receive() {
 			mLogger->logError("Failed to decode received CAM. Error code: " + to_string(res));
 			continue;
 		}
+		//asn_fprint(stdout, &asn_DEF_CAM, cam);
 		camPackage::CAM camProto = convertAsn1toProtoBuf(cam);
 		camProto.SerializeToString(&serializedProtoCam);
 
@@ -209,48 +209,59 @@ double CaService::getHeading(double lat1, double lon1, double lat2, double lon2)
 }
 
 //periodically check generation rules for sending to LDM and DCC
-void CaService::triggerCam(const boost::system::error_code &ec) {
+void CaService::alarm(const boost::system::error_code &ec) {
 	// Check heading and position conditions only if we have valid GPS data
 	if(isGPSdataValid()) {
-
-		if(!mLastSentCam.has_gps()) {
+		if (!mLastSentCamInfo.hasGPS) {
 			sendCamInfo("First GPS data", -1);
 			mLogger->logInfo("First GPS data");
-			send();
-			scheduleNextTrigger();
+			trigger();
 			return;
 		}
 
 		//|current position - last CAM position| > 5 m
 		if(isPositionChanged()) {
-			send();
-			scheduleNextTrigger();
+			trigger();
 			return;
 		}
 
 		//|current heading (towards North) - last CAM heading| > 4 deg
 		if(isHeadingChanged()) {
-			send();
-			scheduleNextTrigger();
+			trigger();
 			return;
 		}
 	}
 
 	//|current speed - last CAM speed| > 1 m/s
 	if(isSpeedChanged()) {
-		send();
-		scheduleNextTrigger();
+		trigger();
 		return;
 	}
 
 	//max. time interval 1s
 	if(isTimeToTriggerCAM()) {
-		send();
-		scheduleNextTrigger();
+		trigger();
 		return;
 	}
 
-	scheduleNextTrigger();
+	scheduleNextAlarm();
+}
+
+void CaService::trigger() {
+	send();
+	updateLastSentCamInfo();
+	scheduleNextAlarm();
+}
+
+void CaService::updateLastSentCamInfo() {
+	cout << "Has GPS: " << mLastSentCamInfo.hasGPS << endl;
+	cout << "Lat, long, alt: " << mLastSentCamInfo.lastGps.latitude() << ", " << mLastSentCamInfo.lastGps.longitude() << ", " << endl;
+	cout << "Has OBD2: " << mLastSentCamInfo.hasOBD2 << endl;
+	cout << "Speed: " << mLastSentCamInfo.lastObd2.speed() << ", " << endl;
+	cout << "Heading: " << mLastSentCamInfo.lastHeading << endl;
+	cout << "Timestamp: " << mLastSentCamInfo.timestamp << endl;
+	cout << "-----------------------------------------------------------------" << endl;
+
 }
 
 bool CaService::isGPSdataValid() {
@@ -267,9 +278,9 @@ bool CaService::isGPSdataValid() {
 
 bool CaService::isHeadingChanged() {
 	mMutexLatestGps.lock();
-	double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+	double currentHeading = getHeading(mLastSentCamInfo.lastGps.latitude(), mLastSentCamInfo.lastGps.longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	if(currentHeading != -1) {
-		double deltaHeading = currentHeading - mLastSentCam.heading();
+		double deltaHeading = currentHeading - mLastSentCamInfo.lastHeading;
 		if (deltaHeading > 180) {
 			deltaHeading -= 360;
 		} else if (deltaHeading < -180) {
@@ -288,7 +299,7 @@ bool CaService::isHeadingChanged() {
 
 bool CaService::isPositionChanged() {
 	mMutexLatestGps.lock();
-	double distance = getDistance(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+	double distance = getDistance(mLastSentCamInfo.lastGps.latitude(), mLastSentCamInfo.lastGps.longitude(), mLatestGps.latitude(), mLatestGps.longitude());
 	if(distance > 5.0) {
 		sendCamInfo("distance", distance);
 		mLogger->logInfo("distance: " + to_string(distance));
@@ -308,7 +319,7 @@ bool CaService::isSpeedChanged() {
 		return false;
 	}
 	mObd2Valid = true;
-	double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCam.obd2().speed());
+	double deltaSpeed = abs(mLatestObd2.speed() - mLastSentCamInfo.lastObd2.speed());
 	if(deltaSpeed > 1.0) {
 		sendCamInfo("speed", deltaSpeed);
 		mLogger->logInfo("deltaSpeed: " + to_string(deltaSpeed));
@@ -322,7 +333,7 @@ bool CaService::isSpeedChanged() {
 bool CaService::isTimeToTriggerCAM() {
 	//max. time interval 1s
 	int64_t currentTime = Utils::currentTime();
-	int64_t deltaTime = currentTime - mLastSentCam.createtime();
+	int64_t deltaTime = currentTime - mLastSentCamInfo.timestamp;
 	if(deltaTime >= 1*1000*1000*1000) {
 		sendCamInfo("time", deltaTime);
 		mLogger->logInfo("deltaTime: " + to_string(deltaTime));
@@ -331,39 +342,41 @@ bool CaService::isTimeToTriggerCAM() {
 	return false;
 }
 
-void CaService::scheduleNextTrigger() {
+void CaService::scheduleNextAlarm() {
 	//min. time interval 0.1 s
 	mTimer->expires_from_now(boost::posix_time::millisec(100));
-	mTimer->async_wait(boost::bind(&CaService::triggerCam, this, boost::asio::placeholders::error));
+	mTimer->async_wait(boost::bind(&CaService::alarm, this, boost::asio::placeholders::error));
 }
 
 //generate CAM and send to LDM and DCC
 void CaService::send() {
 	string serializedData;
-	camPackage::CAM cam;
+//	camPackage::CAM cam;
 	dataPackage::DATA data;
 //  Project group sending CAM[
-	cam = generateCam();
+//	cam = generateCam();
 //	data = generateData(cam);
 //	data.SerializeToString(&serializedData);
 //	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
 //	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
 //	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
 //
-	mLastSentCam = cam;
+//	mLastSentCam = cam;
 //]
 
 	// Standard compliant CAM
-	vector<uint8_t> encodedCam = generateCam2();
+	CAM_t* cam = generateCam2();
+	vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
 	string strCam(encodedCam.begin(), encodedCam.end());
 	cout << "Encoded CAM size " << encodedCam.size() << " and string len: " << strCam.length() << endl;
 
-	data.set_id(cam.id());
+	data.set_id(2);
 	data.set_type(dataPackage::DATA_Type_CAM);
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
-	data.set_createtime(cam.createtime());
-	data.set_validuntil(cam.createtime() + mConfig.mExpirationTime*1000*1000*1000);
+	int64_t currTime = Utils::currentTime();
+	data.set_createtime(currTime);
+	data.set_validuntil(currTime + mConfig.mExpirationTime*1000*1000*1000);
 	data.set_content(strCam);
 	cout << "encoded string: " << strCam << endl;
 
@@ -371,13 +384,12 @@ void CaService::send() {
 	mLogger->logInfo("Send new CAM " + to_string(data.id()) + " to DCC and LDM\n");
 
 	mSenderToDcc->send("CAM", serializedData);	//send serialized DATA to DCC
-	mSenderToLdm->send("CAM", data.content()); //send serialized CAM to LDM
-//
-//	mLastSentCam = cam;
-//
-//	CAM_t* decodedcam = 0;
-//	mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&decodedcam, strCam);
-////	asn_fprint(stdout, &asn_DEF_CAM, decodedcam);
+
+	camPackage::CAM camProto = convertAsn1toProtoBuf(cam);
+	string serializedProtoCam;
+	camProto.SerializeToString(&serializedProtoCam);
+	mSenderToLdm->send("CAM", serializedProtoCam); //send serialized CAM to LDM
+    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
 }
 
 //generate new CAM with increasing ID, current timestamp and latest gps data
@@ -395,8 +407,8 @@ camPackage::CAM CaService::generateCam() {
 		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
 		cam.set_allocated_gps(gps);
 
-		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-		cam.set_heading(currentHeading);
+//		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+//		cam.set_heading(currentHeading);
 	}
 	mMutexLatestGps.unlock();
 
@@ -411,28 +423,50 @@ camPackage::CAM CaService::generateCam() {
 	return cam;
 }
 
-vector<uint8_t> CaService::generateCam2() {
+CAM_t* CaService::generateCam2() {
 	cout << "generateCAM2  " << endl; //<< mGlobalConfig.mStationID << endl;
-	CAM_t* cam = static_cast<CAM_t*>( calloc(1, sizeof(CAM_t)) );
+	CAM_t* cam = static_cast<CAM_t*>(calloc(1, sizeof(CAM_t)));
 	if (!cam) {
 		throw runtime_error("could not allocate CAM_t");
 	}
 	cout << " local " << cam << " and size : " << sizeof(*cam) << " " << sizeof(CAM_t) << endl;
 	// ITS pdu header
 	//TODO: GSP: station id is 0..4294967295
-	cam->header.stationID = mIdCounter; //mGlobalConfig.mStationID;
+	cam->header.stationID = mGlobalConfig.mStationID;// mIdCounter; //
 	cam->header.messageID = messageID_cam;
 	cam->header.protocolVersion = protocolVersion_currentVersion;
 
 	// generation delta time
-	cam->cam.generationDeltaTime = 0;
+	int64_t currTime = Utils::currentTime();
+	if (mLastSentCamInfo.timestamp) {
+		cam->cam.generationDeltaTime = (currTime - mLastSentCamInfo.timestamp) / (1000000);
+	} else {
+		cam->cam.generationDeltaTime = 0;
+	}
+	mLastSentCamInfo.timestamp = currTime;
 
 	// Basic container
 	cam->cam.camParameters.basicContainer.stationType = StationType_unknown;
-	cam->cam.camParameters.basicContainer.referencePosition.latitude = 0;
-	cam->cam.camParameters.basicContainer.referencePosition.longitude = 0;
-	cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeValue = 0;
-	cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeConfidence = 0;
+
+	mMutexLatestGps.lock();
+	if (mGpsValid) {
+		cam->cam.camParameters.basicContainer.referencePosition.latitude = mLatestGps.latitude() * 10000000;
+		cam->cam.camParameters.basicContainer.referencePosition.longitude = mLatestGps.longitude() * 10000000;
+		cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeValue = mLatestGps.altitude();
+		double currentHeading = getHeading(mLastSentCamInfo.lastGps.latitude(), mLastSentCamInfo.lastGps.longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+
+		mLastSentCamInfo.hasGPS = true;
+		mLastSentCamInfo.lastGps = gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
+		mLastSentCamInfo.lastHeading = currentHeading;
+	} else {
+		mLastSentCamInfo.hasGPS = false;
+		cam->cam.camParameters.basicContainer.referencePosition.latitude = Latitude_unavailable;
+		cam->cam.camParameters.basicContainer.referencePosition.longitude = Longitude_unavailable;
+		cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
+	}
+	cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeConfidence = AltitudeConfidence_unavailable;
+	mMutexLatestGps.unlock();
+
 	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorConfidence = 0;
 	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorOrientation = 0;
 	cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMinorConfidence = 0;
@@ -454,17 +488,28 @@ vector<uint8_t> CaService::generateCam2() {
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationValue = LongitudinalAccelerationValue_unavailable;
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationConfidence = AccelerationConfidence_unavailable;
 
-	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue = SpeedValue_unavailable;
+
+	mMutexLatestObd2.lock();
+	if (mObd2Valid) {
+		cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue = mLatestObd2.speed();
+		mLastSentCamInfo.hasOBD2 = true;
+		mLastSentCamInfo.lastObd2 = obd2Package::OBD2(mLatestObd2); //data needs to be copied to a new buffer because new obd2 data can be received before sending
+	} else {
+		mLastSentCamInfo.hasOBD2 = false;
+		cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue = SpeedValue_unavailable;
+	}
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence = SpeedConfidence_unavailable;
+	mMutexLatestObd2.unlock();
 
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue = VehicleLengthValue_unavailable;
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthConfidenceIndication = VehicleLengthConfidenceIndication_unavailable;
 
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth = VehicleWidth_unavailable;
 
-
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateValue = YawRateValue_unavailable;
 	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateConfidence = YawRateConfidence_unavailable;
+
+	// Optional
 	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.accelerationControl->
 	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.cenDsrcTollingZone->
 	//	cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.verticalAcceleration
@@ -477,15 +522,17 @@ vector<uint8_t> CaService::generateCam2() {
 	//	cam->cam.camParameters.lowFrequencyContainer->present =
 	//	cam->cam.camParameters.specialVehicleContainer->present =
 
-	// Encode message
-    vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
+	// Printing the cam structure
+	// asn_fprint(stdout, &asn_DEF_CAM, cam);
 
-    // Printing the cam structure
-    // asn_fprint(stdout, &asn_DEF_CAM, cam);
+	// Encode message
+//    vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
 
     //TODO: Free the allocated structure for cam. Is this enough?
-    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
-    return encodedCam;
+//    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
+//    return encodedCam;
+
+    return cam;
 }
 
 dataPackage::DATA CaService::generateData(string encodedCam) {
@@ -513,9 +560,20 @@ camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 	camProto.set_stationid(to_string(cam->header.stationID));
 	camProto.set_id(messageID_cam);
 	camProto.set_content("CAM from " + to_string(cam->header.stationID));
+	camProto.set_createtime(Utils::currentTime());
 
-	// TODO: add gps and obd2 data
+	// GPS
+	gpsPackage::GPS* gps = new gpsPackage::GPS;
+	gps->set_latitude(cam->cam.camParameters.basicContainer.referencePosition.latitude *1.0 / 10000000);
+	gps->set_longitude(cam->cam.camParameters.basicContainer.referencePosition.longitude *1.0 / 10000000);
+	cout << "setting lat: " << gps->latitude() << endl;
+	gps->set_altitude(0);
+	camProto.set_allocated_gps(gps);
 
+	// OBD2
+	obd2Package::OBD2* obd2 = new obd2Package::OBD2;
+	obd2->set_speed(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue);
+	camProto.set_allocated_obd2(obd2);
 	return camProto;
 }
 

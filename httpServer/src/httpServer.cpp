@@ -29,6 +29,8 @@
 #include <utility/CommunicationSender.h>
 #include <buffers/build/trigger.pb.h>
 
+using namespace std;
+
 INITIALIZE_EASYLOGGINGPP
 
 httpServer::httpServer(GlobalConfig globalConfig) {
@@ -281,7 +283,7 @@ std::string httpServer::requestCamInfo(std::string condition) {
 }
 
 std::string httpServer::myMac() {
-	return "{\"myMac\":\"" + mGlobalConfig.mMac + "\"}";
+	return "{\"myMac\":\"" + to_string(mGlobalConfig.mStationID) + "\"}";
 }
 
 int main(){

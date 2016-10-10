@@ -72,6 +72,6 @@ struct GlobalConfig {
 			std::cerr << "Invalid MAC" << std::endl;
 			exit(1);
 		}
-		mStationID = stringToMac(mMac);
+		mStationID = 12345678;//stringToMac(mMac);
 	}
 };

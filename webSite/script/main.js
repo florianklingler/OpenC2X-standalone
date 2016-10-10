@@ -46,6 +46,7 @@ camData = {
 			},camData.refreshRate);
 			//get own mac
 			requestMyMac(function(data) {
+				console.log(data);
 				this.mymac = data.myMac;
 			}.bind(this));
 			return false;
@@ -82,6 +83,7 @@ camData = {
 	},
 	getLastOwnCam : function(callback){
 		camData.init();
+		console.log(camData);
 		if(callback){
 			callback(camData.cams.get(camData.mymac));
 		} else {

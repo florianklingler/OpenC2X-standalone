@@ -136,7 +136,12 @@ private:
 	 * The speed since the last CAM changed by more than 1m/s.
 	 * @param ec Boost error code
 	 */
-	void triggerCam(const boost::system::error_code &ec);
+	void alarm(const boost::system::error_code &ec);
+
+	/** Triggers sending of CAM.
+	 *
+	 */
+	void trigger();
 
 	/** Generates a new CAM.
 	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
@@ -148,7 +153,7 @@ private:
 	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
 	 * @return The newly generated CAM.
 	 */
-	std::vector<uint8_t> generateCam2();
+	/*std::vector<uint8_t>*/CAM_t* generateCam2();
 
 	/** Generates a new data package that includes the specified CAM.
 	 * The specified CAM is serialized and included in the new data package.
@@ -196,12 +201,17 @@ private:
 	/** Schedules next triggering checks for new CAM.
 	 *
 	 */
-	void scheduleNextTrigger();
+	void scheduleNextAlarm();
 
 	/** Checks if the last received GPS data is still valid.
-	 * @return True if gps data is valid, false otherwise.
+	 * @return True if GPS data is valid, false otherwise.
 	 */
 	bool isGPSdataValid();
+
+	/**
+	 * Update last sent CAM details
+	 */
+	void updateLastSentCamInfo();
 
 	GlobalConfig mGlobalConfig;
 	CaServiceConfig mConfig;
@@ -241,9 +251,17 @@ private:
 	std::mutex mMutexLatestObd2;
 
 	// TODO: GSP: Get rid of last sent cam
-	camPackage::CAM mLastSentCam;
-	uint64_t mLastCamTime;
+//	camPackage::CAM mLastSentCam;
 
+	struct LastSentCamInfo {
+		bool hasGPS = false;
+		gpsPackage::GPS lastGps;
+		bool hasOBD2 = false;
+		obd2Package::OBD2 lastObd2;
+		double lastHeading;
+		int64_t timestamp = 0;
+	};
+	LastSentCamInfo mLastSentCamInfo;
 //	CAM_t* mCamStructure;
 };
 
