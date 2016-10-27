@@ -43,9 +43,6 @@ vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *str
 	asn_enc_rval_t erv = uper_encode(td, const_cast<void*>(structPtr), &MessageUtils::writeOut, &payload);
 	mLogger->logInfo("Encoded bytes: " + to_string(erv.encoded));
 	if(erv.encoded == -1) {
-//		stringstream ss;
-//		ss << "Could not encode " << erv.failed_type->name << " " << strerror(errno) << endl;
-//		mLogger->logError(ss.str());
 		throw runtime_error("Encoding failed");
 	}
 	return payload;
