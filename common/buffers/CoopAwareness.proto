@@ -1,0 +1,6 @@
+package its;
+
+message CoopAwareness {
+	required int64 genDeltaTime = 1;
+	required its.CamParameters = 2;
+}

@@ -1,0 +1,7 @@
+package its;
+
+message LowFreqContainer {
+	enum Type {BASIC_VEHICLE_LOW_FREQ_CONTAINER = 1;}
+	required Type = 1;
+	optional its.BasicVehicleLowFreqContainer = 2;
+}

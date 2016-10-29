@@ -1,0 +1,5 @@
+package its;
+
+message RsuHighFreqContainer {
+	repeated its.ProtectedCommunicationZone = 1;
+}

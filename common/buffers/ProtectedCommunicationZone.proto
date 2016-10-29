@@ -1,0 +1,10 @@
+package its;
+
+message ProtectedCommunicationZone {
+	required int64 protectedZoneType = 1;
+	optional int64 expiryTime = 2;
+	required int64 protectedZoneLatitude = 3;
+	required int64 protectedZoneLongitude = 4;
+	optional int64 protectedZoneRadius = 5;
+	optional int64 protectedZoneId = 6;
+}

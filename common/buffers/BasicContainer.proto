@@ -1,0 +1,12 @@
+package its;
+
+message BasicContainer {
+	required int64 stationType = 1;
+	required int64 latitude = 2;
+	required int64 longitude = 3;
+	required int64 semiMajorConfidence = 4;
+	required int64 semiMinorConfidence = 5;
+	required int64 semiMajorOrientation = 6;
+	required int64 altitude = 7;
+	required int64 altitudeConfidence = 8;
+}

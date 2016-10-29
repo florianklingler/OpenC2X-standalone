@@ -1,0 +1,8 @@
+package its;
+
+message CamParams {
+	required its.BasicContainer = 1;
+	required its.HighFreqContainer = 2;
+	optional its.LowFreqContainer = 3;
+	optional its.SpecialVehicleContainer = 4;
+}

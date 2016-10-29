@@ -1,0 +1,7 @@
+package its;
+
+message ItsPduHeader {
+	required int64 protocolVersion = 1;
+	required int64 messageID = 2;
+	required uint64 stationID = 3;
+}

@@ -1,0 +1,7 @@
+package its;
+
+message BasicVehicleLowFreqContainer {
+	required int64 vehicleRole = 1;
+	required int64 exteriorLights = 2;
+	repeated its.PathPoint = 3;
+}

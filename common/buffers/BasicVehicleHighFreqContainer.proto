@@ -1,0 +1,31 @@
+package its;
+
+message BasicVehicleHighFreqContainer {
+	required int64 heading = 1;
+	required int64 headingConfidence = 2;
+	required int64 speed = 3;
+	required int64 speedConfidence = 4;
+	required int64 driveDirection = 5;
+	required int64 vehicleLength = 6;
+	required int64 vehicleLengthConfidence = 7;
+	required int64 vehicleWidth = 8;
+	required int64 longitudinalAcceleration = 9;
+	required int64 longitudinalAccelerationConfidence = 10;
+	required int64 curvature = 11;
+	required int64 curvatureConfidence = 12;
+	required int64 curvatureCalcMode = 13;
+	required int64 yawRate = 14;
+	required int64 yawRateConfidence = 15;
+	optional int64 accelerationControl = 16;
+	optional int64 lanePosition = 17;
+	optional int64 steeringWheelAngle = 18;
+	optional int64 steeringWheelAngleConfidence = 19;
+	optional int64 lateralAcceleration = 20;
+	optional int64 lateralAccelerationConfidence = 21;
+	optional int64 verticalAcceleration = 22;
+	optional int64 verticalAccelerationConfidence = 23;
+	optional int64 performanceClass = 24;
+	optional int64 protectedZoneLatitude = 25;
+	optional int64 protectedZoneLongitude = 26;
+	optional int64 cenDsrcTollingZoneId = 27;
+}

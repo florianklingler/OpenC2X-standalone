@@ -1,0 +1,8 @@
+package its;
+
+message PathPoint {
+	required int64 deltaLat = 1;
+	required int64 deltaLong = 2;
+	required int64 deltaAlt = 3;
+	optional int64 pathDeltaTime = 4; 
+}
