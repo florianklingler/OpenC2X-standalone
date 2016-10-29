@@ -1,8 +1,12 @@
 package its;
+import "BasicContainer.proto";
+import "HighFreqContainer.proto";
+import "LowFreqContainer.proto";
+import "SpecialVehicleContainer.proto";
 
-message CamParams {
-	required its.BasicContainer = 1;
-	required its.HighFreqContainer = 2;
-	optional its.LowFreqContainer = 3;
-	optional its.SpecialVehicleContainer = 4;
+message CamParameters {
+	required its.BasicContainer basicContainer = 1;
+	required its.HighFreqContainer highFreqContainer= 2;
+	optional its.LowFreqContainer lowFreqContainer = 3;
+	optional its.SpecialVehicleContainer specialVehicleContainer = 4;
 }

@@ -1,8 +1,11 @@
 package its;
 
+import "BasicVehicleHighFreqContainer.proto";
+import "RsuHighFreqContainer.proto";
+
 message HighFreqContainer {
 	enum Type {BASIC_HIGH_FREQ_CONTAINER = 1; RSU_HIGH_FREQ_CONTAINER = 2;}
-	required Type type;
-	optional its.BasicVehicleHighFreqContainer = 2;
-	optional its.RsuHighFreqContainer = 3;
+	required Type type = 1;
+	optional its.BasicVehicleHighFreqContainer basicVehicleHighFreqContainer = 2;
+	optional its.RsuHighFreqContainer rsuHighFreqContainer = 3;
 }

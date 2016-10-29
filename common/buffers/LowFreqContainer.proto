@@ -1,7 +1,9 @@
 package its;
 
+import "BasicVehicleLowFreqContainer.proto";
+
 message LowFreqContainer {
 	enum Type {BASIC_VEHICLE_LOW_FREQ_CONTAINER = 1;}
-	required Type = 1;
-	optional its.BasicVehicleLowFreqContainer = 2;
+	required Type type = 1;
+	optional its.BasicVehicleLowFreqContainer basicVehicleLowFreqContainer = 2;
 }

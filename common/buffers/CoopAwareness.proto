@@ -1,6 +1,8 @@
 package its;
 
+import "CamParameters.proto";
+
 message CoopAwareness {
 	required int64 genDeltaTime = 1;
-	required its.CamParameters = 2;
+	required its.CamParameters camParameters = 2;
 }

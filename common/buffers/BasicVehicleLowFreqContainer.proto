@@ -1,7 +1,9 @@
 package its;
 
+import "PathPoint.proto";
+
 message BasicVehicleLowFreqContainer {
 	required int64 vehicleRole = 1;
 	required int64 exteriorLights = 2;
-	repeated its.PathPoint = 3;
+	repeated its.PathPoint pathPoint = 3;
 }
