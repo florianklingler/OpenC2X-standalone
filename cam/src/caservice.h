@@ -37,6 +37,8 @@
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
 #include <buffers/build/camInfo.pb.h>
+#include <buffers/build/CoopAwareness.pb.h>
+#include <buffers/build/ItsPduHeader.pb.h>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>

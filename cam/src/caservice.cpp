@@ -171,11 +171,11 @@ void CaService::sendCamInfo(string triggerReason, double delta) {
 
 //log delay of received CAM
 void CaService::logDelay(string serializedCam) {
-	camPackage::CAM cam;
-	cam.ParseFromString(serializedCam);
-	int64_t createTime = cam.createtime();
-	int64_t receiveTime = Utils::currentTime();
-	mLogger->logStats(cam.stationid() + "\t" + to_string(cam.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
+//	camPackage::CAM cam;
+//	cam.ParseFromString(serializedCam);
+//	int64_t createTime = cam.createtime();
+//	int64_t receiveTime = Utils::currentTime();
+//	mLogger->logStats(cam.stationid() + "\t" + to_string(cam.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
 }
 
 double CaService::getDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -372,29 +372,29 @@ void CaService::send() {
 camPackage::CAM CaService::generateCam() {
 	camPackage::CAM cam;
 
-	//create CAM
-	cam.set_stationid(mGlobalConfig.mMac);
-	cam.set_id(mIdCounter++);
-	cam.set_content("CAM from CA service");
-	cam.set_createtime(Utils::currentTime());
-
-	mMutexLatestGps.lock();
-	if(mGpsValid) {														//only add gps if valid data is available
-		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
-		cam.set_allocated_gps(gps);
-
-//		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-//		cam.set_heading(currentHeading);
-	}
-	mMutexLatestGps.unlock();
-
-	mMutexLatestObd2.lock();
-	if(mObd2Valid) {													//only add obd2 if valid data is available
-		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
-		cam.set_allocated_obd2(obd2);
-		//TODO: delete obd2, gps?
-	}
-	mMutexLatestObd2.unlock();
+//	//create CAM
+//	cam.set_stationid(mGlobalConfig.mMac);
+//	cam.set_id(mIdCounter++);
+//	cam.set_content("CAM from CA service");
+//	cam.set_createtime(Utils::currentTime());
+//
+//	mMutexLatestGps.lock();
+//	if(mGpsValid) {														//only add gps if valid data is available
+//		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
+//		cam.set_allocated_gps(gps);
+//
+////		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
+////		cam.set_heading(currentHeading);
+//	}
+//	mMutexLatestGps.unlock();
+//
+//	mMutexLatestObd2.lock();
+//	if(mObd2Valid) {													//only add obd2 if valid data is available
+//		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
+//		cam.set_allocated_obd2(obd2);
+//		//TODO: delete obd2, gps?
+//	}
+//	mMutexLatestObd2.unlock();
 
 	return cam;
 }
@@ -513,7 +513,6 @@ CAM_t* CaService::generateCam2() {
     //TODO: Free the allocated structure for cam. Is this enough?
 //    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
 //    return encodedCam;
-
     return cam;
 }
 
@@ -539,23 +538,121 @@ dataPackage::DATA CaService::generateData(string encodedCam) {
 
 camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 	camPackage::CAM camProto;
-	camProto.set_stationid(to_string(cam->header.stationID));
-	camProto.set_id(messageID_cam);
-	camProto.set_content("CAM from " + to_string(cam->header.stationID));
-	camProto.set_createtime(Utils::currentTime());
+	// header
+	its::ItsPduHeader* header = new its::ItsPduHeader;
+	header->set_messageid(cam->header.messageID);
+	header->set_protocolversion(cam->header.protocolVersion);
+	header->set_stationid(cam->header.stationID);
+	camProto.set_allocated_header(header);
 
-	// GPS
-	gpsPackage::GPS* gps = new gpsPackage::GPS;
-	gps->set_latitude(cam->cam.camParameters.basicContainer.referencePosition.latitude *1.0 / 10000000);
-	gps->set_longitude(cam->cam.camParameters.basicContainer.referencePosition.longitude *1.0 / 10000000);
-	gps->set_altitude(0);
-	camProto.set_allocated_gps(gps);
+	// coop awareness
+	its::CoopAwareness* coop = new its::CoopAwareness;
+	coop->set_gendeltatime(cam->cam.generationDeltaTime);
+	its::CamParameters* params = new its::CamParameters;
 
-	// OBD2
-	obd2Package::OBD2* obd2 = new obd2Package::OBD2;
-	obd2->set_speed(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue);
-	camProto.set_allocated_obd2(obd2);
+	// basic container
+	its::BasicContainer* basicContainer = new its::BasicContainer;
+
+	basicContainer->set_stationtype(cam->cam.camParameters.basicContainer.stationType);
+	basicContainer->set_latitude(cam->cam.camParameters.basicContainer.referencePosition.latitude);
+	basicContainer->set_longitude(cam->cam.camParameters.basicContainer.referencePosition.longitude);
+	basicContainer->set_altitude(cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeValue);
+	basicContainer->set_altitudeconfidence(cam->cam.camParameters.basicContainer.referencePosition.altitude.altitudeConfidence);
+	basicContainer->set_semimajorconfidence(cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorConfidence);
+	basicContainer->set_semiminorconfidence(cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMinorConfidence);
+	basicContainer->set_semimajororientation(cam->cam.camParameters.basicContainer.referencePosition.positionConfidenceEllipse.semiMajorOrientation);
+	params->set_allocated_basiccontainer(basicContainer);
+
+	// high frequency container
+	its::HighFreqContainer* highFreqContainer = new its::HighFreqContainer;
+	its::BasicVehicleHighFreqContainer* basicHighFreqContainer = 0;
+	its::RsuHighFreqContainer* rsuHighFreqContainer = 0;
+	switch (cam->cam.camParameters.highFrequencyContainer.present) {
+		case HighFrequencyContainer_PR_basicVehicleContainerHighFrequency:
+			highFreqContainer->set_type(its::HighFreqContainer_Type_BASIC_HIGH_FREQ_CONTAINER);
+			basicHighFreqContainer = new its::BasicVehicleHighFreqContainer();
+			basicHighFreqContainer->set_heading(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingValue);
+			basicHighFreqContainer->set_headingconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.heading.headingConfidence);
+			basicHighFreqContainer->set_speed(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue);
+			basicHighFreqContainer->set_speedconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedConfidence);
+			basicHighFreqContainer->set_drivedirection(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.driveDirection);
+			basicHighFreqContainer->set_vehiclelength(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthValue);
+			basicHighFreqContainer->set_vehiclelengthconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleLength.vehicleLengthConfidenceIndication);
+			basicHighFreqContainer->set_vehiclewidth(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.vehicleWidth);
+			basicHighFreqContainer->set_longitudinalacceleration(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationValue);
+			basicHighFreqContainer->set_longitudinalaccelerationconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.longitudinalAcceleration.longitudinalAccelerationValue);
+			basicHighFreqContainer->set_curvature(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvature.curvatureValue);
+			basicHighFreqContainer->set_curvatureconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvature.curvatureConfidence);
+			basicHighFreqContainer->set_curvaturecalcmode(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.curvatureCalculationMode);
+			basicHighFreqContainer->set_yawrate(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateValue);
+			basicHighFreqContainer->set_yawrateconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateConfidence);
+
+			// optional fields
+//			basicHighFreqContainer->set_accelerationcontrol();
+//			basicHighFreqContainer->set_laneposition();
+//			basicHighFreqContainer->set_steeringwheelangle();
+//			basicHighFreqContainer->set_steeringwheelangleconfidence();
+//			basicHighFreqContainer->set_lateralacceleration();
+//			basicHighFreqContainer->set_lateralaccelerationconfidence();
+//			basicHighFreqContainer->set_verticalacceleration();
+//			basicHighFreqContainer->set_verticalaccelerationconfidence();
+//			basicHighFreqContainer->set_performanceclass();
+//			basicHighFreqContainer->set_protectedzonelatitude();
+//			basicHighFreqContainer->set_has_protectedzonelongitude();
+//			basicHighFreqContainer->set_cendsrctollingzoneid();
+
+			highFreqContainer->set_allocated_basicvehiclehighfreqcontainer(basicHighFreqContainer);
+			break;
+
+		case HighFrequencyContainer_PR_rsuContainerHighFrequency:
+			highFreqContainer->set_type(its::HighFreqContainer_Type_RSU_HIGH_FREQ_CONTAINER);
+
+			rsuHighFreqContainer = new its::RsuHighFreqContainer();
+			// optional fields
+//			rsuHighFreqContainer->
+
+			highFreqContainer->set_allocated_rsuhighfreqcontainer(rsuHighFreqContainer);
+			break;
+
+		default:
+			break;
+	}
+	params->set_allocated_highfreqcontainer(highFreqContainer);
+
+	// low frequency container (optional)
+	if(!cam->cam.camParameters.lowFrequencyContainer) {
+		// fill in the low freq container
+	}
+
+	// special vehicle container (optional)
+	if(!cam->cam.camParameters.specialVehicleContainer) {
+		// fill in the special vehicle container
+	}
+
+	coop->set_allocated_camparameters(params);
+	camProto.set_allocated_coop(coop);
+
 	return camProto;
+
+	////////////////////////////////////////////////////////////
+//	camPackage::CAM camProto;
+//	camProto.set_stationid(to_string(cam->header.stationID));
+//	camProto.set_id(messageID_cam);
+//	camProto.set_content("CAM from " + to_string(cam->header.stationID));
+//	camProto.set_createtime(Utils::currentTime());
+//
+//	// GPS
+//	gpsPackage::GPS* gps = new gpsPackage::GPS;
+//	gps->set_latitude(cam->cam.camParameters.basicContainer.referencePosition.latitude *1.0 / 10000000);
+//	gps->set_longitude(cam->cam.camParameters.basicContainer.referencePosition.longitude *1.0 / 10000000);
+//	gps->set_altitude(0);
+//	camProto.set_allocated_gps(gps);
+//
+//	// OBD2
+//	obd2Package::OBD2* obd2 = new obd2Package::OBD2;
+//	obd2->set_speed(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue);
+//	camProto.set_allocated_obd2(obd2);
+//	return camProto;
 }
 
 int main() {
