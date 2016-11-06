@@ -117,9 +117,20 @@ void LDM::createTables() {
 	char* errmsg = 0;
 
 	//create CAM table
+//	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
+//			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, heading DOUBLE, " \
+//			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
-			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, heading DOUBLE, " \
-			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+			"key INTEGER PRIMARY KEY, protocolVersion INTEGER, messageId INTEGER, stationId INTEGER, "\
+			"genDeltaTime INTEGER, stationType INTEGER, latitude INTEGER, longitude INTEGER, semiMajorConfidence INTEGER, "\
+			"semiMinorConfidence INTEGER, semiMajorOrientation INTEGER, altitude INTEGER, altitudeConfidenc INTEGER, "\
+			"type  INTEGER, heading INTEGER, headingConfidence INTEGER, speed INTEGER, speedConfidence INTEGER, driveDirection INTEGER, "\
+			"vehicleLength INTEGER, vehicleLengthConfidence INTEGER, vehicleWidth INTEGER, longitudinalAcceleration INTEGER, "\
+			"longitudinalAccelerationConfidence INTEGER, curvature INTEGER, curvatureConfidence INTEGER, curvatureCalcMode INTEGER, "\
+			"yawRate INTEGER, yawRateConfidence INTEGER, accelerationControl INTEGER, lanePosition INTEGER, steeringWheelAngle INTEGER, "\
+			"steeringWheelAngleConfidence INTEGER, lateralAcceleration INTEGER, lateralAccelerationConfidence INTEGER, verticalAcceleration INTEGER, "\
+			"verticalAccelerationConfidence INTEGER, performanceClass INTEGER, protectedZoneLatitude INTEGER, protectedZoneLongitude INTEGER, "\
+			"cendSrcTollingZoneId INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -255,42 +266,98 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 	if (camCache.empty()){
 		sqlite3_stmt *stmt;
 		//sql from http://stackoverflow.com/questions/1313120/retrieving-the-last-record-in-each-group; have to use createTime instead of id because id isn't necessarily unique and growing
-		string sqlCommand = "SELECT cam1.* from CAM cam1 LEFT JOIN CAM cam2 ON (cam1.stationId = cam2.stationId AND cam1.createTime < cam2.createTime) WHERE cam2.createTime IS NULL";
+		string sqlCommand = "SELECT cam1.* from CAM cam1 LEFT JOIN CAM cam2 ON (cam1.stationId = cam2.stationId AND cam1.key < cam2.key) WHERE cam2.key IS NULL";
 
 		char* errmsg = 0;
 		mCamMutex.lock();
 		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 				camPackage::CAM cam;
+				// header
+				its::ItsPduHeader* header = new its::ItsPduHeader;
+				header->set_messageid(sqlite3_column_int64(stmt, 1));
+				header->set_protocolversion(sqlite3_column_int64(stmt, 2));
+				header->set_stationid(sqlite3_column_int64(stmt, 3));
+				cam.set_allocated_header(header);
+				// coop awareness
+				its::CoopAwareness* coop = new its::CoopAwareness;
+				coop->set_gendeltatime(sqlite3_column_int64(stmt, 4));
+				its::CamParameters* params = new its::CamParameters;
 
-				//set attributes retrieved from result columns
-				cam.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
-				cam.set_id(sqlite3_column_int(stmt, 2));
-				cam.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
-				cam.set_createtime(sqlite3_column_int64(stmt, 4));
+				// basic container
+				its::BasicContainer* basicContainer = new its::BasicContainer;
 
-				//add GPS if available
-				int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
-				if (gpsRowId > 0) {
-					dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-					gpsPackage::GPS* gps = new gpsPackage::GPS();
-					gps->ParseFromString(ldmData.data(0));
-					cam.set_allocated_gps(gps);
+				basicContainer->set_stationtype(sqlite3_column_int64(stmt, 5));
+				basicContainer->set_latitude(sqlite3_column_int64(stmt, 6));
+				basicContainer->set_longitude(sqlite3_column_int64(stmt, 7));
+				basicContainer->set_altitude(sqlite3_column_int64(stmt, 11));
+				basicContainer->set_altitudeconfidence(sqlite3_column_int64(stmt, 12));
+				basicContainer->set_semimajorconfidence(sqlite3_column_int64(stmt, 8));
+				basicContainer->set_semiminorconfidence(sqlite3_column_int64(stmt, 9));
+				basicContainer->set_semimajororientation(sqlite3_column_int64(stmt, 10));
+				params->set_allocated_basiccontainer(basicContainer);
+
+				// high frequency container
+				its::HighFreqContainer* highFreqContainer = new its::HighFreqContainer;
+				its::BasicVehicleHighFreqContainer* basicHighFreqContainer = 0;
+				its::RsuHighFreqContainer* rsuHighFreqContainer = 0;
+
+				switch (sqlite3_column_int64(stmt, 13)) { // based upon type
+					case its::HighFreqContainer_Type_BASIC_HIGH_FREQ_CONTAINER:
+						highFreqContainer->set_type(its::HighFreqContainer_Type_BASIC_HIGH_FREQ_CONTAINER);
+						basicHighFreqContainer = new its::BasicVehicleHighFreqContainer();
+						basicHighFreqContainer->set_heading(sqlite3_column_int64(stmt, 14));
+						basicHighFreqContainer->set_headingconfidence(sqlite3_column_int64(stmt, 15));
+						basicHighFreqContainer->set_speed(sqlite3_column_int64(stmt, 16));
+						basicHighFreqContainer->set_speedconfidence(sqlite3_column_int64(stmt, 17));
+						basicHighFreqContainer->set_drivedirection(sqlite3_column_int64(stmt, 18));
+						basicHighFreqContainer->set_vehiclelength(sqlite3_column_int64(stmt, 19));
+						basicHighFreqContainer->set_vehiclelengthconfidence(sqlite3_column_int64(stmt, 20));
+						basicHighFreqContainer->set_vehiclewidth(sqlite3_column_int64(stmt, 21));
+						basicHighFreqContainer->set_longitudinalacceleration(sqlite3_column_int64(stmt, 22));
+						basicHighFreqContainer->set_longitudinalaccelerationconfidence(sqlite3_column_int64(stmt, 23));
+						basicHighFreqContainer->set_curvature(sqlite3_column_int64(stmt, 24));
+						basicHighFreqContainer->set_curvatureconfidence(sqlite3_column_int64(stmt, 25));
+						basicHighFreqContainer->set_curvaturecalcmode(sqlite3_column_int64(stmt, 26));
+						basicHighFreqContainer->set_yawrate(sqlite3_column_int64(stmt, 27));
+						basicHighFreqContainer->set_yawrateconfidence(sqlite3_column_int64(stmt, 28));
+
+						// optional fields
+			//			basicHighFreqContainer->set_accelerationcontrol();
+			//			basicHighFreqContainer->set_laneposition();
+			//			basicHighFreqContainer->set_steeringwheelangle();
+			//			basicHighFreqContainer->set_steeringwheelangleconfidence();
+			//			basicHighFreqContainer->set_lateralacceleration();
+			//			basicHighFreqContainer->set_lateralaccelerationconfidence();
+			//			basicHighFreqContainer->set_verticalacceleration();
+			//			basicHighFreqContainer->set_verticalaccelerationconfidence();
+			//			basicHighFreqContainer->set_performanceclass();
+			//			basicHighFreqContainer->set_protectedzonelatitude();
+			//			basicHighFreqContainer->set_has_protectedzonelongitude();
+			//			basicHighFreqContainer->set_cendsrctollingzoneid();
+
+						highFreqContainer->set_allocated_basicvehiclehighfreqcontainer(basicHighFreqContainer);
+						break;
+
+					case its::HighFreqContainer_Type_RSU_HIGH_FREQ_CONTAINER:
+						highFreqContainer->set_type(its::HighFreqContainer_Type_RSU_HIGH_FREQ_CONTAINER);
+
+						rsuHighFreqContainer = new its::RsuHighFreqContainer();
+						// optional fields
+			//			rsuHighFreqContainer->
+
+						highFreqContainer->set_allocated_rsuhighfreqcontainer(rsuHighFreqContainer);
+						break;
+
+					default:
+						break;
 				}
 
-				//add OBD2 if available
-				int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
-				if (obd2RowId > 0) {
-					dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-					obd2Package::OBD2* obd2 = new obd2Package::OBD2();
-					obd2->ParseFromString(ldmData.data(0));
-					cam.set_allocated_obd2(obd2);
-				}
 
-				cam.set_heading(sqlite3_column_double(stmt, 7));
+
 
 				//add result
-				camCache[cam.stationid()]=cam;
+				camCache[to_string(cam.header().stationid())]=cam;
 			}
 			sqlite3_finalize(stmt);
 		}
@@ -470,82 +537,70 @@ void LDM::insert(string sqlCommand) {
 //inserts CAM into DB
 void LDM::insertCam(camPackage::CAM cam) {
 	stringstream sSql;
-	// set decimal precision to 15
-	sSql  << setprecision(15);
-	int64_t gpsRowId = -1;
-	int64_t obd2RowId = -1;
-	sqlite3_stmt *stmt;
-	char* errmsg = 0;
+	int invalidVal = -999999;
+	sSql << setprecision(15);
+	// header
+	int64_t protocolversion = cam.header().protocolversion();
+	int64_t messageid = cam.header().messageid();
+	int64_t stationid = cam.header().stationid();
+	// coop awareness
+	int64_t gendeltatime = cam.coop().gendeltatime();
+	// basic container
+	int64_t stationtype = cam.coop().camparameters().basiccontainer().stationtype();
+	int64_t latitude = cam.coop().camparameters().basiccontainer().latitude();
+	int64_t longitude = cam.coop().camparameters().basiccontainer().longitude();
+	int64_t semimajorconfidence = cam.coop().camparameters().basiccontainer().semimajorconfidence();
+	int64_t semiminorconfidence = cam.coop().camparameters().basiccontainer().semiminorconfidence();
+	int64_t semimajororientation = cam.coop().camparameters().basiccontainer().semimajororientation();
+	int64_t altitude = cam.coop().camparameters().basiccontainer().altitude();
+	int64_t altitudeconfidence = cam.coop().camparameters().basiccontainer().altitudeconfidence();
 
-	//insert GPS if available
-	if (cam.has_gps()) {
-		mGpsMutex.lock();
-		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << cam.gps().latitude() << ", " << cam.gps().longitude() << ", " << cam.gps().altitude() << ", " << cam.gps().epx() << ", " << cam.gps().epy() << ", " << cam.gps().time() << ", " << cam.gps().online() << ", " << cam.gps().satellites() << " );";
-		insert(sSql.str());
-		sSql.str("");
-		sSql.clear();
-		sSql << "SELECT key FROM GPS ORDER BY key DESC LIMIT 1;";
+	// high frequency container
+	int64_t type = cam.coop().camparameters().highfreqcontainer().type();
+	int64_t heading = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().heading();
+	int64_t headingconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().headingconfidence();
+	int64_t speed = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().speed();
+	int64_t speedconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().speedconfidence();
+	int64_t drivedirection = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().drivedirection();
+	int64_t vehiclelength = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().vehiclelength();
+	int64_t vehiclelengthconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().vehiclelengthconfidence();
+	int64_t vehiclewidth = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().vehiclewidth();
+	int64_t longitudinalacceleration = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().longitudinalacceleration();
+	int64_t longitudinalaccelerationconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().longitudinalaccelerationconfidence();
+	int64_t curvature = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().curvature();
+	int64_t curvatureconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().curvatureconfidence();
+	int64_t curvaturecalcmode = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().curvaturecalcmode();
+	int64_t yawrate = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().yawrate();
+	int64_t yawrateconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().yawrateconfidence();
+	int64_t accelerationcontrol = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().accelerationcontrol();
+	int64_t laneposition = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().laneposition();
+	int64_t steeringwheelangle = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().steeringwheelangle();
+	int64_t steeringwheelangleconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().steeringwheelangleconfidence();
+	int64_t lateralacceleration = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().lateralacceleration();
+	int64_t lateralaccelerationconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().lateralaccelerationconfidence();
+	int64_t verticalacceleration = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().verticalacceleration();
+	int64_t verticalaccelerationconfidence = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().verticalaccelerationconfidence();
+	int64_t performanceclass = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().performanceclass();
+	int64_t protectedzonelatitude = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().protectedzonelatitude();
+	int64_t protectedzonelongitude = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().protectedzonelongitude();
+	int64_t cendsrctollingzoneid = cam.coop().camparameters().highfreqcontainer().basicvehiclehighfreqcontainer().cendsrctollingzoneid();
 
-		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-				// get last inserted row id in gps
-				gpsRowId = (sqlite3_column_int64(stmt, 0));
-			}
-			sqlite3_finalize(stmt);
-		}
-		else {
-			gpsRowId = -1;
-			string error(errmsg);
-			mLogger->logError("SQL error: " + error);
-			sqlite3_free(errmsg);
-		}
-		mGpsMutex.unlock();
-	}
-	sSql.str("");
-	sSql.clear();
-
-	//insert OBD2 if available
-	if (cam.has_obd2()) {
-		mObd2Mutex.lock();
-		sSql << "INSERT INTO OBD2 (time, speed, rpm) VALUES (" << cam.obd2().time() << ", " << cam.obd2().speed() << ", " << cam.obd2().rpm() << " );";
-		insert(sSql.str());
-		sSql.str("");
-		sSql.clear();
-		sSql << "SELECT key FROM OBD2 ORDER BY key DESC LIMIT 1;";
-		if (sqlite3_prepare_v2(mDb, sSql.str().c_str(), -1, &stmt, NULL) == SQLITE_OK) {
-			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
-				// get last inserted row id in obd2
-				obd2RowId = (sqlite3_column_int64(stmt, 0));
-			}
-			sqlite3_finalize(stmt);
-		}
-		else {
-			obd2RowId = -1;
-			string error(errmsg);
-			mLogger->logError("SQL error: " + error);
-			sqlite3_free(errmsg);
-		}
-		mObd2Mutex.unlock();
-	}
-	sSql.str("");
-	sSql.clear();
-	//insert CAM with foreign keys to reference GPS, OBD2 //TODO: always include heading? might be invalid/not set; just include if has_heading=true?
-	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, obd2, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << obd2RowId << ", " << cam.heading() << " );";
-	}
-	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, gps, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << gpsRowId << ", " << cam.heading() << " );";
-	}
-	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, obd2, heading) VALUES ('" << cam.stationid()  << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << obd2RowId << ", " << cam.heading() << " );";
-	}
-	else {
-		sSql << "INSERT INTO CAM (stationId, id, content, createTime, heading) VALUES ('" << cam.stationid() << "', " << cam.id() << ", '" << cam.content() << "', " << cam.createtime() << ", " << cam.heading() << " );";
-	}
+	sSql << "INSERT INTO CAM (protocolVersion, messageId, stationId, genDeltaTime, stationType, latitude, longitude, semiMajorConfidence,"\
+			"semiMinorConfidence, semiMajorOrientation, altitude, altitudeConfidenc, type, heading, headingConfidence, speed, speedConfidence,"\
+			"driveDirection, vehicleLength, vehicleLengthConfidence, vehicleWidth, longitudinalAcceleration, longitudinalAccelerationConfidence,"\
+			"curvature, curvatureConfidence, curvatureCalcMode, yawRate, yawRateConfidence, accelerationControl, lanePosition, steeringWheelAngle,"\
+			"steeringWheelAngleConfidence, lateralAcceleration, lateralAccelerationConfidence, verticalAcceleration, verticalAccelerationConfidence,"\
+			"performanceClass, protectedZoneLatitude, protectedZoneLongitude, cendSrcTollingZoneId) VALUES (" << protocolversion << ", " << messageid << ", "\
+			<< stationid << ", " << gendeltatime << ", " << stationtype << ", " << latitude << ", " << longitude << ", " << semimajorconfidence << ", "\
+			<< semiminorconfidence << ", " << semimajororientation << ", " << altitude << ", " << altitudeconfidence << ", " << type << ", " << heading << ", "\
+			<< headingconfidence << ", " << speed << ", " << speedconfidence << ", " << drivedirection << ", " << vehiclelength << ", " << vehiclelengthconfidence << ", "\
+			<< vehiclewidth << ", " << longitudinalacceleration << ", " << longitudinalaccelerationconfidence << ", " << curvature << ", " << curvatureconfidence << ", "\
+			<< curvaturecalcmode << ", " << yawrate << ", " << yawrateconfidence << ", " << accelerationcontrol << ", " << laneposition << ", " << steeringwheelangle << ", "\
+			<< steeringwheelangleconfidence << ", " << lateralacceleration << ", " << lateralaccelerationconfidence << ", " << verticalacceleration << ", "\
+			<< verticalaccelerationconfidence << ", " << performanceclass << ", " << protectedzonelatitude << ", " << protectedzonelongitude << ", " << cendsrctollingzoneid << "); ";
 	mCamMutex.lock();
 	insert(sSql.str());
 	mCamMutex.unlock();
-
 }
 
 //inserts DENM into DB
@@ -621,16 +676,8 @@ void LDM::printCam(camPackage::CAM cam) {
 	stringstream stream;
 	// set decimal precision to 15
 	stream  << setprecision(15);
-
-	stream << "CAM - " << "MAC: " << cam.stationid() << ", id: " << cam.id() << ", content: " << cam.content();
-	if (cam.has_gps()) {
-
-		stream << "\n\tGPS - " << Utils::readableTime(cam.gps().time()) << ", lat: " << cam.gps().latitude() << ", long: " << cam.gps().longitude() << ", alt: " << cam.gps().altitude();
-	}
-	if (cam.has_obd2()) {
-		stream << "\n\tOBD2 - " << Utils::readableTime(cam.obd2().time()) << ", speed: " << cam.obd2().speed() << ", rpm: " << cam.obd2().rpm();
-	}
-	stream << ", heading: " << cam.heading();
+	// TODO: implement with new version of CAM
+	stream << "Unimplemented printCAM()";
 	mLogger->logInfo(stream.str());
 }
 
@@ -702,10 +749,10 @@ void LDM::receiveFromCa() {
 		serializedCam = received.second;
 		cam.ParseFromString(serializedCam);
 
-//		printCam(cam);
+		printCam(cam);
 		//ASSUMPTION: received cam is the newer than all cams that were received before.
 		//TODO: OPTIMIZATION: use pointers instead of copying cams.
-		camCache[cam.stationid()]=cam;
+		camCache[to_string(cam.header().stationid())]=cam;
 		insertCam(cam);
 	}
 }

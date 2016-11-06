@@ -421,7 +421,7 @@ CAM_t* CaService::generateCam2() {
 	mLastSentCamInfo.timestamp = currTime;
 
 	// Basic container
-	cam->cam.camParameters.basicContainer.stationType = StationType_unknown;
+	cam->cam.camParameters.basicContainer.stationType = mConfig.mIsRSU ? StationType_roadSideUnit : StationType_passengerCar;
 
 	mMutexLatestGps.lock();
 	if (mGpsValid) {
