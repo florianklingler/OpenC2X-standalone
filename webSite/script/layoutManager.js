@@ -115,6 +115,14 @@ function createCamContainer(){
 	}
 }
 
+function createReceivedCamContainer(){
+	if($("#ReceivedCam").length === 0){ //container is not created
+		containers.push(new Container("ReceivedCam", function(callback) {
+			camData.getReceivedCamDetail(callback);
+		}, color="#aabbcc"));
+	}
+}
+
 function createDenmContainer(){
 	if($("#Denm").length === 0){ //container is not created
 	containers.push(new Container("Denm", function(callback) {

@@ -26,7 +26,7 @@
 camTimeout = 60 //seconds
 
 /**
- * holds and updates most recend cam data for each station id
+ * holds and updates most recent cam data for each station id
  */
 camData = {
 	mymac : "",
@@ -46,7 +46,6 @@ camData = {
 			},camData.refreshRate);
 			//get own mac
 			requestMyMac(function(data) {
-				console.log(data);
 				this.mymac = data.myMac;
 			}.bind(this));
 			return false;
@@ -61,15 +60,16 @@ camData = {
 	digestCams : function(data){
 		if (camData.init()){ //is initalised
 			data.msgs.forEach(function(cam) {
-				if(camData.cams.get(cam.stationId)){
-					if (camData.cams.get(cam.stationId).createTime < cam.createTime){
-						camData.cams.set(cam.stationId,cam);
-					}
-				} else {
-					camData.cams.set(cam.stationId,cam);
-				}
+//				if(camData.cams.get(cam.header.stationID)){
+//					if (camData.cams.get(cam.stationID).createTime < cam.createTime){
+//						camData.cams.set(cam.stationID,cam);
+//					}
+//				} else {
+					camData.cams.set(cam.header.stationID.toString(),cam);
+//				}
 			})
-			
+//			console.log("printing the cams map")
+//			console.log(camData.cams)
 		}
 	},
 	
@@ -83,11 +83,85 @@ camData = {
 	},
 	getLastOwnCam : function(callback){
 		camData.init();
-		console.log(camData);
-		if(callback){
-			callback(camData.cams.get(camData.mymac));
+		var table = {};
+		var cam = camData.cams.get(camData.mymac);
+		var isVehicle = (cam.coop.camParameters.basicContainer.stationType === 5) ? "Vehicle" : "RSU";
+		table["header"] = {
+							"protocolVersion" : cam.header.protocolVersion,
+							"messageID" : cam.header.messageID,
+							"stationID" : cam.header.stationID
+						};
+		if (isVehicle.includes("RSU")) {
+			table["cam"] = {
+						"genDeltaTime" : cam.coop.genDeltaTime,
+						"stationType" : isVehicle,
+						"latitude" : cam.coop.camParameters.basicContainer.latitude,
+						"longitude" : cam.coop.camParameters.basicContainer.longitude,
+						"altitude" : cam.coop.camParameters.basicContainer.altitude
+						};
 		} else {
-			return camData.cams.get(camData.mymac);
+			table["cam"] = {
+						"genDeltaTime" : cam.coop.genDeltaTime,
+						"stationType" : isVehicle,
+						"latitude" : cam.coop.camParameters.basicContainer.latitude,
+						"longitude" : cam.coop.camParameters.basicContainer.longitude,
+						"altitude" : cam.coop.camParameters.basicContainer.altitude,
+						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
+						"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
+						};
+		}
+
+
+		
+		if(callback){
+			callback(table);
+		} else {
+			//console.log(camData.mymac + " and map" + camData.cams)
+			return table;
+		}
+	},
+	getReceivedCamDetail : function(callback){
+		if(camData.init()){
+			var table={};
+			camData.cams.forEach(function(cam, stationID) {
+				if (stationID == camData.mymac) {
+					// do nothing
+				}
+				else {
+					console.log(cam)
+					//console.log(cam.coop.camParameters.basicContainer.latitude)
+					var isVehicle = (cam.coop.camParameters.basicContainer.stationType === 5) ? "Vehicle" : "RSU";
+					console.log(isVehicle)
+					if (isVehicle.includes("RSU")) {
+						table[stationID] = {
+							"protocolVersion" : cam.header.protocolVersion,
+							"messageID" : cam.header.messageID,
+							"stationID" : cam.header.stationID,
+							"genDeltaTime" : cam.coop.genDeltaTime,
+							"stationType" : isVehicle,
+							"latitude" : cam.coop.camParameters.basicContainer.latitude,
+							"longitude" : cam.coop.camParameters.basicContainer.longitude,
+							"altitude" : cam.coop.camParameters.basicContainer.altitude
+						}
+					} else {
+						table[stationID] = {
+							"protocolVersion" : cam.header.protocolVersion,
+							"messageID" : cam.header.messageID,
+							"stationID" : cam.header.stationID,
+							"genDeltaTime" : cam.coop.genDeltaTime,
+							"stationType" : isVehicle,
+							"latitude" : cam.coop.camParameters.basicContainer.latitude,
+							"longitude" : cam.coop.camParameters.basicContainer.longitude,
+							"altitude" : cam.coop.camParameters.basicContainer.altitude,
+							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
+							"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
+						}
+					}
+					
+				}
+				
+			})
+			callback(table);
 		}
 	},	
 	getCamOverview : function(callback){
@@ -106,7 +180,7 @@ camData = {
 };
 
 
-/** Container that handels the updating of the corresponding div on the webpage.
+/** Container that handles the updating of the corresponding div on the webpage.
  * updateFunction is repeatedly called to provide data for this div. 
  * The Function hould take a callback which shall be called with the retrived data.
  * @param updateFunction fn(callback)
@@ -220,7 +294,7 @@ function initMap(){
 						viewPosition = [cam.gps.latitude,cam.gps.longitude];
 						var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
 						//station id popup
-						marker.bindPopup(cam.stationId);
+						marker.bindPopup(cam.header.stationID);
 						marker.on('mouseover', function(e){
 						    marker.openPopup();
 						});
@@ -235,7 +309,7 @@ function initMap(){
 						}
 						
 						var marker = L.marker([cam.gps.latitude,cam.gps.longitude],{icon: icon}).addTo(map);
-						marker.bindPopup(cam.stationId);
+						marker.bindPopup(cam.header.stationID);
 						marker.on('mouseover', function(e){
 						    marker.openPopup();
 						});
