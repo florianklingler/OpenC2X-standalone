@@ -290,8 +290,10 @@ function initMap(){
 			var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
 				if ( key == camData.mymac){//own cam
-					if(cam.gps){
-						viewPosition = [cam.gps.latitude,cam.gps.longitude];
+					//if(cam.gps){
+						var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
+						var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
+						viewPosition = [lat, lon];
 						var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
 						//station id popup
 						marker.bindPopup(cam.header.stationID);
@@ -299,22 +301,23 @@ function initMap(){
 						    marker.openPopup();
 						});
 						markers.push(marker);
-					}
+					//}
 				} else {//other cams : red marker
-					if(cam.gps){
-						if(cam.createTime +camTimeout*1000000000 < ownCam.createTime){//other cam is old
-							var icon = redMarkerPale;
-						} else {//cam is fresh
+					//if(cam.gps){
+						//if(cam.createTime +camTimeout*1000000000 < ownCam.createTime){//other cam is old
+						//	var icon = redMarkerPale;
+						//} else {//cam is fresh
 							var icon = redMarker;
-						}
-						
-						var marker = L.marker([cam.gps.latitude,cam.gps.longitude],{icon: icon}).addTo(map);
+						//}
+						var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
+						var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
+						var marker = L.marker([lat, lon],{icon: icon}).addTo(map);
 						marker.bindPopup(cam.header.stationID);
 						marker.on('mouseover', function(e){
 						    marker.openPopup();
 						});
 						markers.push(marker);
-					}
+					//}
 				}
 			})
 		}
