@@ -1,4 +1,15 @@
 ASN_MODULE_SOURCES=	\
+	DENM.c	\
+	DecentralizedEnvironmentalNotificationMessage.c	\
+	ManagementContainer.c	\
+	SituationContainer.c	\
+	LocationContainer.c	\
+	ImpactReductionContainer.c	\
+	RoadWorksContainerExtended.c	\
+	StationaryVehicleContainer.c	\
+	AlacarteContainer.c	\
+	Termination.c	\
+	ReferenceDenms.c	\
 	CAM.c	\
 	CoopAwareness.c	\
 	CamParameters.c	\
@@ -151,6 +162,17 @@ ASN_MODULE_SOURCES=	\
 	CenDsrcTollingZoneID.c
 
 ASN_MODULE_HEADERS=	\
+	DENM.h	\
+	DecentralizedEnvironmentalNotificationMessage.h	\
+	ManagementContainer.h	\
+	SituationContainer.h	\
+	LocationContainer.h	\
+	ImpactReductionContainer.h	\
+	RoadWorksContainerExtended.h	\
+	StationaryVehicleContainer.h	\
+	AlacarteContainer.h	\
+	Termination.h	\
+	ReferenceDenms.h	\
 	CAM.h	\
 	CoopAwareness.h	\
 	CamParameters.h	\
@@ -363,6 +385,7 @@ ASN_MODULE_SOURCES+=per_encoder.c
 ASN_MODULE_HEADERS+=per_opentype.h
 ASN_MODULE_SOURCES+=per_opentype.c
 ASN_CONVERTER_SOURCES+=converter-sample.c
+ASN_CONVERTER_SOURCES+=pdu_collection.c
 
 
 lib_LTLIBRARIES=libsomething.la
@@ -371,7 +394,7 @@ libsomething_la_SOURCES=$(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS)
 # This file may be used as an input for make(3)
 # Remove the lines below to convert it into a pure .am file
 TARGET = progname
-CFLAGS += -DPDU=CAM -I.
+CFLAGS += -DASN_PDU_COLLECTION -I.
 OBJS=${ASN_MODULE_SOURCES:.c=.o} ${ASN_CONVERTER_SOURCES:.c=.o}
 
 all: $(TARGET)
@@ -392,5 +415,5 @@ clean:
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	asn1c -fnative-types -gen-PER -pdu=CAM ITS_CAM_v1.3.2.asn
+	asn1c -fnative-types -gen-PER -pdu=auto its_facilities_pdu_all.asn
 
