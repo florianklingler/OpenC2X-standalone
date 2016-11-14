@@ -198,7 +198,7 @@ void DenService::send(triggerPackage::TRIGGER trigger) {
 	string serializedProtoDenm;
 	denmProto.SerializeToString(&serializedProtoDenm);
 	mSenderToLdm->send("DENM", serializedProtoDenm);		//send serialized DENM to LDM
-	asn_DEF_DENM.free_struct(&asn_DEF_DENM, denm, 0);
+	//asn_DEF_DENM.free_struct(&asn_DEF_DENM, denm, 0);
 }
 
 //generate new DENM with increasing ID and current timestamp
@@ -269,6 +269,8 @@ DENM_t* DenService::generateDenm2() {
 	denm->denm.management.eventPosition.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
 	denm->denm.management.eventPosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
 	denm->denm.management.eventPosition.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
+	denm->denm.management.validityDuration = static_cast<long*>(calloc(sizeof(long), 1));
+	*denm->denm.management.validityDuration = 60;
 	return denm;
 }
 
@@ -296,7 +298,9 @@ denmPackage::DENM DenService::convertAsn1toProtoBuf(DENM_t* denm) {
 	mgtCtr->set_semimajororientation(denm->denm.management.eventPosition.positionConfidenceEllipse.semiMajorOrientation);
 	mgtCtr->set_altitude(denm->denm.management.eventPosition.altitude.altitudeValue);
 	mgtCtr->set_altitudeconfidence(denm->denm.management.eventPosition.altitude.altitudeConfidence);
-//	mgtCtr->set_validityduration(denm->denm.management.validityDuration);
+	if(!denm->denm.management.validityDuration) {
+		mgtCtr->set_validityduration(*denm->denm.management.validityDuration);
+	}
 	mgtCtr->set_stationtype(denm->denm.management.stationType);
 	denmMsg->set_allocated_managementcontainer(mgtCtr);
 	denmProto.set_allocated_msg(denmMsg);

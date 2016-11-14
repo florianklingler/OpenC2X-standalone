@@ -138,9 +138,14 @@ void LDM::createTables() {
 	}
 
 	//create DENM table
-	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM(" \
-				"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
-				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+//	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM(" \
+//				"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
+//				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
+	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM("\
+				"key INTEGER PRIMARY KEY, protocolVersion INTEGER, messageId INTEGER, stationId INTEGER, "\
+				"sequenceNumber INTEGER, detectionTime INTEGER, referenceTime INTEGER, latitude INTEGER, longitude INTEGER, "\
+				"semiMajorConfidence INTEGER, semiMinorConfidence INTEGER, semiMajorOrientation INTEGER, altitude INTEGER, "\
+				"altitudeConfidence INTEGER, validityDuration INTEGER, stationType INTEGER);";
 	if (sqlite3_exec(mDb, sqlCommand, NULL, 0, &errmsg)) {
 		string error(errmsg);
 		mLogger->logError("SQL error: " + error);
@@ -386,39 +391,41 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 	if (denmCache.empty()){
 		sqlite3_stmt *stmt;
 		//only get the latest DENM for each stationId
-		string sqlCommand = "SELECT denm1.* from DENM denm1 LEFT JOIN DENM denm2 ON (denm1.stationId = denm2.stationId AND denm1.createTime < denm2.createTime) WHERE denm2.createTime IS NULL";
+		string sqlCommand = "SELECT denm1.* from DENM denm1 LEFT JOIN DENM denm2 ON (denm1.stationId = denm2.stationId AND denm1.key < denm2.key) WHERE denm2.key IS NULL";
 		char* errmsg = 0;
 		mDenmMutex.lock();
 		if (sqlite3_prepare_v2(mDb, sqlCommand.c_str(), -1, &stmt, NULL) == SQLITE_OK) {
 			while (sqlite3_step(stmt) == SQLITE_ROW) {		//iterate over result rows
 				denmPackage::DENM denm;
 
-				//set attributes retrieved from result columns
-				denm.set_stationid(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))));
-				denm.set_id(sqlite3_column_int(stmt, 2));
-				denm.set_content(string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3))));
-				denm.set_createtime(sqlite3_column_int64(stmt, 4));
+				// header
+				its::ItsPduHeader* header = new its::ItsPduHeader;
+				header->set_protocolversion(sqlite3_column_int64(stmt, 1));
+				header->set_messageid(sqlite3_column_int64(stmt, 2));
+				header->set_stationid(sqlite3_column_int64(stmt, 3));
+				denm.set_allocated_header(header);
 
-				//add GPS if available
-				int64_t gpsRowId = sqlite3_column_int64(stmt, 5);
-				if (gpsRowId > 0) {
-					dataPackage::LdmData ldmData = gpsSelect("WHERE key=" + to_string(gpsRowId));
-					gpsPackage::GPS* gps = new gpsPackage::GPS();
-					gps->ParseFromString(ldmData.data(0));
-					denm.set_allocated_gps(gps);
-				}
-
-				//add OBD2 if available
-				int64_t obd2RowId = sqlite3_column_int64(stmt, 6);
-				if (obd2RowId > 0) {
-					dataPackage::LdmData ldmData = obd2Select("WHERE key=" + to_string(obd2RowId));
-					obd2Package::OBD2* obd2 = new obd2Package::OBD2();
-					obd2->ParseFromString(ldmData.data(0));
-					denm.set_allocated_obd2(obd2);
-				}
+				// DENM containers
+				its::DENMessage* denmMsg = new its::DENMessage;
+				its::DENMManagementContainer* mgtCtr = new its::DENMManagementContainer;
+				mgtCtr->set_stationid(sqlite3_column_int64(stmt, 3));
+				mgtCtr->set_sequencenumber(sqlite3_column_int64(stmt, 4));
+			//	mgtCtr->set_detectiontime(sqlite3_column_int64(stmt, 5));
+			//	mgtCtr->set_referencetime(sqlite3_column_int64(stmt, 6));
+				mgtCtr->set_latitude(sqlite3_column_int64(stmt, 7));
+				mgtCtr->set_longitude(sqlite3_column_int64(stmt, 8));
+				mgtCtr->set_semimajorconfidence(sqlite3_column_int64(stmt, 9));
+				mgtCtr->set_semiminorconfidence(sqlite3_column_int64(stmt, 10));
+				mgtCtr->set_semimajororientation(sqlite3_column_int64(stmt, 11));
+				mgtCtr->set_altitude(sqlite3_column_int64(stmt, 12));
+				mgtCtr->set_altitudeconfidence(sqlite3_column_int64(stmt, 13));
+			//	mgtCtr->set_validityduration(sqlite3_column_int64(stmt, 14));
+				mgtCtr->set_stationtype(sqlite3_column_int64(stmt, 15));
+				denmMsg->set_allocated_managementcontainer(mgtCtr);
+				denm.set_allocated_msg(denmMsg);
 
 				//add result
-				denmCache[denm.stationid()]=denm;
+				denmCache[to_string(denm.header().stationid())]=denm;
 			}
 			sqlite3_finalize(stmt);
 		}
@@ -608,44 +615,31 @@ void LDM::insertDenm(denmPackage::DENM denm) {
 	stringstream sSql;
 	// set decimal precision to 15
 	sSql  << setprecision(15);
-	int64_t gpsRowId = -1;
-	int64_t obd2RowId = -1;
 
-	//insert GPS if available
-	if (denm.has_gps()) {
-		mGpsMutex.lock();
-		sSql << "INSERT INTO GPS (latitude, longitude, altitude, epx, epy, time, online, satellites) VALUES (" << denm.gps().latitude() << ", " << denm.gps().longitude() << ", " << denm.gps().altitude() << ", " << denm.gps().epx() << ", " << denm.gps().epy() << ", " << denm.gps().time() << ", " << denm.gps().online() << ", " << denm.gps().satellites() << " );";
-		insert(sSql.str());
-		sSql.str("");
-		sSql.clear();
-		gpsRowId = sqlite3_last_insert_rowid(mDb);
-		mGpsMutex.unlock();
-	}
+	// ITS pdu header
+	int64_t protocolversion = denm.header().protocolversion();
+	int64_t messageid = denm.header().messageid();
+	int64_t stationid = denm.header().stationid();
 
-	//insert OBD2 if available
-	if (denm.has_obd2()) {
-		mObd2Mutex.lock();
-		sSql << "INSERT INTO OBD2 (time, speed, rpm) VALUES (" << denm.obd2().time() << ", " << denm.obd2().speed() << ", " << denm.obd2().rpm() << " );";
-		insert(sSql.str());
-		sSql.str("");
-		sSql.clear();
-		obd2RowId = sqlite3_last_insert_rowid(mDb);
-		mObd2Mutex.unlock();
-	}
+	int64_t sequencenumber = denm.msg().managementcontainer().sequencenumber();
+	int64_t detectiontime = denm.msg().managementcontainer().detectiontime();
+	int64_t referencetime = denm.msg().managementcontainer().referencetime();
+	int64_t latitude = denm.msg().managementcontainer().latitude();
+	int64_t longitude = denm.msg().managementcontainer().longitude();
+	int64_t semimajorconfidence = denm.msg().managementcontainer().semimajorconfidence();
+	int64_t semiminorconfidence = denm.msg().managementcontainer().semiminorconfidence();
+	int64_t semimajororientation = denm.msg().managementcontainer().semimajororientation();
+	int64_t altitude = denm.msg().managementcontainer().altitude();
+	int64_t altitudeconfidence = denm.msg().managementcontainer().altitudeconfidence();
+	int64_t validityduration = denm.msg().managementcontainer().validityduration();
+	int64_t stationtype = denm.msg().managementcontainer().stationtype();
 
-	//insert CAM with foreign keys to reference GPS, OBD2
-	if (gpsRowId > 0 && obd2RowId > 0) {
-		sSql << "INSERT INTO DENM (stationId, id, content, createTime, gps, obd2) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << ", " << obd2RowId << " );";
-	}
-	else if (gpsRowId > 0) {
-		sSql << "INSERT INTO DENM (stationId, id, content, createTime, gps) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << gpsRowId << " );";
-	}
-	else if (obd2RowId > 0) {
-		sSql << "INSERT INTO DENM (stationId, id, content, createTime, obd2) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << ", " << obd2RowId << " );";
-	}
-	else {
-		sSql << "INSERT INTO DENM (stationId, id, content, createTime) VALUES ('" << denm.stationid() << "', " << denm.id() << ", '" << denm.content() << "', " << denm.createtime() << " );";
-	}
+	sSql << "INSERT INTO DENM (protocolVersion, messageId, stationId, sequenceNumber, detectionTime, referenceTime, latitude, longitude, "\
+			"semiMajorConfidence, semiMinorConfidence, semiMajorOrientation, altitude, altitudeConfidence, validityDuration, stationType) VALUES ("\
+			<< protocolversion << ", " << messageid << ", " << stationid << ", " << sequencenumber << ", " << detectiontime << ", " << referencetime << ", "\
+			<< latitude << ", " << longitude << ", " << semimajorconfidence << ", " << semiminorconfidence << ", " << semimajororientation << ", "\
+			<< altitude << ", " << altitudeconfidence << ", " << validityduration << ", " << stationtype << "); ";
+
 	mDenmMutex.lock();
 	insert(sSql.str());
 	mDenmMutex.unlock();
@@ -685,15 +679,8 @@ void LDM::printDenm(denmPackage::DENM denm) {
 	stringstream stream;
 	// set decimal precision to 15
 	stream  << setprecision(15);
-
-	stream << "DENM - " << Utils::readableTime(denm.createtime()) << ", MAC: " << denm.stationid() << ", id: " << denm.id() << ", content: " << denm.content();
-	if (denm.has_gps()) {
-
-		stream << "\n\tGPS - " << Utils::readableTime(denm.gps().time()) << ", lat: " << denm.gps().latitude() << ", long: " << denm.gps().longitude() << ", alt: " << denm.gps().altitude();
-	}
-	if (denm.has_obd2()) {
-		stream << "\n\tOBD2 - " << Utils::readableTime(denm.obd2().time()) << ", speed: " << denm.obd2().speed() << ", rpm: " << denm.obd2().rpm();
-	}
+	// TODO: implement with new version of DENM
+	stream << "Unimplemented printDENM()";
 	mLogger->logInfo(stream.str());
 }
 
@@ -764,12 +751,13 @@ void LDM::receiveFromDen() {
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();//receive
 		serializedDenm = received.second;
+		cout << "LDM received DENM from DENM service" << endl << endl << endl;
 		denm.ParseFromString(serializedDenm);
 
 		printDenm(denm);
 		//ASSUMPTION: received denm is the newer than all denm that were received before.
 		//TODO: OPTIMIZATION: use pointers instead of copying denm.
-		denmCache[denm.stationid()] = denm;
+		denmCache[to_string(denm.header().stationid())] = denm;
 		insertDenm(denm);
 	}
 }
