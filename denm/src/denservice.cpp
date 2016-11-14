@@ -108,7 +108,7 @@ void DenService::receive() {
 			mLogger->logError("Failed to decode received DENM. Error code: " + to_string(res));
 			continue;
 		}
-		//asn_fprint(stdout, &asn_DEF_DENM, denm);
+//		asn_fprint(stdout, &asn_DEF_DENM, denm);
 		denmPackage::DENM denmProto = convertAsn1toProtoBuf(denm);
 		denmProto.SerializeToString(&serializedProtoDenm);
 
@@ -173,12 +173,11 @@ void DenService::triggerAppDenm() {
 //generate DENM and send to LDM and DCC
 void DenService::send(triggerPackage::TRIGGER trigger) {
 	string serializedData;
-	// denmPackage::DENM denm;
 	dataPackage::DATA data;
 
 	// create denm
 	DENM_t* denm = generateDenm2();
-	asn_fprint(stdout, &asn_DEF_DENM, denm);
+	// asn_fprint(stdout, &asn_DEF_DENM, denm);
 	vector<uint8_t> encodedDenm = mMsgUtils->encodeMessage(&asn_DEF_DENM, denm);
 	string strDenm(encodedDenm.begin(), encodedDenm.end());
 	mLogger->logDebug("Encoded DENM size: " + to_string(strDenm.length()));
@@ -194,7 +193,12 @@ void DenService::send(triggerPackage::TRIGGER trigger) {
 	data.SerializeToString(&serializedData);
 	mLogger->logInfo("send new DENM " + to_string(data.id()) + " to DCC and LDM");
 	mSenderToDcc->send("DENM", serializedData);		//send serialized DATA to DCC
-	mSenderToLdm->send("DENM", data.content());		//send serialized DENM to LDM
+
+	denmPackage::DENM denmProto = convertAsn1toProtoBuf(denm);
+	string serializedProtoDenm;
+	denmProto.SerializeToString(&serializedProtoDenm);
+	mSenderToLdm->send("DENM", serializedProtoDenm);		//send serialized DENM to LDM
+	asn_DEF_DENM.free_struct(&asn_DEF_DENM, denm, 0);
 }
 
 //generate new DENM with increasing ID and current timestamp
