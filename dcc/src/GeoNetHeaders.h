@@ -58,10 +58,28 @@ struct GeoNetTSB {
 	uint32_t reserved;
 };
 
-struct GeoNetHeader {
+struct GeoBroadcast {
+	uint16_t sequenceNumber;
+	uint16_t reserved;
+	SourcePositionVector spv;
+	uint32_t latitude;
+	uint32_t longitude;
+	uint16_t distA;
+	uint16_t distB;
+	uint16_t angle;
+	uint16_t resrvd;
+};
+
+struct GeoNetHeaderCAM {
 	GeoNetBasicHeader basicHeader;
 	GeoNetCommonHeader commonHeader;
 	GeoNetTSB tsb;
+};
+
+struct GeoNetHeaderDENM {
+	GeoNetBasicHeader basicHeader;
+	GeoNetCommonHeader commonHeader;
+	GeoBroadcast brdcst;
 };
 
 struct BTPHeader {
@@ -69,12 +87,14 @@ struct BTPHeader {
 	uint16_t mSourcePort;
 };
 
-struct GeoNetworkAndBTPHeader {
-	GeoNetHeader mGeoNetHdr;
+struct GeoNetworkAndBTPHeaderCAM {
+	GeoNetHeaderCAM mGeoNetHdr;
 	BTPHeader mBTPHdr;
 };
 
-
-
+struct GeoNetworkAndBTPHeaderDENM {
+	GeoNetHeaderDENM mGeoNetHdr;
+	BTPHeader mBTPHdr;
+};
 
 #endif /* GEONETHEADERS_H_ */

@@ -24,6 +24,7 @@
 
 #include "SendToHardwareViaMAC.h"
 #include <ctype.h>
+#include <buffers/build/data.pb.h>
 
 using namespace std;
 
@@ -191,20 +192,34 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	}
 }
 
-void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority) {
-
-	unsigned int packetsize = sizeof(struct ether_header) + sizeof(struct GeoNetworkAndBTPHeader) + msg->size();
+void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority, int type) {
+	unsigned int geoHdrLen;
+	uint8_t* geoHdr;
+	switch(type) {
+		case dataPackage::DATA_Type_DENM:
+			fillGeoNetBTPheaderForDenm(msg->size());
+			geoHdrLen = sizeof(struct GeoNetworkAndBTPHeaderDENM);
+			geoHdr = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForDenm);
+			break;
+		case dataPackage::DATA_Type_CAM:
+			fillGeoNetBTPheaderForCam(msg->size());
+			geoHdrLen = sizeof(struct GeoNetworkAndBTPHeaderCAM);
+			geoHdr = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
+			break;
+		default:
+			mLogger->logError("Queued packet has invalid type: " + to_string(type));
+			break;
+	}
+	unsigned int packetsize = sizeof(struct ether_header) + geoHdrLen + msg->size();
 	unsigned char packet[packetsize];
-	unsigned char* payload = packet + sizeof(struct ether_header) + sizeof(GeoNetworkAndBTPHeader);
+	unsigned char* payload = packet + sizeof(struct ether_header) + geoHdrLen;
 	unsigned char* geoNetHdr = packet + sizeof(struct ether_header);
 
 	//copy header to packet
 	memcpy(&packet,&mEth_hdr,sizeof(struct ether_header));
 
 	// Fill in geo networking and btp header
-	fillGeoNetBTPheaderForCam(msg->size());
-	uint8_t* geoHdr = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
-	memcpy(geoNetHdr, geoHdr, sizeof(struct GeoNetworkAndBTPHeader));
+	memcpy(geoNetHdr, geoHdr, geoHdrLen);
 
 	//copy payload to packet
 	memcpy(payload,msg->c_str(),msg->size());
@@ -254,7 +269,6 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForCam(int payloadLen) {
 	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.payload = htons(payloadLen + sizeof(struct BTPHeader));
 	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.maxHop = 1;
 	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.reserved = 0;
-
 	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.assignmentTypeCountryCode = htons(38393);
 //	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
 	memcpy(&mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr, ether_aton(mOwnMac.c_str()), ETH_ALEN);
@@ -271,6 +285,45 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForCam(int payloadLen) {
 	mGeoBtpHdrForCam.mBTPHdr.mSourcePort = htons(0);
 	uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
 	dumpBuffer(temp, sizeof(mGeoBtpHdrForCam));
+}
+
+void SendToHardwareViaMAC::fillGeoNetBTPheaderForDenm(int payloadLen) {
+	// GeoNetwork Header
+	mGeoBtpHdrForDenm.mGeoNetHdr.basicHeader.versionAndNH = 1;
+	mGeoBtpHdrForDenm.mGeoNetHdr.basicHeader.reserved = 0;
+	mGeoBtpHdrForDenm.mGeoNetHdr.basicHeader.lifetime = 241;
+	mGeoBtpHdrForDenm.mGeoNetHdr.basicHeader.remainingHopLimit = 1;
+
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.nhAndReserved = 32;
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.htAndHst = 66;
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.tc = 1;
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.payload = htons(payloadLen + sizeof(struct BTPHeader));
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.maxHop = 1;
+	mGeoBtpHdrForDenm.mGeoNetHdr.commonHeader.reserved = 0;
+
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.sequenceNumber = 0;
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.reserved = 0;
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.addr.assignmentTypeCountryCode = htons(38393);
+//	mGeoBtpHdrForDenm.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
+	memcpy(&mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.addr.llAddr, ether_aton(mOwnMac.c_str()), ETH_ALEN);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.timestamp = htonl(2810450329);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.latitude = htonl(424939708);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.longitude = htonl(-834330986);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.speed = htons(496);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.heading = htons(1996);
+
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.latitude = htonl(424939708);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.longitude = htonl(-834330985);
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.distA = 200;
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.distB = 100;
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.angle = 0;
+	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.resrvd = htonl(0);
+
+	// BTP Header
+	mGeoBtpHdrForDenm.mBTPHdr.mDestinationPort = htons(2002);
+	mGeoBtpHdrForDenm.mBTPHdr.mSourcePort = htons(0);
+	uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForDenm);
+	dumpBuffer(temp, sizeof(mGeoBtpHdrForDenm));
 }
 
 void SendToHardwareViaMAC::dumpBuffer(const uint8_t* buffer, int size) {

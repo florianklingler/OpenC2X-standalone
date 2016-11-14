@@ -76,14 +76,17 @@ public:
 	 * Sends standard compliant packet to the hardware queue with the corresponding priority.
 	 * @param msg
 	 * @param priority
+	 * @param type
 	 */
-	void sendWithGeoNet(std::string* msg, int priority);
+	void sendWithGeoNet(std::string* msg, int priority, int type);
 
 	/**
 	 * Fills simple GeoNetworking and BTP header for CAM
 	 * @returns geonetwork and BTP header
 	 */
 	void fillGeoNetBTPheaderForCam(int payloadLen);
+
+	void fillGeoNetBTPheaderForDenm(int payloadLen);
 
 	/**
 	 * Dumps the content in the buffer in hex format
@@ -107,7 +110,8 @@ private:
 
 	// Basic struct for geo-networking and BTP header
 	// Hard-coded for interoperability with Cohda MK5 box
-	struct GeoNetworkAndBTPHeader mGeoBtpHdrForCam;
+	struct GeoNetworkAndBTPHeaderCAM mGeoBtpHdrForCam;
+	struct GeoNetworkAndBTPHeaderDENM mGeoBtpHdrForDenm;
 };
 
 /**

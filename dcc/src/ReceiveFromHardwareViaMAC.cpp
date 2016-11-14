@@ -107,8 +107,8 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 		char* geoNetPDU = mPacket + mLinkLayerLength;
 		if (geoNetPDU[5] == 80) {
 			// CAM
-			int camPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeader);
-			char* camPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeader);
+			int camPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeaderCAM);
+			char* camPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeaderCAM);
 			string msg(camPDU, camPDULen);
 			mLogger->logInfo("Received CAM of size: " + to_string(camPDULen) + ", forwarding it to the CAM service");
 			ReceivedPacketInfo info;
@@ -117,8 +117,14 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 			return make_pair(info, msg);
 		} else if (geoNetPDU[5] == 66) {
 			// DENM
-			mLogger->logInfo("Received DENM but we do not handle standard compliant DENMs at the moment.");
-			continue;
+			int denmPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeaderDENM);
+			char* denmPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeaderDENM);
+			string msg(denmPDU, denmPDULen);
+			mLogger->logInfo("Received DENM of size: " + to_string(denmPDULen) + ", forwarding it to the DENM service");
+			ReceivedPacketInfo info;
+			info.mSenderMac = senderMac;
+			info.mType = dataPackage::DATA_Type_DENM;
+			return make_pair(info, msg);
 		} else {
 			// TODO: Possible cases?
 			continue;
