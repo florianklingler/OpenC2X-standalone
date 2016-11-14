@@ -38,6 +38,8 @@
 #include <buffers/build/gps.pb.h>
 #include <buffers/build/obd2.pb.h>
 #include <buffers/build/trigger.pb.h>
+#include <asn1/DENM.h>
+#include <messages/MessageUtils.h>
 #include <mutex>
 
 /**
@@ -91,6 +93,16 @@ public:
 	 */
 	dataPackage::DATA generateData(denmPackage::DENM denm);
 
+	/** Generates standard compliant DENM
+	 *
+	 */
+	DENM_t* generateDenm2();
+
+	/** Converts ASN1 DENM structure into DENM protocol buffer.
+	 * @return The newly generated DENM protocol buffer.
+	 */
+	denmPackage::DENM convertAsn1toProtoBuf(DENM_t* cam);
+
 	/**
 	 * Receives new GPS data from the GPS module.
 	 */
@@ -118,6 +130,7 @@ private:
 	boost::thread* mThreadAppTrigger;
 
 	LoggingUtility* mLogger;
+	MessageUtils* mMsgUtils;
 
 	/**
 	 * Id for DENM message.
