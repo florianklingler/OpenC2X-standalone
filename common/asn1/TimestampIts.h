@@ -12,20 +12,14 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <INTEGER.h>
+#include <BIT_STRING.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Dependencies */
-typedef enum TimestampIts {
-	TimestampIts_utcStartOf2004	= 0,
-	TimestampIts_oneMillisecAfterUTCStartOf2004	= 1
-} e_TimestampIts;
-
 /* TimestampIts */
-typedef INTEGER_t	 TimestampIts_t;
+typedef BIT_STRING_t	 TimestampIts_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TimestampIts;

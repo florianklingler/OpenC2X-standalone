@@ -6,8 +6,6 @@ cd ..
 
 protoc --proto_path=./ --cpp_out=build/ cam.proto 
 
-protoc --proto_path=./ --cpp_out=build/ denm.proto
-
 protoc --proto_path=./ --cpp_out=build/ data.proto 
 
 protoc --proto_path=./ --cpp_out=build/ gps.proto 
@@ -45,3 +43,10 @@ protoc --proto_path=./ --cpp_out=build/ ProtectedCommunicationZone.proto
 protoc --proto_path=./ --cpp_out=build/ RsuHighFreqContainer.proto
 
 protoc --proto_path=./ --cpp_out=build/ SpecialVehicleContainer.proto
+
+protoc --proto_path=./ --cpp_out=build/ DENMessage.proto
+
+protoc --proto_path=./ --cpp_out=build/ DENMManagementContainer.proto
+
+protoc --proto_path=./ --cpp_out=build/ denm.proto
+

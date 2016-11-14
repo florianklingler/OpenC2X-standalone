@@ -347,7 +347,7 @@ void CaService::send() {
 	string strCam(encodedCam.begin(), encodedCam.end());
 	mLogger->logDebug("Encoded CAM size: " + to_string(strCam.length()));
 
-	data.set_id(2);
+	data.set_id(messageID_cam);
 	data.set_type(dataPackage::DATA_Type_CAM);
 	data.set_priority(dataPackage::DATA_Priority_BE);
 
@@ -406,7 +406,6 @@ CAM_t* CaService::generateCam2() {
 		throw runtime_error("could not allocate CAM_t");
 	}
 	// ITS pdu header
-	//TODO: GSP: station id is 0..4294967295
 	cam->header.stationID = mGlobalConfig.mStationID;// mIdCounter; //
 	cam->header.messageID = messageID_cam;
 	cam->header.protocolVersion = protocolVersion_currentVersion;

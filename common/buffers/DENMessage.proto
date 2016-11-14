@@ -1,0 +1,7 @@
+package its;
+import "DENMManagementContainer.proto";
+
+message DENMessage {
+	required its.DENMManagementContainer managementContainer = 1;
+	// ignore optional fields as of now
+}

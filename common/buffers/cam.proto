@@ -1,6 +1,4 @@
 package camPackage;
-import "gps.proto";
-import "obd2.proto";
 import "ItsPduHeader.proto";
 import "CoopAwareness.proto";
 

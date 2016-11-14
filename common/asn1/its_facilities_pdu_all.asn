@@ -1066,10 +1066,12 @@ BEGIN
 	unavailable(127)
     } (1..127)
     
-    TimestampIts ::= INTEGER {
-	utcStartOf2004(0),
-	oneMillisecAfterUTCStartOf2004(1)
-    } (0..4398046511103)
+--    TimestampIts ::= INTEGER {
+--	    utcStartOf2004(0),
+--  	oneMillisecAfterUTCStartOf2004(1)
+--    } (0..4398046511103)
+    
+    TimestampIts ::= BIT STRING(SIZE(42))	-- 4398046511103 takes 42 bits and asn doesnt support more than 32 bit int (strange)
     
     VehicleRole ::= ENUMERATED {
 	default(0),

@@ -1,12 +1,8 @@
 package denmPackage;
-import "gps.proto";
-import "obd2.proto";
+import "ItsPduHeader.proto";
+import "DENMessage.proto";
 
 message DENM {
-	required string stationId = 1;
-	required int32 id = 2;
-	required string content = 3;
-	optional int64 createTime = 4;
-	optional gpsPackage.GPS gps = 5;
-	optional obd2Package.OBD2 obd2 = 6;
+	required its.ItsPduHeader header = 1;
+	required its.DENMessage msg= 2;
 }

@@ -1,0 +1,18 @@
+package its;
+
+message DENMManagementContainer {
+	// this proto ignores optional fields in standard at the moment
+	required uint64 stationID = 1;
+	required int64 sequenceNumber = 2;
+	optional int64 detectionTime = 3; // required ?
+	optional int64 referenceTime = 4; // required ?
+	required int64 latitude = 5;
+	required int64 longitude = 6;
+	required int64 semiMajorConfidence = 7;
+	required int64 semiMinorConfidence = 8;
+	required int64 semiMajorOrientation = 9;
+	required int64 altitude = 10;
+	required int64 altitudeConfidence = 11;
+	optional int64 validityDuration = 12;
+	required int64 stationType = 13;
+}
