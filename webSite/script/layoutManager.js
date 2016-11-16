@@ -126,7 +126,7 @@ function createReceivedCamContainer(){
 function createDenmContainer(){
 	if($("#Denm").length === 0){ //container is not created
 	containers.push(new Container("Denm", function(callback) {
-			requestDenm(callback);
+			denmData.getLastOwnDenm(callback);
 		},color= "#FFFF00"));
 	}
 }
@@ -134,7 +134,7 @@ function createDenmContainer(){
 function createReceivedDenmContainer(){
 	if($("#ReceivedDenm").length === 0){ //container is not created
 		containers.push(new Container("ReceivedDenm", function(callback) {
-			camData.getReceivedCamDetail(callback);
+			denmData.getReceivedDenmDetail(callback);
 		}, color="#66bb22"));
 	}
 }

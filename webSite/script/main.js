@@ -25,6 +25,92 @@
  */
 camTimeout = 60 //seconds
 
+denmData = {
+	mymac : "",
+	denms : new Map(),
+	refreshRate : 1000,
+	lastUpdate : 0,
+
+	init : function(){
+		if (this.mymac == ""){//is not initalised
+			//start updating
+			window.setInterval(function(){
+				denmData.updateDenms();
+			},denmData.refreshRate);
+			//get own mac
+			requestMyMac(function(data) {
+				this.mymac = data.myMac;
+			}.bind(this));
+			return false;
+		} else {
+			return true;
+		}
+	},
+	updateDenms: function(){
+		if (this.lastUpdate+this.refreshRate < new Date().getTime()){
+			requestDenm(this.digestDenms);
+		}
+	},
+	digestDenms : function(data){
+		if (denmData.init()){ //is initalised
+			data.msgs.forEach(function(denm) {
+				denmData.denms.set(denm.header.stationID.toString(),denm);
+			})
+		}
+	},
+	getLastOwnDenm : function(callback){
+		denmData.init();
+		var table = {};
+		var denm = denmData.denms.get(denmData.mymac);
+		var isVehicle = (denm.msg.managementContainer.stationType === 5) ? "Vehicle" : "RSU";
+		table["header"] = {
+							"protocolVersion" : denm.header.protocolVersion,
+							"messageID" : denm.header.messageID,
+							"stationID" : denm.header.stationID
+						};
+		table["denm"] = {
+							"latitude" : denm.msg.managementContainer.latitude,
+							"longitude" : denm.msg.managementContainer.longitude,
+							"altitude" : denm.msg.managementContainer.altitude,
+							"stationType" : isVehicle
+						};
+		if(callback){
+			callback(table);
+		} else {
+			//console.log(camData.mymac + " and map" + camData.cams)
+			return table;
+		}
+	},
+	getReceivedDenmDetail : function(callback){
+		if(denmData.init()){
+			var table={};
+			denmData.denms.forEach(function(denm, stationID) {
+				if (stationID == denmData.mymac) {
+					// do nothing
+				}
+				else {
+					console.log(denm)
+					//console.log(cam.coop.camParameters.basicContainer.latitude)
+					var isVehicle = (denm.msg.managementContainer.stationType === 5) ? "Vehicle" : "RSU";
+					console.log(isVehicle)
+					table[stationID] = {
+						"protocolVersion" : denm.header.protocolVersion,
+						"messageID" : denm.header.messageID,
+						"stationID" : denm.header.stationID,
+						"latitude" : denm.msg.managementContainer.latitude,
+						"longitude" : denm.msg.managementContainer.longitude,
+						"altitude" : denm.msg.managementContainer.altitude,
+						"stationType" : isVehicle
+					}
+					
+				}
+				
+			})
+			callback(table);
+		}
+	},
+};
+
 /**
  * holds and updates most recent cam data for each station id
  */
