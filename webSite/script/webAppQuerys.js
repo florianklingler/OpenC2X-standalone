@@ -69,10 +69,11 @@ function requestDenm(callback){
                             var latestTime = 0;
                             var latestDenm;
                             data.msgs.forEach(function(denm){
-                                if (denm.createTime > latestTime){
+                                //if (denm.createTime > latestTime){
                                     latestDenm = denm;
-                                    latestTime = denm.createTime;
-                                }
+                                //    latestTime = denm.createTime;
+                                console.log(latestDenm.header.stationID);
+                                //}
                             });
 		callback(latestDenm);
 	},"json");
