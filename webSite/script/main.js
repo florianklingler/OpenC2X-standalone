@@ -89,10 +89,8 @@ denmData = {
 					// do nothing
 				}
 				else {
-					console.log(denm)
 					//console.log(cam.coop.camParameters.basicContainer.latitude)
 					var isVehicle = (denm.msg.managementContainer.stationType === 5) ? "Vehicle" : "RSU";
-					console.log(isVehicle)
 					table[stationID] = {
 						"protocolVersion" : denm.header.protocolVersion,
 						"messageID" : denm.header.messageID,
@@ -214,10 +212,8 @@ camData = {
 					// do nothing
 				}
 				else {
-					console.log(cam)
 					//console.log(cam.coop.camParameters.basicContainer.latitude)
 					var isVehicle = (cam.coop.camParameters.basicContainer.stationType === 5) ? "Vehicle" : "RSU";
-					console.log(isVehicle)
 					if (isVehicle.includes("RSU")) {
 						table[stationID] = {
 							"protocolVersion" : cam.header.protocolVersion,
