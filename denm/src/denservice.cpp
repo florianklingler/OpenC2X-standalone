@@ -256,8 +256,8 @@ DENM_t* DenService::generateDenm2() {
 	denm->denm.management.stationType = StationType_passengerCar;
 	mMutexLatestGps.lock();
 	if(mLatestGps.has_time()) {	//only add gps if valid data is available
-		denm->denm.management.eventPosition.latitude = mLatestGps.latitude();
-		denm->denm.management.eventPosition.longitude = mLatestGps.longitude();
+		denm->denm.management.eventPosition.latitude = mLatestGps.latitude() * 10000000; // in one-tenth of microdegrees
+		denm->denm.management.eventPosition.longitude = mLatestGps.longitude() * 10000000; // in one-tenth of microdegrees
 		denm->denm.management.eventPosition.altitude.altitudeValue = mLatestGps.altitude();
 	} else {
 		denm->denm.management.eventPosition.latitude = Latitude_unavailable;
