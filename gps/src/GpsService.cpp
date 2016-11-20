@@ -33,6 +33,8 @@
 #include <cmath>
 #include <string>
 #include <utility/Utils.h>
+#include <boost/algorithm/string.hpp>
+
 
 using namespace std;
 
@@ -221,30 +223,24 @@ void GpsService::simulateData(const boost::system::error_code &ec, position curr
 
 void GpsService::simulateFromDemoTrail(const boost::system::error_code &ec) {
 	string line;
-	while(getline(mFile, line)) {
-		gpsPackage::GPS buffer = convertTrailDataToBuffer(line);
-		sendToServices(buffer);
-		usleep(500000);
+	while(1) {
+		while(getline(mFile, line)) {
+			gpsPackage::GPS buffer = convertTrailDataToBuffer(line);
+			sendToServices(buffer);
+			usleep(500000);
+		}
+		mFile.clear();
+		mFile.seekg(0, ios::beg);
 	}
 }
 
-gpsPackage::GPS GpsService::convertTrailDataToBuffer(string data) {
+gpsPackage::GPS GpsService::convertTrailDataToBuffer(string line) {
 	gpsPackage::GPS buffer;
-	std::string delimiter = "\t";
-	size_t pos = 0;
-	int idx = 0;
-	std::string token;
-	while ((pos = data.find(delimiter)) != std::string::npos) {
-	    token = data.substr(0, pos);
-	    if(idx == 1) {
-	    	buffer.set_latitude(stod(token));
-	    } else if(idx == 2) {
-	    	buffer.set_longitude(stod(token));
-	    }
-	    idx++;
-	    data.erase(0, pos + delimiter.length());
-	}
-	buffer.set_altitude(0);
+	vector<string> values;
+	boost::split(values, line, boost::is_any_of("\t"));
+	buffer.set_latitude(stod(values[1]));
+	buffer.set_longitude(stod(values[2]));
+	buffer.set_altitude(stod(values[3]));
 	buffer.set_epx(0);
 	buffer.set_epy(0);
 	buffer.set_time(Utils::currentTime());
