@@ -62,11 +62,6 @@ public:
 	 */
 	void receive();
 
-	/** Logs the delay of the specified (serialized) DENM between its creation time and the current time.
-	 * @param byteMessage senrialized DENM message
-	 */
-	void logDelay(std::string byteMessage);
-
 	/**
 	 * Triggers generation/ sending of DENM message by an external application.
 	 */
@@ -78,25 +73,10 @@ public:
 	 */
 	void send(triggerPackage::TRIGGER trigger);
 
-	/**
-	 * Generates a new DENM.
-	 * @param trigger The data that the external application wants to include in the DENM.
-	 * @return The newly generated Denm package.
-	 */
-	denmPackage::DENM generateDenm(triggerPackage::TRIGGER trigger);
-
-	/** Generates a new data package that includes the specified DENM.
-	 * The specified DENM is serialized and included in the data package.
-	 * Additionally, the station id, priority, creation time of the DENM are included.
-	 * @param denm The DENM to be included in the data package
-	 * @return The newly generated data package.
-	 */
-	dataPackage::DATA generateData(denmPackage::DENM denm);
-
-	/** Generates standard compliant DENM
+	/** Generates a new DENM
 	 *
 	 */
-	DENM_t* generateDenm2();
+	DENM_t* generateDenm();
 
 	/** Converts ASN1 DENM structure into DENM protocol buffer.
 	 * @return The newly generated DENM protocol buffer.

@@ -119,12 +119,6 @@ private:
 	 */
 	void receive();
 
-	/** Logs the delay of the specified (serialized) CAM between its creation time and the current time.
-	 *
-	 * @param serializedCam
-	 */
-	void logDelay(std::string serializedCam);
-
 	/** Sends information about why a CAM was triggered to LDM.
 	 * Sends serialized camInfo to LDM, including the current time and the specified reason for triggering.
 	 * @param triggerReason Difference in time, heading, position, or speed.
@@ -147,25 +141,11 @@ private:
 	 */
 	void trigger();
 
-	/** Generates a new CAM.
-	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
-	 * @return The newly generated CAM.
-	 */
-	camPackage::CAM generateCam();
-
 	/** Generates a new unaligned PER compliant CAM.
 	 * The new CAM includes the MAC address as stationId, an increasing but not unique ID, a current time stamp, and the latest GPS and OBD2 data if it is not too old (as configured).
 	 * @return The newly generated CAM.
 	 */
-	/*std::vector<uint8_t>*/CAM_t* generateCam2();
-
-	/** Generates a new data package that includes the specified CAM.
-	 * The specified CAM is serialized and included in the new data package.
-	 * Additionally, the ID, type, priority, creation time and life time of the specified CAM are included.
-	 * @param cam The CAM to be included in the data package.
-	 * @return The newly generated data package.
-	 */
-	dataPackage::DATA generateData(std::string encodedCam);
+	/*std::vector<uint8_t>*/CAM_t* generateCam();
 
 	/** Converts ASN1 CAM structure into CAM protocol buffer.
 	 * @return The newly generated CAM protocol buffer.
@@ -249,9 +229,6 @@ private:
 	bool mObd2Valid;
 	std::mutex mMutexLatestObd2;
 
-	// TODO: GSP: Get rid of last sent cam
-//	camPackage::CAM mLastSentCam;
-
 	struct LastSentCamInfo {
 		bool hasGPS = false;
 		gpsPackage::GPS lastGps;
@@ -261,7 +238,6 @@ private:
 		int64_t timestamp = 0;
 	};
 	LastSentCamInfo mLastSentCamInfo;
-//	CAM_t* mCamStructure;
 };
 
 /** @} */ //end group

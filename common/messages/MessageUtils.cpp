@@ -52,7 +52,7 @@ vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *str
 int MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buffer) {
 	asn_codec_ctx_t ctx{};
 	asn_dec_rval_t drv = uper_decode_complete(&ctx, td, t, buffer.data(), buffer.length());
-//	asn_dec_rval_t drv = uper_decode(&context, td, t, buffer.data(), buffer.length(), 0, 0);
+	//asn_dec_rval_t drv = uper_decode(&context, td, t, buffer.data(), buffer.length(), 0, 0);
 	mLogger->logInfo("Decoded bytes: " + to_string(drv.consumed) + " and returning code: " + to_string(drv.code));
 	return drv.code;// == RC_OK;
 }

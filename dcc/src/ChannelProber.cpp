@@ -184,7 +184,7 @@ int ChannelProber::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->mWifi->load.busyTimeLast = busy_time;
 	cp->mWifi->load.noise = noise;
 	cp->mWifi->load.mutexChannelLoad.unlock();
-//	cp->mLogger->logStats(to_string(channel) + "\t" + to_string(busy_time_diff) + "\t" + to_string(total_time_diff) + "\t" + to_string(load));
+	//cp->mLogger->logStats(to_string(channel) + "\t" + to_string(busy_time_diff) + "\t" + to_string(total_time_diff) + "\t" + to_string(load));
 	return NL_SKIP;
 }
 

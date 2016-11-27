@@ -117,9 +117,6 @@ void LDM::createTables() {
 	char* errmsg = 0;
 
 	//create CAM table
-//	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
-//			"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, heading DOUBLE, " \
-//			"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS CAM(" \
 			"key INTEGER PRIMARY KEY, protocolVersion INTEGER, messageId INTEGER, stationId INTEGER, "\
 			"genDeltaTime INTEGER, stationType INTEGER, latitude INTEGER, longitude INTEGER, semiMajorConfidence INTEGER, "\
@@ -138,9 +135,6 @@ void LDM::createTables() {
 	}
 
 	//create DENM table
-//	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM(" \
-//				"key INTEGER PRIMARY KEY, stationId TEXT, id INTEGER, content TEXT, createTime INTEGER, gps INTEGER, obd2 INTEGER, " \
-//				"FOREIGN KEY(gps) REFERENCES GPS (KEYWORDASCOLUMNNAME), FOREIGN KEY(obd2) REFERENCES OBD2 (KEYWORDASCOLUMNNAME));";
 	sqlCommand = (char*) "CREATE TABLE IF NOT EXISTS DENM("\
 				"key INTEGER PRIMARY KEY, protocolVersion INTEGER, messageId INTEGER, stationId INTEGER, "\
 				"sequenceNumber INTEGER, detectionTime INTEGER, referenceTime INTEGER, latitude INTEGER, longitude INTEGER, "\
@@ -328,18 +322,18 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 						basicHighFreqContainer->set_yawrateconfidence(sqlite3_column_int64(stmt, 28));
 
 						// optional fields
-			//			basicHighFreqContainer->set_accelerationcontrol();
-			//			basicHighFreqContainer->set_laneposition();
-			//			basicHighFreqContainer->set_steeringwheelangle();
-			//			basicHighFreqContainer->set_steeringwheelangleconfidence();
-			//			basicHighFreqContainer->set_lateralacceleration();
-			//			basicHighFreqContainer->set_lateralaccelerationconfidence();
-			//			basicHighFreqContainer->set_verticalacceleration();
-			//			basicHighFreqContainer->set_verticalaccelerationconfidence();
-			//			basicHighFreqContainer->set_performanceclass();
-			//			basicHighFreqContainer->set_protectedzonelatitude();
-			//			basicHighFreqContainer->set_has_protectedzonelongitude();
-			//			basicHighFreqContainer->set_cendsrctollingzoneid();
+						//basicHighFreqContainer->set_accelerationcontrol();
+						//basicHighFreqContainer->set_laneposition();
+						//basicHighFreqContainer->set_steeringwheelangle();
+						//basicHighFreqContainer->set_steeringwheelangleconfidence();
+						//basicHighFreqContainer->set_lateralacceleration();
+						//basicHighFreqContainer->set_lateralaccelerationconfidence();
+						//basicHighFreqContainer->set_verticalacceleration();
+						//basicHighFreqContainer->set_verticalaccelerationconfidence();
+						//basicHighFreqContainer->set_performanceclass();
+						//basicHighFreqContainer->set_protectedzonelatitude();
+						//basicHighFreqContainer->set_has_protectedzonelongitude();
+						//basicHighFreqContainer->set_cendsrctollingzoneid();
 
 						highFreqContainer->set_allocated_basicvehiclehighfreqcontainer(basicHighFreqContainer);
 						break;
@@ -349,7 +343,7 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 
 						rsuHighFreqContainer = new its::RsuHighFreqContainer();
 						// optional fields
-			//			rsuHighFreqContainer->
+						//rsuHighFreqContainer->
 
 						highFreqContainer->set_allocated_rsuhighfreqcontainer(rsuHighFreqContainer);
 						break;
@@ -357,10 +351,6 @@ dataPackage::LdmData LDM::camSelect(string condition) {
 					default:
 						break;
 				}
-
-
-
-
 				//add result
 				camCache[to_string(cam.header().stationid())]=cam;
 			}
@@ -410,8 +400,8 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 				its::DENMManagementContainer* mgtCtr = new its::DENMManagementContainer;
 				mgtCtr->set_stationid(sqlite3_column_int64(stmt, 3));
 				mgtCtr->set_sequencenumber(sqlite3_column_int64(stmt, 4));
-			//	mgtCtr->set_detectiontime(sqlite3_column_int64(stmt, 5));
-			//	mgtCtr->set_referencetime(sqlite3_column_int64(stmt, 6));
+				//mgtCtr->set_detectiontime(sqlite3_column_int64(stmt, 5));
+				//mgtCtr->set_referencetime(sqlite3_column_int64(stmt, 6));
 				mgtCtr->set_latitude(sqlite3_column_int64(stmt, 7));
 				mgtCtr->set_longitude(sqlite3_column_int64(stmt, 8));
 				mgtCtr->set_semimajorconfidence(sqlite3_column_int64(stmt, 9));
@@ -419,7 +409,7 @@ dataPackage::LdmData LDM::denmSelect(string condition) {
 				mgtCtr->set_semimajororientation(sqlite3_column_int64(stmt, 11));
 				mgtCtr->set_altitude(sqlite3_column_int64(stmt, 12));
 				mgtCtr->set_altitudeconfidence(sqlite3_column_int64(stmt, 13));
-			//	mgtCtr->set_validityduration(sqlite3_column_int64(stmt, 14));
+				//mgtCtr->set_validityduration(sqlite3_column_int64(stmt, 14));
 				mgtCtr->set_stationtype(sqlite3_column_int64(stmt, 15));
 				denmMsg->set_allocated_managementcontainer(mgtCtr);
 				denm.set_allocated_msg(denmMsg);
@@ -736,7 +726,7 @@ void LDM::receiveFromCa() {
 		serializedCam = received.second;
 		cam.ParseFromString(serializedCam);
 
-		printCam(cam);
+		//printCam(cam);
 		//ASSUMPTION: received cam is the newer than all cams that were received before.
 		//TODO: OPTIMIZATION: use pointers instead of copying cams.
 		camCache[to_string(cam.header().stationid())]=cam;
@@ -754,7 +744,7 @@ void LDM::receiveFromDen() {
 		cout << "LDM received DENM from DENM service" << endl << endl << endl;
 		denm.ParseFromString(serializedDenm);
 
-		printDenm(denm);
+		//printDenm(denm);
 		//ASSUMPTION: received denm is the newer than all denm that were received before.
 		//TODO: OPTIMIZATION: use pointers instead of copying denm.
 		denmCache[to_string(denm.header().stationid())] = denm;

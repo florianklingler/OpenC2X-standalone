@@ -108,7 +108,7 @@ void DenService::receive() {
 			mLogger->logError("Failed to decode received DENM. Error code: " + to_string(res));
 			continue;
 		}
-//		asn_fprint(stdout, &asn_DEF_DENM, denm);
+		//asn_fprint(stdout, &asn_DEF_DENM, denm);
 		denmPackage::DENM denmProto = convertAsn1toProtoBuf(denm);
 		denmProto.SerializeToString(&serializedProtoDenm);
 
@@ -145,15 +145,6 @@ void DenService::receiveObd2Data() {
 	}
 }
 
-//log delay of received DENM
-void DenService::logDelay(string serializedDenm) {
-//	denmPackage::DENM denm;
-//	denm.ParseFromString(serializedDenm);
-//	int64_t createTime = denm.createtime();
-//	int64_t receiveTime = Utils::currentTime();
-//	mLogger->logStats(denm.stationid() + "\t" + to_string(denm.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
-}
-
 //trigger generation/send of DENM by external application
 void DenService::triggerAppDenm() {
 	string envelope;
@@ -176,7 +167,7 @@ void DenService::send(triggerPackage::TRIGGER trigger) {
 	dataPackage::DATA data;
 
 	// create denm
-	DENM_t* denm = generateDenm2();
+	DENM_t* denm = generateDenm();
 	// asn_fprint(stdout, &asn_DEF_DENM, denm);
 	vector<uint8_t> encodedDenm = mMsgUtils->encodeMessage(&asn_DEF_DENM, denm);
 	string strDenm(encodedDenm.begin(), encodedDenm.end());
@@ -201,35 +192,8 @@ void DenService::send(triggerPackage::TRIGGER trigger) {
 	//asn_DEF_DENM.free_struct(&asn_DEF_DENM, denm, 0);
 }
 
-//generate new DENM with increasing ID and current timestamp
-denmPackage::DENM DenService::generateDenm(triggerPackage::TRIGGER trigger) {
-	denmPackage::DENM denm;
-
-//	//create DENM
-//	denm.set_stationid(mGlobalConfig.mMac);
-//	denm.set_id(mIdCounter++);
-//	denm.set_content(trigger.content());
-//	denm.set_createtime(Utils::currentTime());
-//
-//	mMutexLatestGps.lock();
-//	if(mLatestGps.has_time()) {											//only add gps if valid data is available
-//		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);			//data needs to be copied to a new buffer because new gps data can be received before sending
-//		denm.set_allocated_gps(gps);
-//	}
-//	mMutexLatestGps.unlock();
-//
-//	mMutexLatestObd2.lock();
-//	if(mLatestObd2.has_time()) {										//only add obd2 if valid data is available
-//		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
-//		denm.set_allocated_obd2(obd2);
-//		//TODO: delete obd2, gps?
-//	}
-//	mMutexLatestObd2.unlock();
-
-	return denm;
-}
-
-DENM_t* DenService::generateDenm2() {
+//generate a new DENM
+DENM_t* DenService::generateDenm() {
 	DENM_t* denm = static_cast<DENM_t*>(calloc(1, sizeof(DENM_t)));
 	if (!denm) {
 		throw runtime_error("could not allocate DENM_t");
@@ -289,8 +253,8 @@ denmPackage::DENM DenService::convertAsn1toProtoBuf(DENM_t* denm) {
 	its::DENMManagementContainer* mgtCtr = new its::DENMManagementContainer;
 	mgtCtr->set_stationid(denm->denm.management.actionID.originatingStationID);
 	mgtCtr->set_sequencenumber(denm->denm.management.actionID.sequenceNumber);
-//	mgtCtr->set_detectiontime(denm->denm.management.detectionTime);
-//	mgtCtr->set_referencetime(denm->denm.management.referenceTime);
+	//mgtCtr->set_detectiontime(denm->denm.management.detectionTime);
+	//mgtCtr->set_referencetime(denm->denm.management.referenceTime);
 	mgtCtr->set_latitude(denm->denm.management.eventPosition.latitude);
 	mgtCtr->set_longitude(denm->denm.management.eventPosition.longitude);
 	mgtCtr->set_semimajorconfidence(denm->denm.management.eventPosition.positionConfidenceEllipse.semiMajorConfidence);
@@ -305,25 +269,6 @@ denmPackage::DENM DenService::convertAsn1toProtoBuf(DENM_t* denm) {
 	denmMsg->set_allocated_managementcontainer(mgtCtr);
 	denmProto.set_allocated_msg(denmMsg);
 	return denmProto;
-}
-
-dataPackage::DATA DenService::generateData(denmPackage::DENM denm) {
-	dataPackage::DATA data;
-//	string serializedDenm;
-
-//	//serialize DENM
-//	denm.SerializeToString(&serializedDenm);
-//
-//	//create DATA
-//	data.set_id(denm.id());
-//	data.set_type(dataPackage::DATA_Type_DENM);
-//	data.set_priority(dataPackage::DATA_Priority_VI);
-//
-//	data.set_createtime(denm.createtime());
-//	data.set_validuntil(denm.createtime() + 1*1000*1000*1000);	//1s TODO: conform to standard? -> specify using CLI
-//	data.set_content(serializedDenm);
-
-	return data;
 }
 
 int main() {

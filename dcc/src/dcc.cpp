@@ -225,15 +225,6 @@ void DCC::receiveFromCa2() {
 
 		string encodedCam = data->content();
 
-//		// Test to decode the received CAM [
-//		CAM_t* cam = 0;//new CAM_t;
-//		int res = mMsgUtils->decodeMessage(&asn_DEF_CAM, (void **)&cam, encodedCam);
-////		asn_fprint(stdout, &asn_DEF_CAM, cam);
-//		cout << "Decoding result " << res << endl;
-//		cout << "decoded cam: " << cam << endl;
-//		cout << "HEADER: " << cam->header.stationID << " speed: " << cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue << endl;
-//		// ]
-
 		Channels::t_access_category ac = (Channels::t_access_category) data->priority();
 		int64_t nowTime = Utils::currentTime();
 		mBucket[ac]->flushQueue(nowTime);
@@ -549,10 +540,7 @@ void DCC::sendQueuedPackets(Channels::t_access_category ac) {
 			setMessageLimits(data);
 
 			string byteMessage;
-//			data->SerializeToString(&byteMessage);
-//			mSenderToHw->send(&byteMessage,ac);
 			byteMessage = data->content();
-//			mSenderToHw->send(&byteMessage, ac);
 			mSenderToHw->sendWithGeoNet(&byteMessage, ac, data->type());
 			mLogger->logInfo("AC " + to_string(ac) + ": Sent data " + to_string(data->id()) + " to HW -> queue length: " + to_string(mBucket[ac]->getQueuedPackets()) + ", tokens: " + to_string(mBucket[ac]->availableTokens));
 			delete data;

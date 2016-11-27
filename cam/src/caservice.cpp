@@ -169,15 +169,6 @@ void CaService::sendCamInfo(string triggerReason, double delta) {
 	mSenderToLdm->send("camInfo", serializedCamInfo);
 }
 
-//log delay of received CAM
-void CaService::logDelay(string serializedCam) {
-//	camPackage::CAM cam;
-//	cam.ParseFromString(serializedCam);
-//	int64_t createTime = cam.createtime();
-//	int64_t receiveTime = Utils::currentTime();
-//	mLogger->logStats(cam.stationid() + "\t" + to_string(cam.id()) + "\t" + Utils::readableTime(createTime) + "\t" + Utils::readableTime(receiveTime));
-}
-
 double CaService::getDistance(double lat1, double lon1, double lat2, double lon2) {
 	double R = 6371; // km
 	double dLat = (lat2-lat1) * M_PI/180.0;		//convert to rad
@@ -342,7 +333,7 @@ void CaService::send() {
 	dataPackage::DATA data;
 
 	// Standard compliant CAM
-	CAM_t* cam = generateCam2();
+	CAM_t* cam = generateCam();
 	vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
 	string strCam(encodedCam.begin(), encodedCam.end());
 	mLogger->logDebug("Encoded CAM size: " + to_string(strCam.length()));
@@ -368,38 +359,8 @@ void CaService::send() {
     asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
 }
 
-//generate new CAM with increasing ID, current timestamp and latest gps data
-camPackage::CAM CaService::generateCam() {
-	camPackage::CAM cam;
-
-//	//create CAM
-//	cam.set_stationid(mGlobalConfig.mMac);
-//	cam.set_id(mIdCounter++);
-//	cam.set_content("CAM from CA service");
-//	cam.set_createtime(Utils::currentTime());
-//
-//	mMutexLatestGps.lock();
-//	if(mGpsValid) {														//only add gps if valid data is available
-//		gpsPackage::GPS* gps = new gpsPackage::GPS(mLatestGps);		//data needs to be copied to a new buffer because new gps data can be received before sending
-//		cam.set_allocated_gps(gps);
-//
-////		double currentHeading = getHeading(mLastSentCam.gps().latitude(), mLastSentCam.gps().longitude(), mLatestGps.latitude(), mLatestGps.longitude());
-////		cam.set_heading(currentHeading);
-//	}
-//	mMutexLatestGps.unlock();
-//
-//	mMutexLatestObd2.lock();
-//	if(mObd2Valid) {													//only add obd2 if valid data is available
-//		obd2Package::OBD2* obd2 = new obd2Package::OBD2(mLatestObd2);	//data needs to be copied to a new buffer because new obd2 data can be received before sending
-//		cam.set_allocated_obd2(obd2);
-//		//TODO: delete obd2, gps?
-//	}
-//	mMutexLatestObd2.unlock();
-
-	return cam;
-}
-
-CAM_t* CaService::generateCam2() {
+//generate new CAM with latest gps and obd2 data
+CAM_t* CaService::generateCam() {
 	mLogger->logDebug("Generating CAM as per UPER");
 	CAM_t* cam = static_cast<CAM_t*>(calloc(1, sizeof(CAM_t)));
 	if (!cam) {
@@ -506,33 +467,10 @@ CAM_t* CaService::generateCam2() {
 	// Printing the cam structure
 	//	asn_fprint(stdout, &asn_DEF_CAM, cam);
 
-	// Encode message
-//    vector<uint8_t> encodedCam = mMsgUtils->encodeMessage(&asn_DEF_CAM, cam);
 
     //TODO: Free the allocated structure for cam. Is this enough?
-//    asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
-//    return encodedCam;
+	//asn_DEF_CAM.free_struct(&asn_DEF_CAM, cam, 0);
     return cam;
-}
-
-dataPackage::DATA CaService::generateData(string encodedCam) {
-	dataPackage::DATA data;
-	string serializedCam;
-
-	//serialize CAM
-	//	encodedCam.SerializeToString(&serializedCam);
-
-	//create DATA
-	data.set_id(/*cam.id()*/1);
-	data.set_type(dataPackage::DATA_Type_CAM);
-	data.set_priority(dataPackage::DATA_Priority_BE);
-
-	uint64_t time = Utils::currentTime();
-	data.set_createtime(time);
-	data.set_validuntil(time + mConfig.mExpirationTime*1000*1000*1000);
-	data.set_content(serializedCam);
-
-	return data;
 }
 
 camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
@@ -587,18 +525,18 @@ camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 			basicHighFreqContainer->set_yawrateconfidence(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.yawRate.yawRateConfidence);
 
 			// optional fields
-//			basicHighFreqContainer->set_accelerationcontrol();
-//			basicHighFreqContainer->set_laneposition();
-//			basicHighFreqContainer->set_steeringwheelangle();
-//			basicHighFreqContainer->set_steeringwheelangleconfidence();
-//			basicHighFreqContainer->set_lateralacceleration();
-//			basicHighFreqContainer->set_lateralaccelerationconfidence();
-//			basicHighFreqContainer->set_verticalacceleration();
-//			basicHighFreqContainer->set_verticalaccelerationconfidence();
-//			basicHighFreqContainer->set_performanceclass();
-//			basicHighFreqContainer->set_protectedzonelatitude();
-//			basicHighFreqContainer->set_has_protectedzonelongitude();
-//			basicHighFreqContainer->set_cendsrctollingzoneid();
+			//basicHighFreqContainer->set_accelerationcontrol();
+			//basicHighFreqContainer->set_laneposition();
+			//basicHighFreqContainer->set_steeringwheelangle();
+			//basicHighFreqContainer->set_steeringwheelangleconfidence();
+			//basicHighFreqContainer->set_lateralacceleration();
+			//basicHighFreqContainer->set_lateralaccelerationconfidence();
+			//basicHighFreqContainer->set_verticalacceleration();
+			//basicHighFreqContainer->set_verticalaccelerationconfidence();
+			//basicHighFreqContainer->set_performanceclass();
+			//basicHighFreqContainer->set_protectedzonelatitude();
+			//basicHighFreqContainer->set_has_protectedzonelongitude();
+			//basicHighFreqContainer->set_cendsrctollingzoneid();
 
 			highFreqContainer->set_allocated_basicvehiclehighfreqcontainer(basicHighFreqContainer);
 			break;
@@ -608,7 +546,7 @@ camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 
 			rsuHighFreqContainer = new its::RsuHighFreqContainer();
 			// optional fields
-//			rsuHighFreqContainer->
+			//rsuHighFreqContainer->
 
 			highFreqContainer->set_allocated_rsuhighfreqcontainer(rsuHighFreqContainer);
 			break;
@@ -632,26 +570,6 @@ camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 	camProto.set_allocated_coop(coop);
 
 	return camProto;
-
-	////////////////////////////////////////////////////////////
-//	camPackage::CAM camProto;
-//	camProto.set_stationid(to_string(cam->header.stationID));
-//	camProto.set_id(messageID_cam);
-//	camProto.set_content("CAM from " + to_string(cam->header.stationID));
-//	camProto.set_createtime(Utils::currentTime());
-//
-//	// GPS
-//	gpsPackage::GPS* gps = new gpsPackage::GPS;
-//	gps->set_latitude(cam->cam.camParameters.basicContainer.referencePosition.latitude *1.0 / 10000000);
-//	gps->set_longitude(cam->cam.camParameters.basicContainer.referencePosition.longitude *1.0 / 10000000);
-//	gps->set_altitude(0);
-//	camProto.set_allocated_gps(gps);
-//
-//	// OBD2
-//	obd2Package::OBD2* obd2 = new obd2Package::OBD2;
-//	obd2->set_speed(cam->cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency.speed.speedValue);
-//	camProto.set_allocated_obd2(obd2);
-//	return camProto;
 }
 
 int main() {

@@ -270,7 +270,7 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForCam(int payloadLen) {
 	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.maxHop = 1;
 	mGeoBtpHdrForCam.mGeoNetHdr.commonHeader.reserved = 0;
 	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.assignmentTypeCountryCode = htons(38393);
-//	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
+	//mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
 	memcpy(&mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.addr.llAddr, ether_aton(mOwnMac.c_str()), ETH_ALEN);
 	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.timestamp = htonl(2810450329);
 	mGeoBtpHdrForCam.mGeoNetHdr.tsb.spv.latitude = htonl(424937722);
@@ -304,7 +304,7 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForDenm(int payloadLen) {
 	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.sequenceNumber = 0;
 	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.reserved = 0;
 	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.addr.assignmentTypeCountryCode = htons(38393);
-//	mGeoBtpHdrForDenm.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
+	//mGeoBtpHdrForDenm.mGeoNetHdr.tsb.spv.addr.llAddr = reinterpret_cast<uint8_t*>(ether_aton(mOwnMac.c_str()));
 	memcpy(&mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.addr.llAddr, ether_aton(mOwnMac.c_str()), ETH_ALEN);
 	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.timestamp = htonl(2810450329);
 	mGeoBtpHdrForDenm.mGeoNetHdr.brdcst.spv.latitude = htonl(424939708);
