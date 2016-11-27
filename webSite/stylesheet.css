@@ -1,6 +1,10 @@
 .container {
 }
 
+body {
+    font-family: "Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
 #mapContainer {
 	height : 100%;
 }
@@ -19,9 +23,10 @@
 	background: lightgray;
 	border: 2px solid black;
 	border-radius: 10px;
-	padding:10px;
-	margin: 10px;
+	padding: 10px;
+	margin: 0px 10px;
 	display: inline-block;
+	width: auto;
 }
 
 .updateButton{

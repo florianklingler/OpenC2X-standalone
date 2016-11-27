@@ -34,9 +34,9 @@ denmData = {
 	init : function(){
 		if (this.mymac == ""){//is not initalised
 			//start updating
-			window.setInterval(function(){
-				denmData.updateDenms();
-			},denmData.refreshRate);
+			// window.setInterval(function(){
+			// 	denmData.updateDenms();
+			// },denmData.refreshRate);
 			//get own mac
 			requestMyMac(function(data) {
 				this.mymac = data.myMac;
@@ -124,10 +124,6 @@ camData = {
 	 */
 	init : function(){
 		if (this.mymac == ""){//is not initalised
-			//start updating
-			window.setInterval(function(){
-				camData.updateCams();
-			},camData.refreshRate);
 			//get own mac
 			requestMyMac(function(data) {
 				this.mymac = data.myMac;
@@ -179,16 +175,16 @@ camData = {
 			table["cam"] = {
 						"genDeltaTime" : cam.coop.genDeltaTime,
 						"stationType" : isVehicle,
-						"latitude" : cam.coop.camParameters.basicContainer.latitude,
-						"longitude" : cam.coop.camParameters.basicContainer.longitude,
+						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
+						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 						"altitude" : cam.coop.camParameters.basicContainer.altitude
 						};
 		} else {
 			table["cam"] = {
 						"genDeltaTime" : cam.coop.genDeltaTime,
 						"stationType" : isVehicle,
-						"latitude" : cam.coop.camParameters.basicContainer.latitude,
-						"longitude" : cam.coop.camParameters.basicContainer.longitude,
+						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
+						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 						"altitude" : cam.coop.camParameters.basicContainer.altitude,
 						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
 						"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
@@ -221,8 +217,8 @@ camData = {
 							"stationID" : cam.header.stationID,
 							"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
-							"latitude" : cam.coop.camParameters.basicContainer.latitude,
-							"longitude" : cam.coop.camParameters.basicContainer.longitude,
+							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
+							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 							"altitude" : cam.coop.camParameters.basicContainer.altitude
 						}
 					} else {
@@ -232,8 +228,8 @@ camData = {
 							"stationID" : cam.header.stationID,
 							"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
-							"latitude" : cam.coop.camParameters.basicContainer.latitude,
-							"longitude" : cam.coop.camParameters.basicContainer.longitude,
+							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
+							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 							"altitude" : cam.coop.camParameters.basicContainer.altitude,
 							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
 							"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
@@ -276,12 +272,16 @@ function Container(name,updateFunction,color,updateInterval){
 	this.id = name;
 	this.updateFunction = updateFunction;
 	this.intervalID = -1;
+	closeThisContainer = function(objId){
+		$(objId).remove();
+	};
 	var htmlstr = 
 		'<div id="'+name+'" class="container dataContainer"> '+
-        	'<h4 style="display:inline-block">'+name+'</h4>'+
-    //    	'<div style="background:green" class="updateButton"></div>'+
+			'<a href="javascript:void(0)" onclick="closeThisContainer('+name+')"><i class="fa fa-times" aria-hidden="true" style="float: right;"></i></a>'+
+        	'<h4 style="display:inline-block; width: 100%; text-align: center;">'+name+'</h4>'+
+        	//'<div style="background:green" class="updateButton"></div>'+
         	'<table id="'+name+'_data">'+
-				'<tr><td>loading</td><td>Data</td></tr>'+
+				'<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Loading</td><td>Data...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>'+
         	'</table>'+
     	'</div>';
 	$("body").append(htmlstr);
@@ -369,7 +369,7 @@ function initMap(){
                             popupAnchor:  [0, -20]
 			});
 
-			var ownCam = camData.getLastOwnCam();
+			//var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
 				if ( key == camData.mymac){//own cam
 					//if(cam.gps){
@@ -405,17 +405,24 @@ function initMap(){
 		}
 		map.invalidateSize();
 		map.setView(viewPosition);
-	},2000);
+	},1300);
 	
 
 	$("#mapWrapper").draggable().resizable();
 }
 
 $(document).ready(function(){
-	
 	initMap();
+
+	window.setInterval(function(){
+	 	camData.updateCams();
+	},camData.refreshRate);
 	
-	var counter = 1;
+	window.setInterval(function(){
+		denmData.updateDenms();
+	},denmData.refreshRate);
+
+// 	var counter = 1;
 	
 //	var carContainer = new Container("car", function(callback) {
 //		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
@@ -426,6 +433,7 @@ $(document).ready(function(){
 //	},color="#22ff22");
 	
 });
+
 
 /** Open when someone clicks on the button element */
 function openNav() {

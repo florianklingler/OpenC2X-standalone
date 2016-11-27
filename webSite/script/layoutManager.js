@@ -36,6 +36,7 @@ function saveLayout(){
 	
 	for (var i = 0; i< containers.length;i++){
 		var con = containers[i];
+		if(con.id === "") continue;
 		var config = {
 			offset: $("#"+con.id).offset(),
 			height: $("#"+con.id).height(),
@@ -115,6 +116,15 @@ function createCamContainer(){
 	}
 }
 
+function test() {
+	console.log("test run");
+	if($("#ReceivedCam").length === 0){ //container is not created
+		containers.push(new Container("ReceivedCam", function(callback) {
+			camData.getReceivedCamDetail(callback);
+		}, color="#aabbcc"));
+	}
+}
+
 function createReceivedCamContainer(){
 	if($("#ReceivedCam").length === 0){ //container is not created
 		containers.push(new Container("ReceivedCam", function(callback) {
@@ -135,7 +145,7 @@ function createReceivedDenmContainer(){
 	if($("#ReceivedDenm").length === 0){ //container is not created
 		containers.push(new Container("ReceivedDenm", function(callback) {
 			denmData.getReceivedDenmDetail(callback);
-		}, color="#66bb22"));
+		}, color="#FFFF00"));
 	}
 }
 
@@ -156,11 +166,35 @@ function createCamInfoContainer(){
 }
 
 function createDccInfoContainer(){
-	if($("#DccInfo").length === 0){ //container is not created
-		containers.push(new Container("DccInfo", function(callback) {
-			requestDccInfo(callback);
+	if($("#AC_BE").length === 0){ //container is not created
+		containers.push(new Container("AC_BE", function(callback) {
+			requestAC_BE(callback);
+		}, color="#FF7700"));
+	}
+
+	if($("#AC_VI").length === 0){ //container is not created
+		containers.push(new Container("AC_VI", function(callback) {
+			requestAC_VI(callback);
 		}, color="#FF7700"));
 	}
 }
+
+function createAC_BEContainer(){
+	if($("#AC_BE").length === 0){ //container is not created
+		containers.push(new Container("AC_BE", function(callback) {
+			requestAC_BE(callback);
+		}, color="#FF7700"));
+	}
+}
+
+function createAC_VIContainer(){
+	if($("#AC_VI").length === 0){ //container is not created
+		containers.push(new Container("AC_VI", function(callback) {
+			requestAC_VI(callback);
+		}, color="#FF7700"));
+	}
+}
+
+
 
 /**  @} */// end of group

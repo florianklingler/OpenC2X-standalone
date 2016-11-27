@@ -110,6 +110,46 @@ function requestDccInfo(callback){
 	},"json");
 }
 
+function requestAC_BE(callback){
+	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
+			function(data){
+		var table = {};		
+		table["AC_BE"] = {
+							"access category " : data.msgs[0].Cat0.accessCategory,
+							"state           " : data.msgs[0].Cat0.state,
+							"time            " : data.msgs[0].Cat0.time,
+							"token interval  " : data.msgs[0].Cat0.tokenInterval,
+							"available tokens" : data.msgs[0].Cat0.availableTokens,
+							"channel load    " : data.msgs[0].Cat0.channelLoad,
+							"carrier sense   " : data.msgs[0].Cat0.carrierSense,
+							"data rate       " : data.msgs[0].Cat0.datarate,
+							"tx power        " : data.msgs[0].Cat0.txPower						
+						};
+		callback(table);
+		//callback(data.msgs[data.msgs.length-1]);
+	},"json");
+}
+
+function requestAC_VI(callback){
+	$.post("http://localhost:1188/request_dccinfo",JSON.stringify({condition:"latest"}),
+			function(data){
+		var table = {};
+		table["AC_VI"] = {
+							"access category " : data.msgs[0].Cat2.accessCategory,
+							"state           " : data.msgs[0].Cat2.state,
+							"time            " : data.msgs[0].Cat2.time,
+							"token interval  " : data.msgs[0].Cat2.tokenInterval,
+							"available tokens" : data.msgs[0].Cat2.availableTokens,
+							"channel load    " : data.msgs[0].Cat2.channelLoad,
+							"carrier sense   " : data.msgs[0].Cat2.carrierSense,
+							"data rate       " : data.msgs[0].Cat2.datarate,
+							"tx power        " : data.msgs[0].Cat2.txPower						
+						};
+		callback(table);
+		//callback(data.msgs[data.msgs.length-1]);
+	},"json");
+}
+
 /**
  * triggers the creation of a DEN message.
  * via http request to httpServer
