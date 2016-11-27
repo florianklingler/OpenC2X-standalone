@@ -15,6 +15,13 @@ When OpenC2X source is organised in the tree structure like this:
     ├── httpServer
     ├── ldm
     └── obd2
+----------------------------------------------------------------------------------------------------
+                                      Generate source from asn
+----------------------------------------------------------------------------------------------------
+Open a terminal, navigate to asn1 folder in common:
+
+    $ cd /path_to_my_project/src/common/asn1/
+    $ ./generate.sh
 
 ----------------------------------------------------------------------------------------------------
                                          Without Eclipse
