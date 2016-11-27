@@ -115,15 +115,15 @@ function requestAC_BE(callback){
 			function(data){
 		var table = {};		
 		table["AC_BE"] = {
-							"access category " : data.msgs[0].Cat0.accessCategory,
+							"category " : data.msgs[0].Cat0.accessCategory,
 							"state           " : data.msgs[0].Cat0.state,
 							"time            " : data.msgs[0].Cat0.time,
 							"token interval  " : data.msgs[0].Cat0.tokenInterval,
 							"available tokens" : data.msgs[0].Cat0.availableTokens,
-							"channel load    " : data.msgs[0].Cat0.channelLoad,
-							"carrier sense   " : data.msgs[0].Cat0.carrierSense,
-							"data rate       " : data.msgs[0].Cat0.datarate,
-							"tx power        " : data.msgs[0].Cat0.txPower						
+							"channel load    " : data.msgs[0].Cat0.channelLoad//,
+							//"carrier sense   " : data.msgs[0].Cat0.carrierSense,    // These are just hard coded values, can be ignored
+							//"data rate       " : data.msgs[0].Cat0.datarate,
+							//"tx power        " : data.msgs[0].Cat0.txPower						
 						};
 		callback(table);
 		//callback(data.msgs[data.msgs.length-1]);
@@ -135,15 +135,15 @@ function requestAC_VI(callback){
 			function(data){
 		var table = {};
 		table["AC_VI"] = {
-							"access category " : data.msgs[0].Cat2.accessCategory,
+							"category " : data.msgs[0].Cat2.accessCategory,
 							"state           " : data.msgs[0].Cat2.state,
 							"time            " : data.msgs[0].Cat2.time,
 							"token interval  " : data.msgs[0].Cat2.tokenInterval,
 							"available tokens" : data.msgs[0].Cat2.availableTokens,
-							"channel load    " : data.msgs[0].Cat2.channelLoad,
-							"carrier sense   " : data.msgs[0].Cat2.carrierSense,
-							"data rate       " : data.msgs[0].Cat2.datarate,
-							"tx power        " : data.msgs[0].Cat2.txPower						
+							"channel load    " : data.msgs[0].Cat2.channelLoad//,
+							//"carrier sense   " : data.msgs[0].Cat2.carrierSense,
+							//"data rate       " : data.msgs[0].Cat2.datarate,
+							//"tx power        " : data.msgs[0].Cat2.txPower						
 						};
 		callback(table);
 		//callback(data.msgs[data.msgs.length-1]);

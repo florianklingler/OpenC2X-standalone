@@ -186,8 +186,7 @@ camData = {
 						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 						"altitude" : cam.coop.camParameters.basicContainer.altitude,
-						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
-						"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
+						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed
 						};
 		}
 
@@ -231,8 +230,7 @@ camData = {
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 							"altitude" : cam.coop.camParameters.basicContainer.altitude,
-							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed,
-							"heading" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.heading
+							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed
 						}
 					}
 					
@@ -278,7 +276,7 @@ function Container(name,updateFunction,color,updateInterval){
 	var htmlstr = 
 		'<div id="'+name+'" class="container dataContainer"> '+
 			'<a href="javascript:void(0)" onclick="closeThisContainer('+name+')"><i class="fa fa-times" aria-hidden="true" style="float: right;"></i></a>'+
-        	'<h4 style="display:inline-block; width: 100%; text-align: center;">'+name+'</h4>'+
+        	'<h4 style="display:inline-block; width: 100%; text-align: center; margin: -5px 0px 0px 0px;">'+name+'</h4>'+
         	//'<div style="background:green" class="updateButton"></div>'+
         	'<table id="'+name+'_data">'+
 				'<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Loading</td><td>Data...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>'+
@@ -422,7 +420,7 @@ $(document).ready(function(){
 		denmData.updateDenms();
 	},denmData.refreshRate);
 
-	$("#slideWrapper").draggable();
+	$("#slideWrapper").draggable().resizable();
 
 // 	var counter = 1;
 	
