@@ -173,7 +173,7 @@ camData = {
 						};
 		if (isVehicle.includes("RSU")) {
 			table["cam"] = {
-						"genDeltaTime" : cam.coop.genDeltaTime,
+						//"genDeltaTime" : cam.coop.genDeltaTime,
 						"stationType" : isVehicle,
 						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -181,7 +181,7 @@ camData = {
 						};
 		} else {
 			table["cam"] = {
-						"genDeltaTime" : cam.coop.genDeltaTime,
+						//"genDeltaTime" : cam.coop.genDeltaTime,
 						"stationType" : isVehicle,
 						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -214,7 +214,7 @@ camData = {
 							"protocolVersion" : cam.header.protocolVersion,
 							"messageID" : cam.header.messageID,
 							"stationID" : cam.header.stationID,
-							"genDeltaTime" : cam.coop.genDeltaTime,
+							//"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -225,7 +225,7 @@ camData = {
 							"protocolVersion" : cam.header.protocolVersion,
 							"messageID" : cam.header.messageID,
 							"stationID" : cam.header.stationID,
-							"genDeltaTime" : cam.coop.genDeltaTime,
+							//"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -437,7 +437,7 @@ $(document).ready(function(){
 
 /** Open when someone clicks on the button element */
 function openNav() {
-    document.getElementById("myNav").style.width = "50%";
+    document.getElementById("myNav").style.width = "30%";
 }
 
 /** Close when someone clicks on the "x" symbol inside the overlay */
