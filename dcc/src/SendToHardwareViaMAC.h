@@ -30,8 +30,8 @@
 
 #include "GeoNetHeaders.h"
 
-#include <utility/LoggingUtility.h>
-#include <utility/Constants.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/utility/Constants.h>
 #include <string.h>
 
 #include <unistd.h> // Std. Fct.  getuid() and read()

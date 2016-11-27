@@ -29,22 +29,22 @@
  */
 
 #include <boost/thread.hpp>
-#include <config/config.h>
-#include <utility/CommunicationReceiver.h>
-#include <utility/CommunicationSender.h>
-#include <buffers/build/data.pb.h>
-#include <buffers/build/cam.pb.h>
-#include <buffers/build/gps.pb.h>
-#include <buffers/build/obd2.pb.h>
-#include <buffers/build/camInfo.pb.h>
-#include <buffers/build/CoopAwareness.pb.h>
-#include <buffers/build/ItsPduHeader.pb.h>
+#include <common/config/config.h>
+#include <common/utility/CommunicationReceiver.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/buffers/build/data.pb.h>
+#include <common/buffers/build/cam.pb.h>
+#include <common/buffers/build/gps.pb.h>
+#include <common/buffers/build/obd2.pb.h>
+#include <common/buffers/build/camInfo.pb.h>
+#include <common/buffers/build/CoopAwareness.pb.h>
+#include <common/buffers/build/ItsPduHeader.pb.h>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <mutex>
-#include <asn1/CAM.h>
-#include <messages/MessageUtils.h>
+#include <common/asn1/CAM.h>
+#include <common/messages/MessageUtils.h>
 
 /** Struct that hold the configuration for CaService.
  * The configuration is defined in <a href="../../cam/config/config.xml">cam/config/config.xml</a>

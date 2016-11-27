@@ -29,13 +29,13 @@
  * @{
  */
 #include <gps.h>
-#include <utility/CommunicationSender.h>
-#include <utility/LoggingUtility.h>
-#include <buffers/build/gps.pb.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/buffers/build/gps.pb.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
-#include <config/config.h>
+#include <common/config/config.h>
 #include <fstream>
 
 /** Struct that hold the configuration for GpsService.

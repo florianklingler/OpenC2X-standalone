@@ -28,9 +28,9 @@
  * @{
  */
 
-#include <utility/Constants.h>
-#include <utility/LoggingUtility.h>
-#include <buffers/build/data.pb.h>
+#include <common/utility/Constants.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/buffers/build/data.pb.h>
 #include <string>
 #include <unistd.h> // Std. Fct.  getuid() and read()
 #include <netinet/in.h> // Socket Fct. (incl. <sys/socket.h>)

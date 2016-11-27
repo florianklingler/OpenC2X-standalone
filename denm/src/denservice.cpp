@@ -31,8 +31,8 @@
 #include <chrono>
 #include <string>
 #include <stdlib.h>
-#include <utility/Utils.h>
-#include <asn1/TimestampIts.h>
+#include <common/utility/Utils.h>
+#include <common/asn1/TimestampIts.h>
 
 using namespace std;
 

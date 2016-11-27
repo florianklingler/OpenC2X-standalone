@@ -26,9 +26,9 @@
 #include "ldm.h"
 #include <unistd.h>
 #include <iostream>
-#include <config/config.h>
+#include <common/config/config.h>
 #include <map>
-#include <utility/Utils.h>
+#include <common/utility/Utils.h>
 
 using namespace std;
 

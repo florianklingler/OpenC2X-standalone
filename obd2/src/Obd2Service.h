@@ -29,14 +29,14 @@
  */
 
 #include "SerialPort.h"
-#include <utility/CommunicationSender.h>
-#include <utility/LoggingUtility.h>
-#include <buffers/build/obd2.pb.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/buffers/build/obd2.pb.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
 #include <string>
-#include <config/config.h>
+#include <common/config/config.h>
 
 /** Struct that holds the configuration for Obd2Service.
  * The configuration is defined in <a href="../../obd2/config/config.xml">obd2/config/config.xml</a>.

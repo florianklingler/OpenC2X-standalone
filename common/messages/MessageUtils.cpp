@@ -17,7 +17,8 @@
 // Gurjashan Singh Pannu <gurjashan.pannu@ccs-labs.org>
 
 #include "MessageUtils.h"
-#include "../asn1/per_encoder.h"
+#include <common/asn1/per_encoder.h>
+#include <common/asn1/per_decoder.h>
 #include <iterator>
 
 using namespace std;

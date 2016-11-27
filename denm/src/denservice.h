@@ -29,17 +29,17 @@
  */
 
 #include <boost/thread.hpp>
-#include <config/config.h>
-#include <utility/CommunicationReceiver.h>
-#include <utility/CommunicationSender.h>
-#include <utility/LoggingUtility.h>
-#include <buffers/build/data.pb.h>
-#include <buffers/build/denm.pb.h>
-#include <buffers/build/gps.pb.h>
-#include <buffers/build/obd2.pb.h>
-#include <buffers/build/trigger.pb.h>
-#include <asn1/DENM.h>
-#include <messages/MessageUtils.h>
+#include <common/config/config.h>
+#include <common/utility/CommunicationReceiver.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/buffers/build/data.pb.h>
+#include <common/buffers/build/denm.pb.h>
+#include <common/buffers/build/gps.pb.h>
+#include <common/buffers/build/obd2.pb.h>
+#include <common/buffers/build/trigger.pb.h>
+#include <common/asn1/DENM.h>
+#include <common/messages/MessageUtils.h>
 #include <mutex>
 
 /**

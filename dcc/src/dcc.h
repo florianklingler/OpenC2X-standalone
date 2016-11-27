@@ -36,17 +36,17 @@
 #include <mutex>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
-#include <config/config.h>
-#include <utility/CommunicationReceiver.h>
-#include <utility/CommunicationSender.h>
-#include <utility/LoggingUtility.h>
-#include <buffers/build/data.pb.h>
-#include <buffers/build/dccInfo.pb.h>
+#include <common/config/config.h>
+#include <common/utility/CommunicationReceiver.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/utility/LoggingUtility.h>
+#include <common/buffers/build/data.pb.h>
+#include <common/buffers/build/dccInfo.pb.h>
 #include "SendToHardwareViaMAC.h"
 #include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
 #include "PktStatsCollector.h"
-#include <messages/MessageUtils.h>
+#include <common/messages/MessageUtils.h>
 #include <random>
 
 /**

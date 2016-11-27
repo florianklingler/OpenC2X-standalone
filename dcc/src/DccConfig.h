@@ -31,7 +31,7 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <utility/Constants.h>
+#include <common/utility/Constants.h>
 
 namespace {
 	const int STATE_UNDEF = -1;

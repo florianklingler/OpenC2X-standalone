@@ -30,10 +30,10 @@
 #include <random>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <signal.h>
-#include <utility/Utils.h>
-#include <asn1/CAM.h>
-#include <asn1/ItsPduHeader.h>
-#include <asn1/per_decoder.h>
+#include <common/utility/Utils.h>
+#include <common/asn1/CAM.h>
+#include <common/asn1/ItsPduHeader.h>
+#include <common/asn1/per_decoder.h>
 
 using namespace std;
 

@@ -4,8 +4,8 @@
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
-#include <utility/CommunicationSender.h>
-#include <buffers/build/trigger.pb.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/buffers/build/trigger.pb.h>
 
 /*
  * This is a simple application that can trigger DENMs using a command-line interface.

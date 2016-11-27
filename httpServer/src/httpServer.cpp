@@ -26,8 +26,8 @@
 #include "httpServer.h"
 #include "external/pbjson.hpp"
 #include "external/crow_all.h"
-#include <utility/CommunicationSender.h>
-#include <buffers/build/trigger.pb.h>
+#include <common/utility/CommunicationSender.h>
+#include <common/buffers/build/trigger.pb.h>
 
 using namespace std;
 

@@ -20,8 +20,8 @@
 #ifndef MESSAGE_UTILS_H_
 #define MESSAGE_UTILS_H_
 
-#include "../utility/LoggingUtility.h"
-#include "../asn1/asn_application.h"
+#include <common/utility/LoggingUtility.h>
+#include <common/asn1/asn_application.h>
 #include <string>
 #include <vector>
 

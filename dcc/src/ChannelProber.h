@@ -31,7 +31,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
-#include <utility/LoggingUtility.h>
+#include <common/utility/LoggingUtility.h>
 #include <netlink/netlink-kernel.h>
 #include <netlink/socket.h>
 #include <netlink/genl/genl.h>

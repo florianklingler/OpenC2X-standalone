@@ -31,8 +31,8 @@
 #include <chrono>
 #include <cmath>
 #include <string>
-#include <utility/Utils.h>
-#include <asn1/per_encoder.h>
+#include <common/utility/Utils.h>
+#include <common/asn1/per_encoder.h>
 
 using namespace std;
 

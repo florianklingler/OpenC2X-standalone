@@ -29,17 +29,17 @@
  */
 
 #include <boost/thread.hpp>
-#include <utility/CommunicationReceiver.h>
-#include <utility/CommunicationServer.h>
-#include <utility/LoggingUtility.h>
+#include <common/utility/CommunicationReceiver.h>
+#include <common/utility/CommunicationServer.h>
+#include <common/utility/LoggingUtility.h>
 #include <sqlite3.h>
-#include <buffers/build/cam.pb.h>
-#include <buffers/build/denm.pb.h>
-#include <buffers/build/gps.pb.h>
-#include <buffers/build/obd2.pb.h>
-#include <buffers/build/dccInfo.pb.h>
-#include <buffers/build/camInfo.pb.h>
-#include <buffers/build/ldmData.pb.h>
+#include <common/buffers/build/cam.pb.h>
+#include <common/buffers/build/denm.pb.h>
+#include <common/buffers/build/gps.pb.h>
+#include <common/buffers/build/obd2.pb.h>
+#include <common/buffers/build/dccInfo.pb.h>
+#include <common/buffers/build/camInfo.pb.h>
+#include <common/buffers/build/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>

@@ -2,7 +2,7 @@
 #define ELPP_NO_DEFAULT_LOG_FILE
 
 #include "denmApp.h"
-#include <config/config.h>
+#include <common/config/config.h>
 
 using namespace std;
 

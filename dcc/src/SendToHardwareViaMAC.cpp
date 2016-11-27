@@ -24,7 +24,7 @@
 
 #include "SendToHardwareViaMAC.h"
 #include <ctype.h>
-#include <buffers/build/data.pb.h>
+#include <common/buffers/build/data.pb.h>
 
 using namespace std;
 
