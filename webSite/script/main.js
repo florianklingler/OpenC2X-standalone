@@ -422,6 +422,8 @@ $(document).ready(function(){
 		denmData.updateDenms();
 	},denmData.refreshRate);
 
+	$("#slideWrapper").draggable();
+
 // 	var counter = 1;
 	
 //	var carContainer = new Container("car", function(callback) {
