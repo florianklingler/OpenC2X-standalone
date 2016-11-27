@@ -1,4 +1,4 @@
-For setting up openC2X kernel, following needs to be done:
+For setting up openC2X kernel with ath9k chipset, following needs to be done:
 
 $ git clone https://github.com/CTU-IIG/802.11p-linux.git
 $ cd 802.11p-linux
