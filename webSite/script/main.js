@@ -69,8 +69,8 @@ denmData = {
 							"stationID" : denm.header.stationID
 						};
 		table["denm"] = {
-							"latitude" : denm.msg.managementContainer.latitude,
-							"longitude" : denm.msg.managementContainer.longitude,
+							"latitude" : denm.msg.managementContainer.latitude/10000000,
+							"longitude" : denm.msg.managementContainer.longitude/10000000,
 							"altitude" : denm.msg.managementContainer.altitude,
 							"stationType" : isVehicle
 						};
@@ -95,8 +95,8 @@ denmData = {
 						"protocolVersion" : denm.header.protocolVersion,
 						"messageID" : denm.header.messageID,
 						"stationID" : denm.header.stationID,
-						"latitude" : denm.msg.managementContainer.latitude,
-						"longitude" : denm.msg.managementContainer.longitude,
+						"latitude" : denm.msg.managementContainer.latitude/10000000,
+						"longitude" : denm.msg.managementContainer.longitude/10000000,
 						"altitude" : denm.msg.managementContainer.altitude,
 						"stationType" : isVehicle
 					}
