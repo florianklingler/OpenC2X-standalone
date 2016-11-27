@@ -17,7 +17,18 @@ When OpenC2X source is organised in the tree structure like this:
     └── obd2
 
 ----------------------------------------------------------------------------------------------------
-                                  Creating the eclipse project files   
+                                         Without Eclipse
+----------------------------------------------------------------------------------------------------
+Open a terminal, navigate to your project root folder and configure the project:
+
+    $ cd /path_to_my_project/build
+    $ cmake ../src
+    $ make all
+
+The executables can be found in corresponding module folders found in build/binaries/
+
+----------------------------------------------------------------------------------------------------
+                                           With Eclipse   
 ----------------------------------------------------------------------------------------------------
 Open a terminal, navigate to your project root folder and configure the project:
 
@@ -26,7 +37,7 @@ Open a terminal, navigate to your project root folder and configure the project:
 
 
 ----------------------------------------------------------------------------------------------------
-                                        Importing into Eclipse
+                                      Importing into Eclipse
 ----------------------------------------------------------------------------------------------------
 1) Launch Eclipse CDT and select File > Import.
 2) In the list select General > Existing Projects into Workspace and then next.
