@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------------------------
-                                Creating the eclipse project files
+                                             OpenC2X
 ----------------------------------------------------------------------------------------------------
 When OpenC2X source is organised in the tree structure like this:
 .
@@ -17,13 +17,12 @@ When OpenC2X source is organised in the tree structure like this:
     └── obd2
 
 ----------------------------------------------------------------------------------------------------
-        Open a terminal, navigate to your project root folder and configure the project:
+                                  Creating the eclipse project files   
 ----------------------------------------------------------------------------------------------------
+Open a terminal, navigate to your project root folder and configure the project:
 
-$ cd /path_to_my_project/build
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" ../src
-
-
+    $ cd /path_to_my_project/build
+    $ cmake -G "Eclipse CDT4 - Unix Makefiles" ../src
 
 
 ----------------------------------------------------------------------------------------------------

@@ -5,3 +5,15 @@ PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER BasicContainer.proto BasicVehicleHi
 ADD_LIBRARY(proto SHARED ${PROTO_HEADER} ${PROTO_SRC})
 
 install(TARGETS proto DESTINATION lib)
+
+ADD_CUSTOM_TARGET(
+    proto-config ALL COMMENT "Installing Recource-Files into Builddirectory"
+)
+
+ADD_CUSTOM_COMMAND(
+    TARGET proto-config
+    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/build/
+    COMMAND cp -a ${CMAKE_BINARY_DIR}/common/buffers/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/build/
+    COMMAND cp -a ${CMAKE_BINARY_DIR}/common/buffers/*.h ${CMAKE_CURRENT_SOURCE_DIR}/build/
+)
+
