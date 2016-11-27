@@ -22,7 +22,11 @@
         <script src="script/layoutManager.js"></script>
         <script src="script/webAppQuerys.js"></script>
     	<script src="script/main.js"></script>
-        
+
+	    <!-- Slideshow -->
+	    <script src="lib/slideshow/slideshow.js"></script>
+	    <link type="text/css" rel="stylesheet" href="lib/slideshow/slideshow.css"/>
+
         <title>OpenC2X</title>
         <link rel="shortcut icon" type="image/x-icon" href="image/openc2x.png" />`
     </head>
@@ -34,18 +38,18 @@
 			<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 			<!-- Overlay content -->
 			<div class="overlay-content">
-				 <span onclick="toggleLayoutLock()">toggle Layout Lock</span>
-				 <span onclick="saveLayout()">save Layout</span>
-				 <span onclick="loadLayout()">load Layout</span>
-				 <span onclick="triggerDenm()">trigger Denm</span>
-				 <span onclick="createDenmContainer()">create Denm</span>
-				 <span onclick="createReceivedDenmContainer()">Received Denm</span>
-				 <span onclick="createCamContainer()">create Cam</span>
-				 <span onclick="createReceivedCamContainer()">Received Cam</span>
-				 <span onclick="createCamInfoContainer()">create Cam Info</span>
-				 <span onclick="createDccInfoContainer()">create Dcc Info</span>
-				 <!-- <span onclick="createCamOverviewContainer()">create Cam Overview</span> -->
-				 <span onclick="javascript:location.href='licenses.html'">Third Party Licenses</span>
+				<span onclick="createCamContainer()">Create CAM</span>
+				<span onclick="createReceivedCamContainer()">Received CAMs</span>
+				<!-- <span onclick="createCamInfoContainer()">create Cam Info</span> -->
+				<span onclick="createDenmContainer()">Create DENM</span>
+				<span onclick="createReceivedDenmContainer()">Received DENMs</span>
+				<span onclick="triggerDenm()">Trigger DENM</span>
+				<span onclick="createDccInfoContainer()">DCC Info</span>
+				<span onclick="toggleLayoutLock()">Toggle Layout Lock</span>
+				<span onclick="saveLayout()">Save Layout</span>
+				<span onclick="loadLayout()">Load Layout</span>
+				<!-- <span onclick="createCamOverviewContainer()">create Cam Overview</span> -->
+				<span onclick="javascript:location.href='licenses.html'">Third Party Licenses</span>
 			</div>
 		</div>
 		
@@ -55,8 +59,56 @@
 	        <div id="mapContainer">
 	        </div>
 		</div>
+
+		<!-- The slideshow -->
+		<div class="container" id="slideWrapper">
+	 		<div class="bss-slides demo1" tabindex="1" autofocus="autofocus" style="width: 620px; height: 620px;">
+	            <figure> 
+	              <img src="image/slideshow/1.jpg" width="600px" height="600px"/>
+	              <figcaption>1</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/2.jpg" width="600px" height="600px"/>
+	              <figcaption>2</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/3.jpg" width="600px" height="600px"/>
+	              <figcaption>3</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/4.jpg" width="600px" height="600px"/>
+	              <figcaption>4</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/5.jpg" width="600px" height="600px"/>
+	              <figcaption>5</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/6.jpg" width="600px" height="600px"/>
+	              <figcaption>6</figcaption> 
+	            </figure>
+	            <figure>
+	              <img src="image/slideshow/7.jpg" width="600px" height="600px"/>
+	              <figcaption>7</figcaption> 
+	            </figure>
+	        </div>
+        </div>
 	 
-	<!--  data containers are going to be added here at runtime -->
-		
+		<!--  data containers are going to be added here at runtime -->
+
+		<script src="lib/slideshow/hammer.min.js"></script>
+		<script src="lib/slideshow/better-simple-slideshow.min.js"></script>
+		<!-- Initialize slideshow	 -->
+		<script type="text/javascript">
+	        var opts = {
+	            auto : {
+	                speed : 1100, 
+	                pauseOnHover : true
+	            },
+	            fullScreen : false, 
+	            swipe : true
+	        };
+	        makeBSS('.demo1', opts);
+    	</script>
 	</body>
 </html>
