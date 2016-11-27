@@ -36,7 +36,7 @@ function saveLayout(){
 	
 	for (var i = 0; i< containers.length;i++){
 		var con = containers[i];
-		if(con.id === "") continue;
+		//if(con.id === "") continue;
 		var config = {
 			offset: $("#"+con.id).offset(),
 			height: $("#"+con.id).height(),

@@ -376,7 +376,7 @@ function initMap(){
 						viewPosition = [lat, lon];
 						var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
 						//station id popup
-						marker.bindPopup(cam.header.stationID);
+						marker.bindPopup("self");
 						marker.on('mouseover', function(e){
 						    marker.openPopup();
 						});
@@ -392,7 +392,7 @@ function initMap(){
 						var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
 						var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
 						var marker = L.marker([lat, lon],{icon: icon}).addTo(map);
-						marker.bindPopup(cam.header.stationID);
+						marker.bindPopup(cam.header.stationID.toString());
 						marker.on('mouseover', function(e){
 						    marker.openPopup();
 						});
