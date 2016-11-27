@@ -1,9 +1,37 @@
-Launch Eclipse and select File > Import.
-In the list select General > Existing Projects into Workspace and then next.
-Browse (Select root directory) to the root folder of the project and select the build folder (in this case dcc,cam,denm,ldm,common).
-Click Finish.
+----------------------------------------------------------------------------------------------------
+                                Creating the eclipse project files
+----------------------------------------------------------------------------------------------------
+When OpenC2X source is organised in the tree structure like this:
+.
+├── build
+└── src
+    ├── CMakeLists.txt
+    ├── cam
+    ├── common
+    ├── dcc
+    ├── denm
+    ├── denmApp
+    ├── gps
+    ├── httpServer
+    ├── ldm
+    └── obd2
 
-open terminal in common/buffers
-then run ./generate.sh to generate protocol buffers
+----------------------------------------------------------------------------------------------------
+        Open a terminal, navigate to your project root folder and configure the project:
+----------------------------------------------------------------------------------------------------
 
-now compiling in eclipse should work
+$ cd /path_to_my_project/build
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" ../src
+
+
+
+
+----------------------------------------------------------------------------------------------------
+                                        Importing into Eclipse
+----------------------------------------------------------------------------------------------------
+1) Launch Eclipse CDT and select File > Import.
+2) In the list select General > Existing Projects into Workspace and then next.
+3) Browse (Select root directory) to the root folder of the project and select the build folder (in
+   the example case, /path_to_my_project/build).
+4) Click Finish.
+
