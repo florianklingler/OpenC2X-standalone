@@ -741,7 +741,6 @@ void LDM::receiveFromDen() {
 	while (1) {
 		pair<string, string> received = mReceiverFromDen->receive();//receive
 		serializedDenm = received.second;
-		cout << "LDM received DENM from DENM service" << endl << endl << endl;
 		denm.ParseFromString(serializedDenm);
 
 		//printDenm(denm);
