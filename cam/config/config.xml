@@ -6,14 +6,7 @@
 	<maxObd2Age>10</maxObd2Age> <!-- in seconds ! -->
 	<thresholdRadiusForHeading>0.30</thresholdRadiusForHeading> <!-- in metres ! -->
 	
-	<!-- ETSI EN 302 637-2 -->
-	<!-- CAM Header -->
-	<stationId>12345678</stationId>
-	<messageId>2</messageId>
-	<protocolVersion>1</protocolVersion>
-	
 	<!-- Basic Container in CAM -->
-	<stationType>5</stationType> <!-- Passenger Car -->
 	<isRSU>0</isRSU> <!-- 0 for Vehicle, 1 for RSU -->
 	
 </cam>

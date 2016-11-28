@@ -1,5 +1,5 @@
 <global>
 	<expNo>1</expNo> <!-- Experiment number -->
-	<ethernetDevice>lo</ethernetDevice> <!--get via console: "ip link show" -->
+	<ethernetDevice>wlan1-ath9k</ethernetDevice> <!--get via console: "ip link show" -->
 	<stationId>123456789</stationId>
 </global>
