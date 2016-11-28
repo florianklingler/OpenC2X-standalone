@@ -71,7 +71,7 @@ void Obd2Service::receiveData(const boost::system::error_code &ec, SerialPort* s
 		//write current data to protocol buffer
 		obd2Package::OBD2 obd2;
 		obd2.set_time(Utils::currentTime());
-		obd2.set_speed(speed);
+		obd2.set_speed(speed * 100); // standard expects speed in 0.01 m/s
 		if (rpm != -1) {
 			obd2.set_rpm(rpm);
 		}
@@ -107,7 +107,7 @@ void Obd2Service::simulateData(const boost::system::error_code &ec) {
 	obd2Package::OBD2 obd2;
 
 	//write current speed to protocol buffer
-	obd2.set_speed(simulateSpeed());
+	obd2.set_speed(simulateSpeed() * 100); // standard expects speed in 0.01 m/s
 	obd2.set_time(Utils::currentTime());
 
 	sendToServices(obd2);

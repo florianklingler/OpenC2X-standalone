@@ -186,7 +186,7 @@ camData = {
 						"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 						"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 						"altitude" : cam.coop.camParameters.basicContainer.altitude,
-						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed
+						"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed/100 + "m/s"
 						};
 		}
 
@@ -230,7 +230,7 @@ camData = {
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
 							"altitude" : cam.coop.camParameters.basicContainer.altitude,
-							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed
+							"speed" : cam.coop.camParameters.highFreqContainer.basicVehicleHighFreqContainer.speed/100 + "m/s"
 						}
 					}
 					
