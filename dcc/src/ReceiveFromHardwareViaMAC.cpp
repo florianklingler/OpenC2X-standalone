@@ -96,10 +96,9 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 			exit(1);
 		}
 		if (ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR) { // TODO: optimization
-			// not GeoNetworking ethertype, ignore! Read next package
+			// not GeoNetworking ethertype, ignore! Read next packet
 			continue;
 		}
-		mLogger->logInfo("GeoNetworking PDU");
 		int geoNetPDULen = mBytes - mLinkLayerLength;
 		// convert sender Mac from network byte order to char
 		string senderMac = ether_ntoa((struct ether_addr*)mEth_hdr->ether_shost);
@@ -110,7 +109,6 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 			int camPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeaderCAM);
 			char* camPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeaderCAM);
 			string msg(camPDU, camPDULen);
-			mLogger->logInfo("Received CAM of size: " + to_string(camPDULen) + ", forwarding it to the CAM service");
 			ReceivedPacketInfo info;
 			info.mSenderMac = senderMac;
 			info.mType = dataPackage::DATA_Type_CAM;
@@ -120,7 +118,6 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 			int denmPDULen = geoNetPDULen - sizeof(struct GeoNetworkAndBTPHeaderDENM);
 			char* denmPDU = geoNetPDU + sizeof(struct GeoNetworkAndBTPHeaderDENM);
 			string msg(denmPDU, denmPDULen);
-			mLogger->logInfo("Received DENM of size: " + to_string(denmPDULen) + ", forwarding it to the DENM service");
 			ReceivedPacketInfo info;
 			info.mSenderMac = senderMac;
 			info.mType = dataPackage::DATA_Type_DENM;

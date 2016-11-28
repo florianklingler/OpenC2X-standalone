@@ -311,13 +311,14 @@ void DCC::receiveFromHw2() {
 			continue;
 		}
 
-		mLogger->logInfo("forward packet from "+ pktInfo->mSenderMac +" from HW to services");
 		switch(pktInfo->mType) {								//send serialized DATA to corresponding module
 			case dataPackage::DATA_Type_CAM:
 				mSenderToServices->send("CAM", *serializedData);
+				mLogger->logInfo("forward received CAM from source "+ pktInfo->mSenderMac +" to services");
 				break;
 			case dataPackage::DATA_Type_DENM:
 				mSenderToServices->send("DENM", *serializedData);
+				mLogger->logInfo("forward received DENM from source "+ pktInfo->mSenderMac +" to services");
 				break;
 			default:
 				break;

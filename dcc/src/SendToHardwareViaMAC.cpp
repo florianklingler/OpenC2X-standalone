@@ -223,7 +223,7 @@ void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority, int type) {
 
 	//copy payload to packet
 	memcpy(payload,msg->c_str(),msg->size());
-	dumpBuffer(reinterpret_cast<const uint8_t*>(msg->c_str()), msg->size());
+	//dumpBuffer(reinterpret_cast<const uint8_t*>(msg->c_str()), msg->size());
 
 	//send Packet
 	mLogger->logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
@@ -283,8 +283,8 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForCam(int payloadLen) {
 	// BTP Header
 	mGeoBtpHdrForCam.mBTPHdr.mDestinationPort = htons(2001);
 	mGeoBtpHdrForCam.mBTPHdr.mSourcePort = htons(0);
-	uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
-	dumpBuffer(temp, sizeof(mGeoBtpHdrForCam));
+	//uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
+	//dumpBuffer(temp, sizeof(mGeoBtpHdrForCam));
 }
 
 void SendToHardwareViaMAC::fillGeoNetBTPheaderForDenm(int payloadLen) {
@@ -322,8 +322,8 @@ void SendToHardwareViaMAC::fillGeoNetBTPheaderForDenm(int payloadLen) {
 	// BTP Header
 	mGeoBtpHdrForDenm.mBTPHdr.mDestinationPort = htons(2002);
 	mGeoBtpHdrForDenm.mBTPHdr.mSourcePort = htons(0);
-	uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForDenm);
-	dumpBuffer(temp, sizeof(mGeoBtpHdrForDenm));
+	//uint8_t* temp = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForDenm);
+	//dumpBuffer(temp, sizeof(mGeoBtpHdrForDenm));
 }
 
 void SendToHardwareViaMAC::dumpBuffer(const uint8_t* buffer, int size) {

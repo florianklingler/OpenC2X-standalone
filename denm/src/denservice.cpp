@@ -206,7 +206,6 @@ DENM_t* DenService::generateDenm() {
 	denm->denm.management.actionID.originatingStationID = mGlobalConfig.mStationID;
 	denm->denm.management.actionID.sequenceNumber = 1;
 	int64_t currTime = Utils::currentTime();
-	cout << "currnet time : " << currTime << endl;
 
 	// Seems like ASN1 supports 32 bit int (strange) and timestamp needs 42 bits.
 	TimestampIts_t* timestamp = static_cast<TimestampIts_t*>(calloc(1, sizeof(TimestampIts_t)));
