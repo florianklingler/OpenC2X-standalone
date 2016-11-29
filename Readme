@@ -52,7 +52,9 @@ Open a terminal, navigate to your project root folder and configure the project:
     $ make all
 
 - The executables can be found in corresponding module folders found in build/binaries/<module>/bin/
+- The config of the modules can be changed in build/binaries/<module>/config/
 - To run OpenC2X, you can also use the script startOpenC2X.sh in scripts directory.
 
 For setting up kernel, go through kernel-patches/README.txt
+
 
