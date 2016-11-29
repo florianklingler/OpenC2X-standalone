@@ -7,10 +7,10 @@ SET(PROJECT_VERSION_MINOR "0")
 SET(PROJECT_VERSION_PATCH "1")
 
 find_package(Boost COMPONENTS date_time system thread)
-find_package (Threads REQUIRED)
+find_package(Threads REQUIRED)
 
 #find_library(ZMQ_LIBRARY zmq REQUIRED HINTS /usr/lib)
-find_program(ASN1C_EXECUTABLE asn1c REQUIRED HINTS /usr/share/asn1c)
+#find_program(ASN1C_EXECUTABLE asn1c REQUIRED HINTS /usr/share/asn1c)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}

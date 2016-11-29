@@ -1,20 +1,3 @@
-#ADD_CUSTOM_TARGET(
-#    target ALL COMMENT "Compiling asn files"
-#)
-
-#ADD_CUSTOM_COMMAND(
-#    TARGET target
-#    COMMAND mkdir -p ${CMAKE_BINARY_DIR}/res/ethercat
-#    COMMAND cp -a ${CMAKE_CURRENT_SOURCE_DIR}/res/* ${CMAKE_BINARY_DIR}/res/ethercat/
-#    COMMAND asn1c -fnative-types -gen-PER -pdu=auto ${CMAKE_CURRENT_SOURCE_DIR}/common/asn1/its_facilities_pdu_all.asn
-#
-#    COMMAND find ${CMAKE_CURRENT_SOURCE_DIR}/common/asn1/ -type l | xargs rm 
-#
-#    COMMAND cp /usr/share/asn1c/*.c ${CMAKE_CURRENT_SOURCE_DIR}/common/asn1/
-#    COMMAND cp /usr/share/asn1c/*.h ${CMAKE_CURRENT_SOURCE_DIR}/common/asn1/
-#    COMMAND rm ${CMAKE_CURRENT_SOURCE_DIR}/common/asn1/converter-sample.c
-#)
-
 set(asn1_SRCS
 	DENM.c	
 	DecentralizedEnvironmentalNotificationMessage.c	
@@ -234,8 +217,7 @@ set(asn1_support_SRCS
 	xer_support.c
 )
 
-link_directories(${ASN1C_EXECUTABLE})
-
+#link_directories(${ASN1C_EXECUTABLE})
 
 add_library(asn SHARED ${asn1_SRCS} ${asn1_support_SRCS})
 
