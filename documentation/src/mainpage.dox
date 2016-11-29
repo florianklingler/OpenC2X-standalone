@@ -16,7 +16,7 @@
  * 
  * \section compile_sec Compiling the source
  * To fulfill the package dependencies, run the following command in the terminal.
- * \verbatim sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev tmux asn1c \endverbatim
+ * \verbatim sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 libsqlite3-dev tmux asn1c build-essential cmake doxygen \endverbatim
  *
  * To compile, run the script (from within the scripts folder).
  * \verbatim ./compileAll.sh \endverbatim
@@ -101,16 +101,6 @@
  * \section standard_sec Standard Conformity
  * Everything we know of which is not conform to the ETSI ITS standard and influences the external behavior of the Application
  * is listed in @ref nonStandard "Not conform to ETSI ITS standard list"
- *
- * \section eclipse Eclipse Integration
- * Every folder in the Repository is an working Eclipse Project.
- * \n
- * Used Plugins:
- * - Base: Eclipse Mars 4.5.1 CDT
- * - Doxygen editor: eclox (not up to date but still working)
- * - Javascript editor:
- * 	- "web dev tools" and "js dev tools" from the eclipse repositories (Help -> Install new Software)
- * 	- "tern" from eclipse marketplace (Help -> Eclipse Marketplace)
  *
  * \section ports Port Diagramm
  * Diagram of ports used by zmq and http between the modules

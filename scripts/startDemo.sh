@@ -10,7 +10,7 @@ SSH_WAIT_TIME=1s # not sure whether needed but if running the app fails after co
 
 if [ "$#" -ne 1 ]
 then
-  echo "Usage: ./runAllSSH.sh [ssh config name]"
+  echo "Usage: ./startDemo.sh [ssh config name]"
   exit 1
 fi
 
@@ -27,12 +27,12 @@ tmux set-option -g mouse
 echo "Starting dcc"
 tmux send-keys "ssh $BOX" C-m
 sleep $SSH_WAIT_TIME
-tmux send-keys "~/build/binaries/dcc/bin/" C-m
+tmux send-keys "cd ~/build/binaries/dcc/bin/" C-m
 tmux send-keys "sudo ./dcc" C-m
 tmux split-window -v
 tmux select-layout tiled
 
-for APP in denm cam gps obd2 httpServer
+for APP in denm cam obd2 httpServer
 do
     echo "Starting $APP"
     # C-m semms to equal to pressing enter -> line is executed
@@ -44,12 +44,20 @@ do
     tmux select-layout tiled
 done 
 
+echo "Starting gps"
+tmux send-keys "ssh $BOX" C-m
+sleep $SSH_WAIT_TIME
+tmux send-keys "~/build/binaries/gps/bin/" C-m
+tmux send-keys "./gpsService" C-m
+tmux split-window -v
+tmux select-layout tiled
+
 echo "Starting ldm"
 tmux send-keys "ssh $BOX" C-m
 sleep $SSH_WAIT_TIME
 tmux send-keys "~/build/binaries/ldm/bin/" C-m
 tmux send-keys "rm ../db/ldm-1.db" C-m
-tmux send-keys "sudo ./dcc" C-m
+tmux send-keys "./ldm" C-m
 tmux split-window -v
 tmux select-layout tiled
 
