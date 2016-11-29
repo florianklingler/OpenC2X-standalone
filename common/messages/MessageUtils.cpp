@@ -14,7 +14,11 @@
 // along with OpenC2X.  If not, see <http://www.gnu.org/licenses/>.
 //
 // Authors:
+// Sven Laux <slaux@mail.uni-paderborn.de>
 // Gurjashan Singh Pannu <gurjashan.pannu@ccs-labs.org>
+// Stefan Schneider <stefan.schneider@ccs-labs.org>
+// Jan Tiemann <janhentie@web.de>
+
 
 #include "MessageUtils.h"
 #include <common/asn1/per_encoder.h>

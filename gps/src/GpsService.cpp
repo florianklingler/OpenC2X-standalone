@@ -20,6 +20,7 @@
 // Jan Tiemann <janhentie@web.de>
 // Christoph Sommer <sommer@ccs-labs.org>
 
+
 #define ELPP_THREAD_SAFE
 #define ELPP_NO_DEFAULT_LOG_FILE
 

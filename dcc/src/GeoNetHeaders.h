@@ -14,7 +14,11 @@
 // along with OpenC2X.  If not, see <http://www.gnu.org/licenses/>.
 //
 // Authors:
+// Sven Laux <slaux@mail.uni-paderborn.de>
 // Gurjashan Singh Pannu <gurjashan.pannu@ccs-labs.org>
+// Stefan Schneider <stefan.schneider@ccs-labs.org>
+// Jan Tiemann <janhentie@web.de>
+
 
 #ifndef GEONETHEADERS_H_
 #define GEONETHEADERS_H_
