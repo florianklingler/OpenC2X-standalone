@@ -334,7 +334,7 @@ function initMap(){
 	
 	
 	var osmAttrib='Map data cr <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 18, attribution: osmAttrib,trackResize:true});		
+	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 17, attribution: osmAttrib,trackResize:true});		
 
 	// start the map in Paderborn
 	viewPosition = [51.7315, 8.739];
