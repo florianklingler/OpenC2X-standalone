@@ -436,11 +436,13 @@ void DCC::measurePktStats(const boost::system::error_code& ec) {
 	}
 
 	mPktStats = mPktStatsCollector->getPktStats();
-	mLogger->logStats(to_string(mStatIdx++)
-			+ "\t" + to_string(mChannelProber->getChannelLoad())
-			+ "\t" + to_string(mPktStats.be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req)
-			+ "\t" + to_string(mPktStats.be_flush_req - prev_be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req - prev_be_flush_not_req)
-		);
+	if(!mConfig.simulateChannelLoad) {
+		mLogger->logStats(to_string(mStatIdx++)
+				+ "\t" + to_string(mChannelProber->getChannelLoad())
+				+ "\t" + to_string(mPktStats.be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req)
+				+ "\t" + to_string(mPktStats.be_flush_req - prev_be_flush_req) + "\t" + to_string(mPktStats.be_flush_not_req - prev_be_flush_not_req)
+			);
+	}
 	prev_be_flush_req = mPktStats.be_flush_req;
 	prev_be_flush_not_req = mPktStats.be_flush_not_req;
 
