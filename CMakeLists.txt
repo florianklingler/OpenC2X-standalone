@@ -4,13 +4,10 @@ project(openc2x C CXX)
 
 SET(PROJECT_VERSION_MAJOR "1")
 SET(PROJECT_VERSION_MINOR "0")
-SET(PROJECT_VERSION_PATCH "1")
+SET(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
 find_package(Boost COMPONENTS date_time system thread)
 find_package(Threads REQUIRED)
-
-#find_library(ZMQ_LIBRARY zmq REQUIRED HINTS /usr/lib)
-#find_program(ASN1C_EXECUTABLE asn1c REQUIRED HINTS /usr/share/asn1c)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}
