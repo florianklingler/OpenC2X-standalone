@@ -43,17 +43,17 @@ INITIALIZE_EASYLOGGINGPP
 
 struct gps_data_t GpsService::mGpsData;
 
-GpsService::GpsService(GpsConfig &config) {
+GpsService::GpsService(GpsConfig &config, string globalConfig, string loggingConf, string statisticConf) {
 	try {
-		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+		mGlobalConfig.loadConfigXML(globalConfig);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 	mConfig = config;
 	mLastTime = NAN;
-	mSender = new CommunicationSender("GPS", "3333", mGlobalConfig.mExpNo);
-	mLogger = new LoggingUtility("GPS", mGlobalConfig.mExpNo);
+	mSender = new CommunicationSender("GPS", "3333", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility("GPS", mGlobalConfig.mExpNo, loggingConf, statisticConf);
 	
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);
@@ -279,9 +279,7 @@ void GpsService::init() {
 			mTimer->async_wait(boost::bind(&GpsService::simulateData, this, boost::asio::placeholders::error, startPosition));
 
 		} else if (mConfig.mMode == 1) {
-			stringstream ss;
-			ss << "../gpsdata/" << mConfig.mGpsDataFile;
-			mFile.open(ss.str(), fstream::in);
+			mFile.open(mConfig.mGpsDataFile, fstream::in);
 			if(!mFile.is_open()) {
 				mLogger->logError("Failed to open gpsdata file");
 				exit(1);
@@ -312,16 +310,20 @@ void sigHandler(int sigNum) {
 }
 
 
-int main() {
+int main(int argc, const char* argv[]) {
+	if(argc != 5) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <gpsConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
 	GpsConfig config;
 	try {
-		config.loadConfigXML("../config/config.xml");
+		config.loadConfigXML(argv[2]);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
-	GpsService gps(config);
+	GpsService gps(config, argv[1], argv[3], argv[4]);
 	gps.init();
 
 	signal(SIGINT, &sigHandler);

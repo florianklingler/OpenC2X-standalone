@@ -42,7 +42,7 @@ public:
 	 * @param expNo Experiment Number
 	 * @param portOut port used for requesting
 	 */
-	CommunicationClient(std::string ownerModule, std::string portOut, int expNo);
+	CommunicationClient(std::string ownerModule, std::string portOut, int expNo, std::string loggingConf, std::string statisticConf);
 	~CommunicationClient();
 	std::string sendRequest(std::string envelope, std::string request, int timeout);
 	void init();

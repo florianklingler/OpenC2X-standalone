@@ -43,7 +43,7 @@ public:
 	 * @param portIn port to listen on for broadcasts
 	 * @param envelope Type of messages to subscribe to, "" for subscribing to all messages
 	 */
-	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo);
+	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo, std::string loggingConf, std::string statisticConf);
 	~CommunicationReceiver();
 	std::pair<std::string, std::string> receive();
 	std::string receiveFromHw();

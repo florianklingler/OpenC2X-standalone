@@ -38,25 +38,25 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-DenService::DenService() {
+DenService::DenService(string globalConfig, string loggingConf, string statisticConf) {
 	try {
-		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+		mGlobalConfig.loadConfigXML(globalConfig);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 
 	string module = "DenService";
-	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER", mGlobalConfig.mExpNo);
-	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM", mGlobalConfig.mExpNo);
-	mSenderToDcc = new CommunicationSender(module, "7777", mGlobalConfig.mExpNo);
-	mSenderToLdm = new CommunicationSender(module, "9999", mGlobalConfig.mExpNo);
+	mReceiverFromApp = new CommunicationReceiver(module, "1111", "TRIGGER", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mReceiverFromDcc = new CommunicationReceiver(module, "5555", "DENM", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mSenderToDcc = new CommunicationSender(module, "7777", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mSenderToLdm = new CommunicationSender(module, "9999", mGlobalConfig.mExpNo, loggingConf, statisticConf);
 
-	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS", mGlobalConfig.mExpNo);
-	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2", mGlobalConfig.mExpNo);
+	mReceiverGps = new CommunicationReceiver(module, "3333", "GPS", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mReceiverObd2 = new CommunicationReceiver(module, "2222", "OBD2", mGlobalConfig.mExpNo, loggingConf, statisticConf);
 
-	mMsgUtils = new MessageUtils("DenService", mGlobalConfig.mExpNo);
-	mLogger = new LoggingUtility("DenService", mGlobalConfig.mExpNo);
+	mMsgUtils = new MessageUtils("DenService", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility("DenService", mGlobalConfig.mExpNo, loggingConf, statisticConf);
 	mLogger->logStats("Station Id \tDENM id \tCreate Time \tReceive Time");
 
 	mIdCounter = 0;
@@ -270,8 +270,12 @@ denmPackage::DENM DenService::convertAsn1toProtoBuf(DENM_t* denm) {
 	return denmProto;
 }
 
-int main() {
-	DenService denm;
+int main(int argc, const char* argv[]) {
+	if(argc != 4) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
+	DenService denm(argv[1], argv[2], argv[3]);
 	denm.init();
 
 	return EXIT_SUCCESS;

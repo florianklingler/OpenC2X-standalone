@@ -35,16 +35,16 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-Obd2Service::Obd2Service(Obd2Config &config) {
+Obd2Service::Obd2Service(Obd2Config &config, string globalConfig, string loggingConf, string statisticConf) {
 	try {
-		mGlobalConfig.loadConfigXML("../../common/config/config.xml");
+		mGlobalConfig.loadConfigXML(globalConfig);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 	mConfig = config;
-	mSender = new CommunicationSender("Obd2Service", "2222", mGlobalConfig.mExpNo);
-	mLogger = new LoggingUtility("Obd2Service", mGlobalConfig.mExpNo);
+	mSender = new CommunicationSender("Obd2Service", "2222", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility("Obd2Service", mGlobalConfig.mExpNo, loggingConf, statisticConf);
 	mLogger->logStats("speed (m/sec)");
 	
 	//for simulation only
@@ -150,16 +150,21 @@ void Obd2Service::init() {
 	}
 }
 
-int main() {
+int main(int argc, const char* argv[]) {
+	if(argc != 5) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <obd2Config.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
+
 	Obd2Config config;
 	try {
-		config.loadConfigXML("../config/config.xml");
+		config.loadConfigXML(argv[2]);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
-	Obd2Service obd2(config);
+	Obd2Service obd2(config, argv[1], argv[3], argv[4]);
 	obd2.init();
 
 	return 0;

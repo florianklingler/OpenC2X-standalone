@@ -75,7 +75,7 @@ typedef struct std::pair<double, double> position;
  */
 class GpsService {
 public:
-	GpsService(GpsConfig &config);
+	GpsService(GpsConfig &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
 	~GpsService();
 
 	/** Connects to GPSd.

@@ -53,11 +53,11 @@ using namespace std;
 int PktStatsCollector::mNl80211Id;
 boost::mutex PktStatsCollector::mutexStats;
 
-PktStatsCollector::PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io, int expNo) {
+PktStatsCollector::PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io, int expNo, string loggingConf, string statisticConf) {
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
 	mIoService = io;
-	mLogger = new LoggingUtility("PktStatsCollector", expNo);
+	mLogger = new LoggingUtility("PktStatsCollector", expNo, loggingConf, statisticConf);
 	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 

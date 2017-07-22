@@ -24,11 +24,11 @@
 
 using namespace std;
 
-CommunicationClient::CommunicationClient(string ownerModule, string portOut, int expNo) {
+CommunicationClient::CommunicationClient(string ownerModule, string portOut, int expNo, string loggingConf, string statisticConf) {
 	mOwnerModule = ownerModule;
 	mPortOut = portOut;
 
-	mLogger = new LoggingUtility(mOwnerModule, expNo);
+	mLogger = new LoggingUtility(mOwnerModule, expNo, loggingConf, statisticConf);
 
 	mContext = new zmq::context_t(1);
 	mClient = NULL;

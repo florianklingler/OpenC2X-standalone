@@ -73,7 +73,7 @@ struct Obd2Config {
  */
 class Obd2Service {
 public:
-	Obd2Service(Obd2Config &config);
+	Obd2Service(Obd2Config &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
 	~Obd2Service();
 	void init();
 

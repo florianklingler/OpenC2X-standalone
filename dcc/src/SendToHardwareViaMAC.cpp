@@ -28,8 +28,8 @@
 
 using namespace std;
 
-SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDevice, int expNo) {
-	mLogger = new LoggingUtility(ownerModule, expNo);
+SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDevice, int expNo, string loggingConf, string statisticConf) {
+	mLogger = new LoggingUtility(ownerModule, expNo, loggingConf, statisticConf);
 
 	//has root?
 	if (getuid() != 0){

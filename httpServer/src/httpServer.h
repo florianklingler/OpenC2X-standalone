@@ -65,7 +65,7 @@ struct httpServerConfig {
 class httpServer {
 public:
 
-	httpServer(GlobalConfig config);
+	httpServer(GlobalConfig config, std::string serverConfig, std::string loggingConf, std::string statisticConf);
 	virtual ~httpServer();
 
 	/** Gets CAMs from LDM and converts them to JSON.

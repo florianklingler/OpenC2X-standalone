@@ -30,11 +30,11 @@
 using namespace std;
 using namespace el;
 
-LoggingUtility::LoggingUtility(string moduleName, int expNo) {
+LoggingUtility::LoggingUtility(string moduleName, int expNo, string loggingConf, string statisticsConf) {
 	mModuleName = moduleName;
 
-	Configurations confDefault("../config/logging.conf");			//default logger for debugging
-	Configurations confStatistics("../config/statistics.conf");	//statistics logger for stats
+	Configurations confDefault(loggingConf);			//default logger for debugging
+	Configurations confStatistics(statisticsConf);	//statistics logger for stats
 
 	confDefault.setRemainingToDefault();
 	confDefault.setGlobally(ConfigurationType::Format, mModuleName + ", %datetime{%h:%m:%s,%g} \t %level \t %msg \t\t");

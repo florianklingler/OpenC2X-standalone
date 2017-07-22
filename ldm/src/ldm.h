@@ -63,7 +63,7 @@
  */
 class LDM {
 public:
-	LDM();
+	LDM(std::string globalConfig, std::string loggingConf, std::string statisticConf);
 	~LDM();
 	void init();
 

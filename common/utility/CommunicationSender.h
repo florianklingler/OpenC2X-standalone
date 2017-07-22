@@ -42,7 +42,7 @@ public:
 	 * @param expNo Experiment Number
 	 * @param portOut port used for broadcasting
 	 */
-	CommunicationSender(std::string ownerModule, std::string portOut, int expNo);
+	CommunicationSender(std::string ownerModule, std::string portOut, int expNo, std::string loggingConf, std::string statisticConf);
 	~CommunicationSender();
 	void send(std::string envelope, std::string message);
 	void sendToHw(std::string message);

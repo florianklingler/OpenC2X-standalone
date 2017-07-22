@@ -33,23 +33,23 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-httpServer::httpServer(GlobalConfig globalConfig) {
+httpServer::httpServer(GlobalConfig globalConfig, string serverConfig, string loggingConf, string statisticConf) {
 	mGlobalConfig = globalConfig;
 	try {
-		mLocalConfig.loadConfigXML("../config/config.xml");
+		mLocalConfig.loadConfigXML(serverConfig);
 	}
 	catch (std::exception &e) {
 		std::cerr << "Error while loading local config.xml: " << e.what() << std::endl;
 	}
 
 	std::string moduleName = "WebApplication";
-	mClientCam = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mClientDenm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mClientGps = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mClientObd2 = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mClientCamInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mClientDccInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo);
-	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo);
+	mClientCam = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mClientDenm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mClientGps = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mClientObd2 = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mClientCamInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mClientDccInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo, loggingConf, statisticConf);
 }
 
 httpServer::~httpServer() {
@@ -286,19 +286,23 @@ std::string httpServer::myMac() {
 	return "{\"myMac\":\"" + to_string(mGlobalConfig.mStationID) + "\"}";
 }
 
-int main(){
+int main(int argc, const char* argv[]){
+	if(argc != 5) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <serverConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
 	crow::SimpleApp app;
 	crow::logger::setLogLevel(crow::LogLevel::ERROR);	//ignore info logging in crow
 	GlobalConfig config;
 	try {
-		config.loadConfigXML("../../common/config/config.xml");
+		config.loadConfigXML(argv[1]);
 	}
 	catch (std::exception &e) {
 		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
 	}
 
 	//ldm requests
-	httpServer* server = new httpServer(config);
+	httpServer* server = new httpServer(config, argv[2], argv[3], argv[4]);
 
 	//CAM
 	CROW_ROUTE(app, "/request_cam")
@@ -439,7 +443,7 @@ int main(){
 	});
 
 	//denm triggering
-	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111", config.mExpNo);
+	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111", config.mExpNo, argv[3], argv[4]);
 	CROW_ROUTE(app, "/trigger_denm")
 	.methods("POST"_method)
 	([senderToDenm](const crow::request& req){

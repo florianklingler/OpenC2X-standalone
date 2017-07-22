@@ -47,7 +47,7 @@ public:
 	 * @param moduleName Module name
 	 * @param expNo Experiment Number
 	 */
-	LoggingUtility(std::string moduleName, int expNo);
+	LoggingUtility(std::string moduleName, int expNo, std::string loggingConf, std::string statisticsConf);
 	virtual ~LoggingUtility();
 
 	std::string timeString();

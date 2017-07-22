@@ -62,7 +62,7 @@ public:
 	 * @param expNo Experiment Number
 	 * @param ethernetDevice Device used for sending
 	 */
-	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice, int expNo);
+	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice, int expNo, std::string loggingConf, std::string statisticConf);
 	virtual ~SendToHardwareViaMAC();
 
 	/**

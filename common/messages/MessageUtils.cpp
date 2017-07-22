@@ -27,8 +27,8 @@
 
 using namespace std;
 
-MessageUtils::MessageUtils(string moduleName, int expNo) {
-	mLogger = new LoggingUtility(moduleName, expNo);
+MessageUtils::MessageUtils(string moduleName, int expNo, string loggingConf, string statisticConf) {
+	mLogger = new LoggingUtility(moduleName, expNo, loggingConf, statisticConf);
 }
 
 MessageUtils::~MessageUtils() {

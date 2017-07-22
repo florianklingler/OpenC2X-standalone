@@ -7,7 +7,7 @@ ADD_LIBRARY(proto SHARED ${PROTO_HEADER} ${PROTO_SRC})
 install(TARGETS proto DESTINATION lib)
 
 ADD_CUSTOM_TARGET(
-    proto-config ALL COMMENT "Installing Recource-Files into Builddirectory"
+    proto-config ALL COMMENT "Installing protobuf generated files"
 )
 
 ADD_CUSTOM_COMMAND(

@@ -111,7 +111,7 @@ public:
 	 * @param io boost io service
 	 * @param expNo experiment number
 	 */
-	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
+	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo, std::string loggingConf, std::string statisticConf);
 	virtual ~PktStatsCollector();
 
 	/**

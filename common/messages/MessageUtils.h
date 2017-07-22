@@ -35,7 +35,7 @@
  */
 class MessageUtils {
 public:
-	MessageUtils(std::string moduleName, int expNo);
+	MessageUtils(std::string moduleName, int expNo, std::string loggingConf, std::string statisticConf);
 	virtual ~MessageUtils();
 
 	static int writeOut(const void *buffer, size_t size, void *app_key);

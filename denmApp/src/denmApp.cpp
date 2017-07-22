@@ -30,15 +30,15 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-DenmApp::DenmApp() {
+DenmApp::DenmApp(std::string globalConfig, std::string loggingConf, std::string statisticConf) {
 	GlobalConfig config;
 	try {
-		config.loadConfigXML("../../common/config/config.xml");
+		config.loadConfigXML(globalConfig);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
-	mSenderToDenm = new CommunicationSender("DenmApp", "1111", config.mExpNo);
+	mSenderToDenm = new CommunicationSender("DenmApp", "1111", config.mExpNo, loggingConf, statisticConf);
 }
 
 DenmApp::~DenmApp() {
@@ -58,17 +58,16 @@ void DenmApp::triggerDenm(string content) {
 
 
 int main(int argc, const char* argv[]) {
-	DenmApp denmApp;
+	if(argc != 4) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
+	DenmApp denmApp(argv[1], argv[2], argv[3]);
 
 	usleep(200*1000);	//FIXME: zmq seems to need some time for setup => doesn't send without sleep
 
-	if (argc >= 2) {
-		string content(argv[1]);
-		denmApp.triggerDenm(content);
-	}
-	else {
-		cout << "Missing arguments" << endl;
-	}
+	string content = "test denm app";
+	denmApp.triggerDenm(content);
 
 	exit(0);			//FIXME: CommunicationSender doesn't terminate => program doesn't quit without exit
 

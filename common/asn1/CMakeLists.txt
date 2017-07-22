@@ -164,8 +164,6 @@ set(asn1_SRCS
 
 set(asn1_support_SRCS
 	ANY.c
-	asn_application.h
-	asn_codecs.h
 	asn_codecs_prim.c
 	asn_SEQUENCE_OF.c
 	asn_SET_OF.c

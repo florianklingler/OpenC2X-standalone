@@ -51,7 +51,7 @@ public:
 	 * @param io boost io service
 	 * @param expNo experiment number
 	 */
-	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo);
+	ChannelProber(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo, std::string loggingConf, std::string statisticConf);
 	virtual ~ChannelProber();
 
 	/**

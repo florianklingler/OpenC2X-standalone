@@ -34,22 +34,22 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-LDM::LDM() {
+LDM::LDM(string globalConfig, string loggingConf, string statisticConf) {
 	GlobalConfig config;
 	try {
-		config.loadConfigXML("../../common/config/config.xml");
+		config.loadConfigXML(globalConfig);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 
 	string moduleName = "Ldm";
-	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM", config.mExpNo);
-	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM", config.mExpNo);
-	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo", config.mExpNo);
-	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo", config.mExpNo);
-	mServer = new CommunicationServer(moduleName, "6789", config.mExpNo);
-	mLogger = new LoggingUtility(moduleName, config.mExpNo);
+	mReceiverFromCa = new CommunicationReceiver(moduleName, "8888", "CAM", config.mExpNo, loggingConf, statisticConf);
+	mReceiverFromDen = new CommunicationReceiver(moduleName, "9999", "DENM", config.mExpNo, loggingConf, statisticConf);
+	mReceiverDccInfo = new CommunicationReceiver(moduleName, "1234", "dccInfo", config.mExpNo, loggingConf, statisticConf);
+	mReceiverCamInfo = new CommunicationReceiver(moduleName, "8888", "camInfo", config.mExpNo, loggingConf, statisticConf);
+	mServer = new CommunicationServer(moduleName, "6789", config.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility(moduleName, config.mExpNo, loggingConf, statisticConf);
 
 	//open SQLite database
 	if(sqlite3_open_v2(("../db/ldm-" + to_string(config.mExpNo) + ".db").c_str(), &mDb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL)) {
@@ -534,7 +534,6 @@ void LDM::insert(string sqlCommand) {
 //inserts CAM into DB
 void LDM::insertCam(camPackage::CAM cam) {
 	stringstream sSql;
-	int invalidVal = -999999;
 	sSql << setprecision(15);
 	// header
 	int64_t protocolversion = cam.header().protocolversion();
@@ -797,8 +796,13 @@ void LDM::receiveCamInfo() {
 	}
 }
 
-int main() {
-	LDM ldm;
+int main(int argc, const char* argv[]) {
+	if(argc != 4) {
+		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
+		exit(1);
+	}
+
+	LDM ldm(argv[1], argv[2], argv[3]);
 	ldm.init();
 
 	return EXIT_SUCCESS;

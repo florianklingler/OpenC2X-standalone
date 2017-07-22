@@ -91,7 +91,7 @@ struct GlobalConfig {
 		}
 		if (!(i == 12 && (s == 5 || s == 0))){
 			mMac = "invalid MAC";
-			std::cerr << "Invalid MAC" << std::endl;
+			std::cerr << "Invalid MAC. Check common/config/config.xml" << std::endl;
 			exit(1);
 		}
 

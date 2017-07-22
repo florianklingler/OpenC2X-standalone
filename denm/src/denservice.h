@@ -49,7 +49,7 @@
  */
 class DenService {
 public:
-	DenService();
+	DenService(std::string globalConfig, std::string loggingConf, std::string statisticConf);
 	~DenService();
 
 	/**

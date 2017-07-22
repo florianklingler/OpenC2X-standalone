@@ -55,7 +55,7 @@ public:
 	 * @param ownerModule Module Name
 	 * @param expNo Experiment Number
 	 */
-	ReceiveFromHardwareViaMAC(std::string ownerModule, int expNo);
+	ReceiveFromHardwareViaMAC(std::string ownerModule, int expNo, std::string loggingConf, std::string statisticConf);
 	virtual ~ReceiveFromHardwareViaMAC();
 	void init();
 

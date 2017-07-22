@@ -54,7 +54,7 @@
  */
 class DCC {
 public:
-	DCC(DccConfig &config);
+	DCC(DccConfig &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
 	~DCC();
 
 
@@ -68,7 +68,7 @@ public:
 	/** Initializes leaky buckets.
 	 *
 	 */
-	void initLeakyBuckets();
+	void initLeakyBuckets(std::string loggingConf, std::string statisticConf);
 
 	/** Initializes states and sets default values.
 	 *

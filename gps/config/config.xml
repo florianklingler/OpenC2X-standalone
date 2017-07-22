@@ -1,5 +1,5 @@
 <gps>
 	<SimulateData>true</SimulateData>
-	<SimulationMode>1</SimulationMode> <!-- 0 for mathematical simuation, 1 for demo trails -->
-	<DataFile>sample-data.csv</DataFile>
+	<SimulationMode>0</SimulationMode> <!-- 0 for mathematical simuation, 1 for demo trails -->
+	<DataFile>/home/user/OpenC2X/gps/gpsdata/sample-data.csv</DataFile> <!-- Enter absolute path to the data file -->
 </gps>

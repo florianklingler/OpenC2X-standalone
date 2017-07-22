@@ -41,7 +41,7 @@ public:
 	 * @param expNo Experiment Number
 	 * @param portOut port used for listening for requests and answering
 	 */
-	CommunicationServer(std::string ownerModule, std::string portOut, int expNo);
+	CommunicationServer(std::string ownerModule, std::string portOut, int expNo, std::string loggingConf, std::string statisticConf);
 	~CommunicationServer();
 	void sendReply(std::string reply);
 	std::pair<std::string, std::string> receiveRequest();

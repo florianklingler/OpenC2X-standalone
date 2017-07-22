@@ -34,11 +34,11 @@ using namespace std;
 
 int ChannelProber::mNl80211Id;
 
-ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io, int expNo) {
+ChannelProber::ChannelProber(string ifname, double probeInterval, boost::asio::io_service* io, int expNo, string loggingConf, string statisticConf) {
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
 	mIoService = io;
-	mLogger = new LoggingUtility("ChannelProber", expNo);
+	mLogger = new LoggingUtility("ChannelProber", expNo, loggingConf, statisticConf);
 	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 
