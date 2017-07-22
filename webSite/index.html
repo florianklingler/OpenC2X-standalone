@@ -23,10 +23,6 @@
         <script src="script/webAppQuerys.js"></script>
     	<script src="script/main.js"></script>
 
-	    <!-- Slideshow -->
-	    <script src="lib/slideshow/slideshow.js"></script>
-	    <link type="text/css" rel="stylesheet" href="lib/slideshow/slideshow.css"/>
-
         <title>OpenC2X</title>
         <link rel="shortcut icon" type="image/x-icon" href="image/openc2x.png" />
     </head>
@@ -39,7 +35,7 @@
 	                    <tr id="mainNav">
 	                        <td style="width:15%; background-color: #0c2f59; padding-left: 20px;">
 	                            <div>
-	                                <img src="image/upb.svg" height="100px">
+	                                <a href="http://www.ccs-labs.org/software/openc2x/"><img src="image/openc2x.png" height="100px"></a>
 	                            </div>
 	                        </td>
 	                        
@@ -54,7 +50,7 @@
 	                        
 	                        <td style="width:15%; background-color: #0c2f59; padding-right: 20px;">
 	                            <div class="l-floatRight">
-	                                <img src="image/ccs.png" height="100px">
+	                                <a href="http://www.ccs-labs.org/"><img src="image/ccs.png" height="100px"></a>
 	                            </div>
 	                        </td>
 	                    </tr>
@@ -91,55 +87,6 @@
 	        </div>
 		</div>
 
-		<!-- The slideshow -->
-		<div class="container" id="slideWrapper">
-	 		<div class="bss-slides demo1" tabindex="1" autofocus="autofocus" style="width: 680px; height: 680px;">
-	            <figure> 
-	              <img src="image/slideshow/1.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>Setting up an experiment</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/2.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>The set up</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/3.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>One script to run all</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/4.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>Get, set and go!</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/5.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>Start / stop any module at run time</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/6.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>A road side unit</figcaption> 
-	            </figure>
-	            <figure>
-	              <img src="image/slideshow/7.jpg.png" style="width: 100%; height: 100%;"/>
-	              <figcaption>A road side unit</figcaption> 
-	            </figure>
-	        </div>
-        </div>
-	 
 		<!--  data containers are going to be added here at runtime -->
-
-		<script src="lib/slideshow/hammer.min.js"></script>
-		<script src="lib/slideshow/better-simple-slideshow.min.js"></script>
-		<!-- Initialize slideshow	 -->
-		<script type="text/javascript">
-	        var opts = {
-	            auto : {
-	                speed : 3000, 
-	                pauseOnHover : true
-	            },
-	            fullScreen : false, 
-	            swipe : true
-	        };
-	        makeBSS('.demo1', opts);
-    	</script>
 	</body>
 </html>

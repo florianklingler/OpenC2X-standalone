@@ -33,10 +33,6 @@ denmData = {
 
 	init : function(){
 		if (this.mymac == ""){//is not initalised
-			//start updating
-			// window.setInterval(function(){
-			// 	denmData.updateDenms();
-			// },denmData.refreshRate);
 			//get own mac
 			requestMyMac(function(data) {
 				this.mymac = data.myMac;
@@ -77,7 +73,6 @@ denmData = {
 		if(callback){
 			callback(table);
 		} else {
-			//console.log(camData.mymac + " and map" + camData.cams)
 			return table;
 		}
 	},
@@ -89,7 +84,6 @@ denmData = {
 					// do nothing
 				}
 				else {
-					//console.log(cam.coop.camParameters.basicContainer.latitude)
 					var isVehicle = (denm.msg.managementContainer.stationType === 5) ? "Vehicle" : "RSU";
 					table[stationID] = {
 						"protocolVersion" : denm.header.protocolVersion,
@@ -140,16 +134,8 @@ camData = {
 	digestCams : function(data){
 		if (camData.init()){ //is initalised
 			data.msgs.forEach(function(cam) {
-//				if(camData.cams.get(cam.header.stationID)){
-//					if (camData.cams.get(cam.stationID).createTime < cam.createTime){
-//						camData.cams.set(cam.stationID,cam);
-//					}
-//				} else {
-					camData.cams.set(cam.header.stationID.toString(),cam);
-//				}
+				camData.cams.set(cam.header.stationID.toString(),cam);
 			})
-//			console.log("printing the cams map")
-//			console.log(camData.cams)
 		}
 	},
 	
@@ -167,9 +153,9 @@ camData = {
 		var cam = camData.cams.get(camData.mymac);
 		var isVehicle = (cam.coop.camParameters.basicContainer.stationType === 5) ? "Vehicle" : "RSU";
 		table["header"] = {
-							"protocolVersion" : cam.header.protocolVersion,
-							"messageID" : cam.header.messageID,
-							"stationID" : cam.header.stationID
+						"protocolVersion" : cam.header.protocolVersion,
+						"messageID" : cam.header.messageID,
+						"stationID" : cam.header.stationID
 						};
 		if (isVehicle.includes("RSU")) {
 			table["cam"] = {
@@ -195,7 +181,6 @@ camData = {
 		if(callback){
 			callback(table);
 		} else {
-			//console.log(camData.mymac + " and map" + camData.cams)
 			return table;
 		}
 	},
@@ -207,14 +192,12 @@ camData = {
 					// do nothing
 				}
 				else {
-					//console.log(cam.coop.camParameters.basicContainer.latitude)
 					var isVehicle = (cam.coop.camParameters.basicContainer.stationType === 5) ? "Vehicle" : "RSU";
 					if (isVehicle.includes("RSU")) {
 						table[stationID] = {
 							"protocolVersion" : cam.header.protocolVersion,
 							"messageID" : cam.header.messageID,
 							"stationID" : cam.header.stationID,
-							//"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -225,7 +208,6 @@ camData = {
 							"protocolVersion" : cam.header.protocolVersion,
 							"messageID" : cam.header.messageID,
 							"stationID" : cam.header.stationID,
-							//"genDeltaTime" : cam.coop.genDeltaTime,
 							"stationType" : isVehicle,
 							"latitude" : cam.coop.camParameters.basicContainer.latitude/10000000,
 							"longitude" : cam.coop.camParameters.basicContainer.longitude/10000000,
@@ -298,25 +280,10 @@ function Container(name,updateFunction,color,updateInterval){
 				function(){this.updateFunction(this.setTable);}.bind(this),
 				this.updateInterval
 			);
-	//		this.updateButton.css("background","green");
+			//this.updateButton.css("background","green");
 		}
 	}.bind(this);
 	this.enableUpdate();
-	
-//	this.disableUpdate = function(){
-//		window.clearInterval(this.intervalID);
-//		this.intervalID=-1;
-//		this.updateButton.css("background","red");
-//	}.bind(this);
-//	
-//	this.toggleUpdate= function(){
-//		if (this.intervalID ===-1){
-//			this.enableUpdate();
-//		} else {
-//			this.disableUpdate();
-//		}
-//	}.bind(this);
-//	this.updateButton.click(this.toggleUpdate);
 }
 
 
@@ -327,19 +294,15 @@ function initMap(){
 	//init map
 	map = L.map('mapContainer');
 
-	// create the tile layer with correct attribution
-	var osmUrl="map/openstreetmap/{z}/{x}/{y}.png";
-	//online map 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-	//marbel chache file:///home/jonh/.local/share/marble/maps/earth/openstreetmap/{z}/{x}/{y}.png
-	
-	
-	var osmAttrib='Map data cr <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-	var osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 17, attribution: osmAttrib,trackResize:true});		
-
 	// start the map in Paderborn
 	viewPosition = [51.7315, 8.739];
 	map.setView(viewPosition,15);
-	map.addLayer(osm);
+
+	// The tiles can also be cached using marble and used for field tests with no internet connectivity.
+	// https://docs.kde.org/stable5/en/kdeedu/marble/download-region.html
+	// http://stackoverflow.com/questions/18735001/openstreetmap-offline
+	L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 	
 	markers = [];
 	
@@ -370,34 +333,26 @@ function initMap(){
 			//var ownCam = camData.getLastOwnCam();
 			camData.cams.forEach(function(cam, key) {
 				if ( key == camData.mymac){//own cam
-					//if(cam.gps){
-						var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
-						var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
-						viewPosition = [lat, lon];
-						var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
-						//station id popup
-						marker.bindPopup("self");
-						marker.on('mouseover', function(e){
-						    marker.openPopup();
-						});
-						markers.push(marker);
-					//}
+					var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
+					var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
+					viewPosition = [lat, lon];
+					var marker = L.marker(viewPosition,{icon:blueMarker}).addTo(map);
+					//station id popup
+					marker.bindPopup("self");
+					marker.on('mouseover', function(e){
+					    marker.openPopup();
+					});
+					markers.push(marker);
 				} else {//other cams : red marker
-					//if(cam.gps){
-						//if(cam.createTime +camTimeout*1000000000 < ownCam.createTime){//other cam is old
-						//	var icon = redMarkerPale;
-						//} else {//cam is fresh
-							var icon = redMarker;
-						//}
-						var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
-						var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
-						var marker = L.marker([lat, lon],{icon: icon}).addTo(map);
-						marker.bindPopup(cam.header.stationID.toString());
-						marker.on('mouseover', function(e){
-						    marker.openPopup();
-						});
-						markers.push(marker);
-					//}
+					var icon = redMarker;
+					var lat = cam.coop.camParameters.basicContainer.latitude/10000000;
+					var lon = cam.coop.camParameters.basicContainer.longitude/10000000;
+					var marker = L.marker([lat, lon],{icon: icon}).addTo(map);
+					marker.bindPopup(cam.header.stationID.toString());
+					marker.on('mouseover', function(e){
+					    marker.openPopup();
+					});
+					markers.push(marker);
 				}
 			})
 		}
@@ -421,17 +376,6 @@ $(document).ready(function(){
 	},denmData.refreshRate);
 
 	$("#slideWrapper").draggable().resizable();
-
-// 	var counter = 1;
-	
-//	var carContainer = new Container("car", function(callback) {
-//		callback({speed:counter,rpm:counter++ * 36,driver:"alive"});
-//	},color="#ff2222");
-//	
-//	var dccContainer = new Container("dcc", function(callback) {
-//		callback({status:"running", queued:(counter*93)%77,state:(counter%2 === 0)?"busy":"relaxed",queueBE:2,queueBK:5,queueVI:0,queueVO:100});
-//	},color="#22ff22");
-	
 });
 
 
