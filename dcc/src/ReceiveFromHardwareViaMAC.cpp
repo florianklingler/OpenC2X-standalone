@@ -25,25 +25,22 @@
 
 using namespace std;
 
-ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(string ownerModule, int expNo, string loggingConf, string statisticConf) {
-	mLogger = new LoggingUtility(ownerModule, expNo, loggingConf, statisticConf);
-
+ReceiveFromHardwareViaMAC::ReceiveFromHardwareViaMAC(LoggingUtility& logger): mLogger(logger) {
 	//has root?
 	if (getuid() != 0){
-		mLogger->logInfo("Program needs root privileges");
+		mLogger.logInfo("Program needs root privileges");
 		exit(1);
 	}
 
 	// PACKET SOCKET, receives ALL incoming packages in whole (with all headers)
 	mSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (mSocket == -1){
-		mLogger->logPError("socket creation failed");
+		mLogger.logPError("socket creation failed");
 		exit(1);
 	}
 }
 
 ReceiveFromHardwareViaMAC::~ReceiveFromHardwareViaMAC() {
-	delete mLogger;
 	close(mSocket);
 }
 
@@ -53,7 +50,7 @@ pair<string,string> ReceiveFromHardwareViaMAC::receive() {
 		//receive package, blocking
 		mBytes = read(mSocket, mPacket, sizeof(mPacket));
 		if (mBytes == -1){
-			mLogger->logPError("reading from Socket failed");
+			mLogger.logPError("reading from Socket failed");
 			exit(1);
 		}
 
@@ -92,7 +89,7 @@ pair<ReceivedPacketInfo, string> ReceiveFromHardwareViaMAC::receiveWithGeoNetHea
 		// receive package, blocking
 		mBytes = read(mSocket, mPacket, sizeof(mPacket));
 		if (mBytes == -1) {
-			mLogger->logPError("reading from Socket failed");
+			mLogger.logPError("reading from Socket failed");
 			exit(1);
 		}
 		if (ntohs(mEth_hdr->ether_type) != ETHERTYPE_CAR) { // TODO: optimization

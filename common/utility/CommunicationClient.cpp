@@ -23,12 +23,10 @@
 #include "CommunicationClient.h"
 
 using namespace std;
+using boost::property_tree::ptree;
 
-CommunicationClient::CommunicationClient(string ownerModule, string portOut, int expNo, string loggingConf, string statisticConf) {
-	mOwnerModule = ownerModule;
+CommunicationClient::CommunicationClient(string portOut, LoggingUtility& logger) : mLogger(logger) {
 	mPortOut = portOut;
-
-	mLogger = new LoggingUtility(mOwnerModule, expNo, loggingConf, statisticConf);
 
 	mContext = new zmq::context_t(1);
 	mClient = NULL;
@@ -39,7 +37,6 @@ CommunicationClient::~CommunicationClient() {
 	mClient->close();
 	delete mContext;
 	delete mClient;
-	delete mLogger;
 }
 
 void CommunicationClient::init() {
@@ -58,7 +55,7 @@ string CommunicationClient::sendRequest(string envelope, string request, int tim
 	init();
 	s_sendmore(*mClient, envelope);
 	s_send (*mClient, request);
-	mLogger->logDebug("sent request to ldm: " + envelope + ", " + request);
+	mLogger.logDebug("sent request to ldm: " + envelope + ", " + request);
 	//Poll socket for a reply, with timeout
 	zmq::pollitem_t items[] = { { (void*) *mClient, 0, ZMQ_POLLIN, 0 } };
 	zmq::poll (&items[0], 1, timeout);
@@ -66,13 +63,13 @@ string CommunicationClient::sendRequest(string envelope, string request, int tim
 	if (items[0].revents & ZMQ_POLLIN) {
 		//  We got a reply from the server, return it to requester
 		std::string reply = s_recv (*mClient);
-		mLogger->logDebug("ldm replied");
+		mLogger.logDebug("ldm replied");
 	    delete mClient;
 	    mMutex.unlock();
 		return reply;
 	}
     //could not get a reply, return ""
-	mLogger->logDebug("no response from ldm");
+	mLogger.logDebug("no response from ldm");
     delete mClient;
     mMutex.unlock();
     return "";

@@ -42,19 +42,17 @@ public:
 	 * @param expNo Experiment Number
 	 * @param portOut port used for broadcasting
 	 */
-	CommunicationSender(std::string ownerModule, std::string portOut, int expNo, std::string loggingConf, std::string statisticConf);
+	CommunicationSender(std::string portOut, LoggingUtility& logger);
 	~CommunicationSender();
 	void send(std::string envelope, std::string message);
 	void sendToHw(std::string message);
 	void sendData(std::string envelope, std::string message);
 
 private:
-	std::string mOwnerModule;
-
 	zmq::context_t* mContext;
 	zmq::socket_t* mPublisher;
 
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 };
 
 #endif

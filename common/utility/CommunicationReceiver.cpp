@@ -24,8 +24,7 @@
 
 using namespace std;
 
-CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, string envelope, int expNo, string loggingConf, string statisticConf) {
-	mOwnerModule = ownerModule;
+CommunicationReceiver::CommunicationReceiver(string portIn, string envelope, LoggingUtility& logger): mLogger(logger) {
 
 	mEnvelope = envelope;
 	mContext = new zmq::context_t(1);
@@ -36,8 +35,6 @@ CommunicationReceiver::CommunicationReceiver(string ownerModule, string portIn, 
 	} else {
 		mSubscriber->setsockopt(ZMQ_SUBSCRIBE, envelope.c_str(), 1);
 	}
-
-	mLogger = new LoggingUtility(mOwnerModule, expNo, loggingConf, statisticConf);
 }
 
 CommunicationReceiver::~CommunicationReceiver() {
@@ -45,14 +42,13 @@ CommunicationReceiver::~CommunicationReceiver() {
 	mSubscriber->close();
 	delete mContext;
 	delete mSubscriber;
-	delete mLogger;
 }
 
 pair<string, string> CommunicationReceiver::receive() {
 	string envelope = s_recv(*mSubscriber);
 	string message = s_recv(*mSubscriber);
 
-	mLogger->logDebug(envelope + " received");
+	mLogger.logDebug(envelope + " received");
 
 	return make_pair(envelope, message);
 }
@@ -60,7 +56,7 @@ pair<string, string> CommunicationReceiver::receive() {
 string CommunicationReceiver::receiveFromHw() {
 	string message = s_recv(*mSubscriber);
 
-	mLogger->logDebug("received from HW");
+	mLogger.logDebug("received from HW");
 
 	return message;
 }

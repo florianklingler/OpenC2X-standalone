@@ -43,18 +43,19 @@ INITIALIZE_EASYLOGGINGPP
 
 struct gps_data_t GpsService::mGpsData;
 
-GpsService::GpsService(GpsConfig &config, string globalConfig, string loggingConf, string statisticConf) {
+GpsService::GpsService(GpsConfig &config) {
 	try {
-		mGlobalConfig.loadConfigXML(globalConfig);
+		mGlobalConfig.loadConfig(GPS_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 	mConfig = config;
 	mLastTime = NAN;
-	mSender = new CommunicationSender("GPS", "3333", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mLogger = new LoggingUtility("GPS", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	
+	ptree pt = load_config_tree();
+	mLogger = new LoggingUtility(GPS_CONFIG_NAME, GPS_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
+	mSender = new CommunicationSender("3333", *mLogger);
+
 	//for simulation only
 	mRandNumberGen = default_random_engine(0);
 	mBernoulli = bernoulli_distribution(0);
@@ -310,20 +311,16 @@ void sigHandler(int sigNum) {
 }
 
 
-int main(int argc, const char* argv[]) {
-	if(argc != 5) {
-		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <gpsConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
-		exit(1);
-	}
+int main(int argc, const char* argv[]) {	
 	GpsConfig config;
 	try {
-		config.loadConfigXML(argv[2]);
+		config.loadConfig();
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
-	GpsService gps(config, argv[1], argv[3], argv[4]);
+	GpsService gps(config);
 	gps.init();
 
 	signal(SIGINT, &sigHandler);

@@ -28,19 +28,22 @@
  * @{
  */
 
-
 #include <common/config/config.h>
 #include <common/utility/CommunicationClient.h>
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/cam.pb.h>
-#include <common/buffers/build/denm.pb.h>
-#include <common/buffers/build/gps.pb.h>
-#include <common/buffers/build/obd2.pb.h>
-#include <common/buffers/build/dccInfo.pb.h>
-#include <common/buffers/build/camInfo.pb.h>
-#include <common/buffers/build/ldmData.pb.h>
+#include <common/utility/Constants.h>
+
+#include <common/buffers/cam.pb.h>
+#include <common/buffers/denm.pb.h>
+#include <common/buffers/gps.pb.h>
+#include <common/buffers/obd2.pb.h>
+#include <common/buffers/dccInfo.pb.h>
+#include <common/buffers/camInfo.pb.h>
+#include <common/buffers/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 #include <mutex>
+#include <ctime>
+#include <iostream>
 
 /** Struct that hold the configuration for httpServer.
  * The configuration is defined in <a href="../../httpServer/config/config.xml">httpServer/config/config.xml</a>
@@ -48,12 +51,9 @@
 struct httpServerConfig {
 	int mTimeout;
 
-	void loadConfigXML(const std::string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
+	void loadConfig() {
+		ptree pt = load_config_tree();
 		mTimeout = pt.get("httpServer.timeout", 100);
-
 	}
 };
 
@@ -65,7 +65,7 @@ struct httpServerConfig {
 class httpServer {
 public:
 
-	httpServer(GlobalConfig config, std::string serverConfig, std::string loggingConf, std::string statisticConf);
+	httpServer(GlobalConfig config);
 	virtual ~httpServer();
 
 	/** Gets CAMs from LDM and converts them to JSON.
@@ -120,6 +120,13 @@ public:
 	 * @return JSON String of Information about the most recent generated CAM
 	 */
 	std::string requestCamInfo(std::string condition);
+	
+	/** Logs a given string to a logfile
+	 *
+	 * @param message
+	 * @return Empty string or error code
+	 */
+	std::string logMessage(std::string message);
 
 	/**returns own mac address of the used ethernet device defined in the global config.
 	 * @return String of MAC address

@@ -26,6 +26,8 @@
 
 #include <string>
 #include "external/easylogging++.h"
+#include <boost/property_tree/ptree.hpp>
+
 
 
 /**
@@ -41,13 +43,12 @@ public:
 	 * name will log into the same file.
 	 * Experiment Number will be put into the logging file name.
 	 *
-	 * @todo unify all configs into a singel global conifg.
-	 * Shouldn't be that hard as the individual configs use their owners name in the root xmltag.
 	 *
 	 * @param moduleName Module name
 	 * @param expNo Experiment Number
+	 * @param config property tree of config
 	 */
-	LoggingUtility(std::string moduleName, int expNo, std::string loggingConf, std::string statisticsConf);
+	LoggingUtility(std::string configName, std::string moduleName, std::string logBasePath, std::string expName, int expNo, boost::property_tree::ptree& config);
 	virtual ~LoggingUtility();
 
 	std::string timeString();
@@ -59,6 +60,7 @@ public:
 
 private:
 	std::string mModuleName;
+	boost::property_tree::ptree& config;
 };
 
 #endif /* UTILITY_LOGGINGUTILITY_H_ */

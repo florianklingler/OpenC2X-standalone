@@ -30,21 +30,24 @@
 #include <chrono>
 #include <cmath>
 #include <common/utility/Utils.h>
+#include <boost/bind.hpp>
 
 using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-Obd2Service::Obd2Service(Obd2Config &config, string globalConfig, string loggingConf, string statisticConf) {
+Obd2Service::Obd2Service(Obd2Config &config) {
 	try {
-		mGlobalConfig.loadConfigXML(globalConfig);
+		mGlobalConfig.loadConfig(OBD2_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 	mConfig = config;
-	mSender = new CommunicationSender("Obd2Service", "2222", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mLogger = new LoggingUtility("Obd2Service", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	ptree pt = load_config_tree();
+	mLogger = new LoggingUtility(OBD2_CONFIG_NAME, OBD2_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
+
+	mSender = new CommunicationSender("2222", *mLogger);
 	mLogger->logStats("speed (m/sec)");
 	
 	//for simulation only
@@ -151,20 +154,16 @@ void Obd2Service::init() {
 }
 
 int main(int argc, const char* argv[]) {
-	if(argc != 5) {
-		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <obd2Config.xml> <logging.conf> <statistics.conf> \n", argv[0]);
-		exit(1);
-	}
 
 	Obd2Config config;
 	try {
-		config.loadConfigXML(argv[2]);
+		config.loadConfig();
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
-	Obd2Service obd2(config, argv[1], argv[3], argv[4]);
+	Obd2Service obd2(config);
 	obd2.init();
 
 	return 0;

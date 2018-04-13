@@ -38,26 +38,27 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-CaService::CaService(CaServiceConfig &config, string globalConfig, string loggingConf, string statisticConf) {
+CaService::CaService(CaServiceConfig &config, ptree& configTree) {
+	
 	try {
-		mGlobalConfig.loadConfigXML(globalConfig);
+		mGlobalConfig.loadConfig(CAM_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl;
 	}
 
 	mConfig = config;
+	mLogger = new LoggingUtility(CAM_CONFIG_NAME, CAM_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, configTree);
 
-	mMsgUtils = new MessageUtils("CaService", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mLogger = new LoggingUtility("CaService", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mMsgUtils = new MessageUtils(*mLogger);
 	mLogger->logStats("Station Id \tCAM id \tCreate Time \tReceive Time");
 
-	mReceiverFromDcc = new CommunicationReceiver("CaService", "5555", "CAM", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mSenderToDcc = new CommunicationSender("CaService", "6666", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mSenderToLdm = new CommunicationSender("CaService", "8888", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mReceiverFromDcc = new CommunicationReceiver("5555", "CAM", *mLogger);
+	mSenderToDcc = new CommunicationSender("6666", *mLogger);
+	mSenderToLdm = new CommunicationSender("8888", *mLogger);
 
-	mReceiverGps = new CommunicationReceiver("CaService", "3333", "GPS", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mReceiverObd2 = new CommunicationReceiver("CaService", "2222", "OBD2", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mReceiverGps = new CommunicationReceiver( "3333", "GPS", *mLogger);
+	mReceiverObd2 = new CommunicationReceiver("2222", "OBD2", *mLogger);
 
 	mThreadReceive = new boost::thread(&CaService::receive, this);
 	mThreadGpsDataReceive = new boost::thread(&CaService::receiveGpsData, this);
@@ -573,20 +574,17 @@ camPackage::CAM CaService::convertAsn1toProtoBuf(CAM_t* cam) {
 }
 
 int main(int argc, const char* argv[]) {
-	if(argc != 5) {
-		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <camConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
-		exit(1);
-	}
-
-	CaServiceConfig config;
+	
+	ptree configTree = load_config_tree();
+	CaServiceConfig caConfig;
 	try {
-		config.loadConfigXML(argv[2]);
+		caConfig.loadConfig(configTree);
 	}
 	catch (std::exception &e) {
 		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
-	CaService cam(config, argv[1], argv[3], argv[4]);
+	CaService cam(caConfig, configTree);
 
 	return EXIT_SUCCESS;
 }

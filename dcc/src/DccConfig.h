@@ -29,9 +29,13 @@
  * @{
  */
 #include <map>
+#include <cmath>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <common/utility/Constants.h>
+#include <common/config/config.h>
+
+using boost::property_tree::ptree;
+
 
 namespace {
 	const int STATE_UNDEF = -1;
@@ -239,26 +243,15 @@ struct DccConfig {
 	size_t NDL_numActiveState;
 	std::map<size_t, DCC_State_Config> stateConfig;
 
-	void loadParameters(const std::string &filename) {
-		using boost::property_tree::ptree;
-		ptree pt;
-
-		read_xml(filename, pt);
+	void loadParameters(ptree& pt) {
 		simulateChannelLoad = pt.get("dcc.simulateChannelLoad", true);
 		ignoreOwnMessages = pt.get("dcc.ignoreOwnMessages", false);
 		dccInfoInterval = pt.get("dcc.dccInfoInterval", 1000);
 
-		xml_file = std::string(filename);
-		load_NDL_Parameters();
+		load_NDL_Parameters(pt);
 	}
 
-	void load_NDL_Parameters() {
-
-		using boost::property_tree::ptree;
-		ptree pt;
-
-		read_xml(xml_file, pt);
-
+	void load_NDL_Parameters(ptree pt) {
 		bucketSize_AC_VI = pt.get("dcc.bucketSize_AC_VI", 1);
 		bucketSize_AC_VO = pt.get("dcc.bucketSize_AC_VO", 1);
 		bucketSize_AC_BE = pt.get("dcc.bucketSize_AC_BE", 1);

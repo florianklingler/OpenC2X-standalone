@@ -36,12 +36,11 @@
 #include <mutex>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
-#include <common/config/config.h>
 #include <common/utility/CommunicationReceiver.h>
 #include <common/utility/CommunicationSender.h>
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/data.pb.h>
-#include <common/buffers/build/dccInfo.pb.h>
+#include <common/buffers/data.pb.h>
+#include <common/buffers/dccInfo.pb.h>
 #include "SendToHardwareViaMAC.h"
 #include "ReceiveFromHardwareViaMAC.h"
 #include "ChannelProber.h"
@@ -54,7 +53,7 @@
  */
 class DCC {
 public:
-	DCC(DccConfig &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	DCC(bool setUpWlan);
 	~DCC();
 
 
@@ -68,7 +67,7 @@ public:
 	/** Initializes leaky buckets.
 	 *
 	 */
-	void initLeakyBuckets(std::string loggingConf, std::string statisticConf);
+	void initLeakyBuckets();
 
 	/** Initializes states and sets default values.
 	 *
@@ -219,6 +218,8 @@ private:
 	CommunicationSender* mSenderToLdm;
 
 	LoggingUtility* mLogger;
+	LoggingUtility* channelProberLogger;
+	LoggingUtility* pktStatsCollectorLogger;
 
 	boost::thread* mThreadReceiveFromCa;
 	boost::thread* mThreadReceiveFromDen;

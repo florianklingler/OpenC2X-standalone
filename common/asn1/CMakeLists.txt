@@ -1,169 +1,177 @@
+#execute_process(COMMAND asn1c -fnative-types -gen-PER -pdu=auto its_facilities_pdu_all.asn WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+
+add_custom_command(
+    OUTPUT  AccelerationConfidence.c AccelerationConfidence.h AccelerationControl.c AccelerationControl.h AccidentSubCauseCode.c AccidentSubCauseCode.h ActionID.c ActionID.h AdverseWeatherCondition-AdhesionSubCauseCode.c AdverseWeatherCondition-AdhesionSubCauseCode.h AdverseWeatherCondition-ExtremeWeatherConditionSubCauseCode.c AdverseWeatherCondition-ExtremeWeatherConditionSubCauseCode.h AdverseWeatherCondition-PrecipitationSubCauseCode.c AdverseWeatherCondition-PrecipitationSubCauseCode.h AdverseWeatherCondition-VisibilitySubCauseCode.c AdverseWeatherCondition-VisibilitySubCauseCode.h AlacarteContainer.c AlacarteContainer.h Altitude.c AltitudeConfidence.c AltitudeConfidence.h Altitude.h AltitudeValue.c AltitudeValue.h asn_application.h asn_codecs.h asn_codecs_prim.c asn_codecs_prim.h asn_internal.h asn_SEQUENCE_OF.c asn_SEQUENCE_OF.h asn_SET_OF.c asn_SET_OF.h asn_system.h BasicContainer.c BasicContainer.h BasicVehicleContainerHighFrequency.c BasicVehicleContainerHighFrequency.h BasicVehicleContainerLowFrequency.c BasicVehicleContainerLowFrequency.h ber_decoder.c ber_decoder.h ber_tlv_length.c ber_tlv_length.h ber_tlv_tag.c ber_tlv_tag.h BIT_STRING.c BIT_STRING.h BOOLEAN.c BOOLEAN.h CAM.c CAM.h CamParameters.c CamParameters.h CauseCode.c CauseCode.h CauseCodeType.c CauseCodeType.h CenDsrcTollingZone.c CenDsrcTollingZone.h CenDsrcTollingZoneID.c CenDsrcTollingZoneID.h ClosedLanes.c ClosedLanes.h CollisionRiskSubCauseCode.c CollisionRiskSubCauseCode.h constraints.c constraints.h constr_CHOICE.c constr_CHOICE.h constr_SEQUENCE.c constr_SEQUENCE.h constr_SEQUENCE_OF.c constr_SEQUENCE_OF.h constr_SET_OF.c constr_SET_OF.h constr_TYPE.c constr_TYPE.h converter-sample.c CoopAwareness.c CoopAwareness.h Curvature.c CurvatureCalculationMode.c CurvatureCalculationMode.h CurvatureConfidence.c CurvatureConfidence.h Curvature.h CurvatureValue.c CurvatureValue.h DangerousEndOfQueueSubCauseCode.c DangerousEndOfQueueSubCauseCode.h DangerousGoodsBasic.c DangerousGoodsBasic.h DangerousGoodsContainer.c DangerousGoodsContainer.h DangerousGoodsExtended.c DangerousGoodsExtended.h DangerousSituationSubCauseCode.c DangerousSituationSubCauseCode.h DecentralizedEnvironmentalNotificationMessage.c DecentralizedEnvironmentalNotificationMessage.h DeltaAltitude.c DeltaAltitude.h DeltaLatitude.c DeltaLatitude.h DeltaLongitude.c DeltaLongitude.h DeltaReferencePosition.c DeltaReferencePosition.h DENM.c DENM.h der_encoder.c der_encoder.h DriveDirection.c DriveDirection.h DrivingLaneStatus.c DrivingLaneStatus.h EmbarkationStatus.c EmbarkationStatus.h EmergencyContainer.c EmergencyContainer.h EmergencyPriority.c EmergencyPriority.h EmergencyVehicleApproachingSubCauseCode.c EmergencyVehicleApproachingSubCauseCode.h EnergyStorageType.c EnergyStorageType.h EventHistory.c EventHistory.h EventPoint.c EventPoint.h ExteriorLights.c ExteriorLights.h GenerationDeltaTime.c GenerationDeltaTime.h HardShoulderStatus.c HardShoulderStatus.h HazardousLocation-AnimalOnTheRoadSubCauseCode.c HazardousLocation-AnimalOnTheRoadSubCauseCode.h HazardousLocation-DangerousCurveSubCauseCode.c HazardousLocation-DangerousCurveSubCauseCode.h HazardousLocation-ObstacleOnTheRoadSubCauseCode.c HazardousLocation-ObstacleOnTheRoadSubCauseCode.h HazardousLocation-SurfaceConditionSubCauseCode.c HazardousLocation-SurfaceConditionSubCauseCode.h Heading.c HeadingConfidence.c HeadingConfidence.h Heading.h HeadingValue.c HeadingValue.h HeightLonCarr.c HeightLonCarr.h HighFrequencyContainer.c HighFrequencyContainer.h HumanPresenceOnTheRoadSubCauseCode.c HumanPresenceOnTheRoadSubCauseCode.h HumanProblemSubCauseCode.c HumanProblemSubCauseCode.h IA5String.c IA5String.h ImpactReductionContainer.c ImpactReductionContainer.h InformationQuality.c InformationQuality.h INTEGER.c INTEGER.h ItineraryPath.c ItineraryPath.h ItsPduHeader.c ItsPduHeader.h LanePosition.c LanePosition.h LateralAcceleration.c LateralAcceleration.h LateralAccelerationValue.c LateralAccelerationValue.h Latitude.c Latitude.h LightBarSirenInUse.c LightBarSirenInUse.h LocationContainer.c LocationContainer.h Longitude.c Longitude.h LongitudinalAcceleration.c LongitudinalAcceleration.h LongitudinalAccelerationValue.c LongitudinalAccelerationValue.h LowFrequencyContainer.c LowFrequencyContainer.h Makefile.am.sample ManagementContainer.c ManagementContainer.h NativeEnumerated.c NativeEnumerated.h NativeInteger.c NativeInteger.h NumberOfOccupants.c NumberOfOccupants.h OCTET_STRING.c OCTET_STRING.h PathDeltaTime.c PathDeltaTime.h PathHistory.c PathHistory.h PathPoint.c PathPoint.h pdu_collection.c per_decoder.c per_decoder.h per_encoder.c per_encoder.h PerformanceClass.c PerformanceClass.h per_opentype.c per_opentype.h per_support.c per_support.h PosCentMass.c PosCentMass.h PosConfidenceEllipse.c PosConfidenceEllipse.h PosFrontAx.c PosFrontAx.h PositioningSolutionType.c PositioningSolutionType.h PositionOfOccupants.c PositionOfOccupants.h PositionOfPillars.c PositionOfPillars.h PosLonCarr.c PosLonCarr.h PosPillar.c PosPillar.h PostCrashSubCauseCode.c PostCrashSubCauseCode.h ProtectedCommunicationZone.c ProtectedCommunicationZone.h ProtectedCommunicationZonesRSU.c ProtectedCommunicationZonesRSU.h ProtectedZoneID.c ProtectedZoneID.h ProtectedZoneRadius.c ProtectedZoneRadius.h ProtectedZoneType.c ProtectedZoneType.h PtActivation.c PtActivationData.c PtActivationData.h PtActivation.h PtActivationType.c PtActivationType.h PublicTransportContainer.c PublicTransportContainer.h ReferenceDenms.c ReferenceDenms.h ReferencePosition.c ReferencePosition.h RelevanceDistance.c RelevanceDistance.h RelevanceTrafficDirection.c RelevanceTrafficDirection.h RequestResponseIndication.c RequestResponseIndication.h RescueAndRecoveryWorkInProgressSubCauseCode.c RescueAndRecoveryWorkInProgressSubCauseCode.h RescueContainer.c RescueContainer.h RestrictedTypes.c RestrictedTypes.h RoadType.c RoadType.h RoadWorksContainerBasic.c RoadWorksContainerBasic.h RoadWorksContainerExtended.c RoadWorksContainerExtended.h RoadworksSubCauseCode.c RoadworksSubCauseCode.h RSUContainerHighFrequency.c RSUContainerHighFrequency.h SafetyCarContainer.c SafetyCarContainer.h SemiAxisLength.c SemiAxisLength.h SequenceNumber.c SequenceNumber.h SignalViolationSubCauseCode.c SignalViolationSubCauseCode.h SituationContainer.c SituationContainer.h SlowVehicleSubCauseCode.c SlowVehicleSubCauseCode.h SpecialTransportContainer.c SpecialTransportContainer.h SpecialTransportType.c SpecialTransportType.h SpecialVehicleContainer.c SpecialVehicleContainer.h Speed.c SpeedConfidence.c SpeedConfidence.h Speed.h SpeedLimit.c SpeedLimit.h SpeedValue.c SpeedValue.h StationarySince.c StationarySince.h StationaryVehicleContainer.c StationaryVehicleContainer.h StationaryVehicleSubCauseCode.c StationaryVehicleSubCauseCode.h StationID.c StationID.h StationType.c StationType.h SteeringWheelAngle.c SteeringWheelAngleConfidence.c SteeringWheelAngleConfidence.h SteeringWheelAngle.h SteeringWheelAngleValue.c SteeringWheelAngleValue.h SubCauseCodeType.c SubCauseCodeType.h Temperature.c Temperature.h Termination.c Termination.h TimestampIts.c TimestampIts.h Traces.c Traces.h TrafficConditionSubCauseCode.c TrafficConditionSubCauseCode.h TrafficRule.c TrafficRule.h TransmissionInterval.c TransmissionInterval.h TurningRadius.c TurningRadius.h UTF8String.c UTF8String.h ValidityDuration.c ValidityDuration.h VDS.c VDS.h VehicleBreakdownSubCauseCode.c VehicleBreakdownSubCauseCode.h VehicleIdentification.c VehicleIdentification.h VehicleLength.c VehicleLengthConfidenceIndication.c VehicleLengthConfidenceIndication.h VehicleLength.h VehicleLengthValue.c VehicleLengthValue.h VehicleMass.c VehicleMass.h VehicleRole.c VehicleRole.h VehicleWidth.c VehicleWidth.h VerticalAcceleration.c VerticalAcceleration.h VerticalAccelerationValue.c VerticalAccelerationValue.h WheelBaseVehicle.c WheelBaseVehicle.h WMInumber.c WMInumber.h WrongWayDrivingSubCauseCode.c WrongWayDrivingSubCauseCode.h xer_decoder.c xer_decoder.h xer_encoder.c xer_encoder.h xer_support.c xer_support.h YawRate.c YawRateConfidence.c YawRateConfidence.h YawRate.h YawRateValue.c YawRateValue.h
+    COMMAND asn1c -fskeletons-copy -fnative-types -gen-PER -pdu=auto ${CMAKE_CURRENT_SOURCE_DIR}/its_facilities_pdu_all.asn
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/its_facilities_pdu_all.asn
+)
+
 set(asn1_SRCS
-	DENM.c	
-	DecentralizedEnvironmentalNotificationMessage.c	
-	ManagementContainer.c	
-	SituationContainer.c	
-	LocationContainer.c	
-	ImpactReductionContainer.c	
-	RoadWorksContainerExtended.c	
-	StationaryVehicleContainer.c	
-	AlacarteContainer.c	
-	Termination.c	
-	ReferenceDenms.c	
-	CAM.c	
-	CoopAwareness.c	
-	CamParameters.c	
-	HighFrequencyContainer.c	
-	LowFrequencyContainer.c	
-	SpecialVehicleContainer.c	
-	BasicContainer.c	
-	BasicVehicleContainerHighFrequency.c	
-	BasicVehicleContainerLowFrequency.c	
-	PublicTransportContainer.c	
-	SpecialTransportContainer.c	
-	DangerousGoodsContainer.c	
-	RoadWorksContainerBasic.c	
-	RescueContainer.c	
-	EmergencyContainer.c	
-	SafetyCarContainer.c	
-	RSUContainerHighFrequency.c	
-	GenerationDeltaTime.c	
-	ItsPduHeader.c	
-	StationID.c	
-	ReferencePosition.c	
-	DeltaReferencePosition.c	
-	Longitude.c	
-	Latitude.c	
-	Altitude.c	
-	AltitudeValue.c	
-	AltitudeConfidence.c	
-	DeltaLongitude.c	
-	DeltaLatitude.c	
-	DeltaAltitude.c	
-	PosConfidenceEllipse.c	
-	PathPoint.c	
-	PathDeltaTime.c	
-	PtActivation.c	
-	PtActivationType.c	
-	PtActivationData.c	
-	AccelerationControl.c	
-	SemiAxisLength.c	
-	CauseCode.c	
-	CauseCodeType.c	
-	SubCauseCodeType.c	
-	TrafficConditionSubCauseCode.c	
-	AccidentSubCauseCode.c	
-	RoadworksSubCauseCode.c	
-	HumanPresenceOnTheRoadSubCauseCode.c	
-	WrongWayDrivingSubCauseCode.c	
-	AdverseWeatherCondition-ExtremeWeatherConditionSubCauseCode.c	
-	AdverseWeatherCondition-AdhesionSubCauseCode.c	
-	AdverseWeatherCondition-VisibilitySubCauseCode.c	
-	AdverseWeatherCondition-PrecipitationSubCauseCode.c	
-	SlowVehicleSubCauseCode.c	
-	StationaryVehicleSubCauseCode.c	
-	HumanProblemSubCauseCode.c	
-	EmergencyVehicleApproachingSubCauseCode.c	
-	HazardousLocation-DangerousCurveSubCauseCode.c	
-	HazardousLocation-SurfaceConditionSubCauseCode.c	
-	HazardousLocation-ObstacleOnTheRoadSubCauseCode.c	
-	HazardousLocation-AnimalOnTheRoadSubCauseCode.c	
-	CollisionRiskSubCauseCode.c	
-	SignalViolationSubCauseCode.c	
-	RescueAndRecoveryWorkInProgressSubCauseCode.c	
-	DangerousEndOfQueueSubCauseCode.c	
-	DangerousSituationSubCauseCode.c	
-	VehicleBreakdownSubCauseCode.c	
-	PostCrashSubCauseCode.c	
-	Curvature.c	
-	CurvatureValue.c	
-	CurvatureConfidence.c	
-	CurvatureCalculationMode.c	
-	Heading.c	
-	HeadingValue.c	
-	HeadingConfidence.c	
-	LanePosition.c	
-	ClosedLanes.c	
-	HardShoulderStatus.c	
-	DrivingLaneStatus.c	
-	PerformanceClass.c	
-	SpeedValue.c	
-	SpeedConfidence.c	
-	VehicleMass.c	
-	Speed.c	
-	DriveDirection.c	
-	EmbarkationStatus.c	
-	LongitudinalAcceleration.c	
-	LongitudinalAccelerationValue.c	
-	AccelerationConfidence.c	
-	LateralAcceleration.c	
-	LateralAccelerationValue.c	
-	VerticalAcceleration.c	
-	VerticalAccelerationValue.c	
-	StationType.c	
-	ExteriorLights.c	
-	DangerousGoodsBasic.c	
-	DangerousGoodsExtended.c	
-	SpecialTransportType.c	
-	LightBarSirenInUse.c	
-	HeightLonCarr.c	
-	PosLonCarr.c	
-	PosPillar.c	
-	PosCentMass.c	
-	RequestResponseIndication.c	
-	SpeedLimit.c	
-	StationarySince.c	
-	Temperature.c	
-	TrafficRule.c	
-	WheelBaseVehicle.c	
-	TurningRadius.c	
-	PosFrontAx.c	
-	PositionOfOccupants.c	
-	PositioningSolutionType.c	
-	VehicleIdentification.c	
-	WMInumber.c	
-	VDS.c	
-	EnergyStorageType.c	
-	VehicleLength.c	
-	VehicleLengthValue.c	
-	VehicleLengthConfidenceIndication.c	
-	VehicleWidth.c	
-	PathHistory.c	
-	EmergencyPriority.c	
-	InformationQuality.c	
-	RoadType.c	
-	SteeringWheelAngle.c	
-	SteeringWheelAngleValue.c	
-	SteeringWheelAngleConfidence.c	
-	TimestampIts.c	
-	VehicleRole.c	
-	YawRate.c	
-	YawRateValue.c	
-	YawRateConfidence.c	
-	ProtectedZoneType.c	
-	RelevanceDistance.c	
-	RelevanceTrafficDirection.c	
-	TransmissionInterval.c	
-	ValidityDuration.c	
-	ActionID.c	
-	ItineraryPath.c	
-	ProtectedCommunicationZone.c	
-	Traces.c	
-	NumberOfOccupants.c	
-	SequenceNumber.c	
-	PositionOfPillars.c	
-	RestrictedTypes.c	
-	EventHistory.c	
-	EventPoint.c	
-	ProtectedCommunicationZonesRSU.c	
-	CenDsrcTollingZone.c	
-	ProtectedZoneRadius.c	
-	ProtectedZoneID.c	
-	CenDsrcTollingZoneID.c
+	 ${CMAKE_CURRENT_BINARY_DIR}/DENM.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DecentralizedEnvironmentalNotificationMessage.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ManagementContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SituationContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LocationContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ImpactReductionContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RoadWorksContainerExtended.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/StationaryVehicleContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AlacarteContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Termination.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ReferenceDenms.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CAM.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CoopAwareness.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CamParameters.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HighFrequencyContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LowFrequencyContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpecialVehicleContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/BasicContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/BasicVehicleContainerHighFrequency.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/BasicVehicleContainerLowFrequency.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PublicTransportContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpecialTransportContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DangerousGoodsContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RoadWorksContainerBasic.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RescueContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EmergencyContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SafetyCarContainer.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RSUContainerHighFrequency.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/GenerationDeltaTime.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ItsPduHeader.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/StationID.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ReferencePosition.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DeltaReferencePosition.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Longitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Latitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Altitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AltitudeValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AltitudeConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DeltaLongitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DeltaLatitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DeltaAltitude.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PosConfidenceEllipse.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PathPoint.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PathDeltaTime.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PtActivation.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PtActivationType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PtActivationData.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AccelerationControl.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SemiAxisLength.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CauseCodeType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SubCauseCodeType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/TrafficConditionSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AccidentSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RoadworksSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HumanPresenceOnTheRoadSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/WrongWayDrivingSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AdverseWeatherCondition-ExtremeWeatherConditionSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AdverseWeatherCondition-AdhesionSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AdverseWeatherCondition-VisibilitySubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AdverseWeatherCondition-PrecipitationSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SlowVehicleSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/StationaryVehicleSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HumanProblemSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EmergencyVehicleApproachingSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HazardousLocation-DangerousCurveSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HazardousLocation-SurfaceConditionSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HazardousLocation-ObstacleOnTheRoadSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HazardousLocation-AnimalOnTheRoadSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CollisionRiskSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SignalViolationSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RescueAndRecoveryWorkInProgressSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DangerousEndOfQueueSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DangerousSituationSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleBreakdownSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PostCrashSubCauseCode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Curvature.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CurvatureValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CurvatureConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CurvatureCalculationMode.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Heading.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HeadingValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HeadingConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LanePosition.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ClosedLanes.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HardShoulderStatus.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DrivingLaneStatus.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PerformanceClass.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpeedValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpeedConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleMass.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Speed.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DriveDirection.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EmbarkationStatus.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LongitudinalAcceleration.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LongitudinalAccelerationValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/AccelerationConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LateralAcceleration.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LateralAccelerationValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VerticalAcceleration.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VerticalAccelerationValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/StationType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ExteriorLights.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DangerousGoodsBasic.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/DangerousGoodsExtended.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpecialTransportType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/LightBarSirenInUse.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/HeightLonCarr.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PosLonCarr.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PosPillar.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PosCentMass.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RequestResponseIndication.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SpeedLimit.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/StationarySince.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Temperature.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/TrafficRule.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/WheelBaseVehicle.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/TurningRadius.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PosFrontAx.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PositionOfOccupants.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PositioningSolutionType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleIdentification.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/WMInumber.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VDS.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EnergyStorageType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleLength.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleLengthValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleLengthConfidenceIndication.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleWidth.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PathHistory.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EmergencyPriority.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/InformationQuality.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RoadType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SteeringWheelAngle.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SteeringWheelAngleValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SteeringWheelAngleConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/TimestampIts.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/VehicleRole.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/YawRate.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/YawRateValue.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/YawRateConfidence.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ProtectedZoneType.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RelevanceDistance.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RelevanceTrafficDirection.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/TransmissionInterval.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ValidityDuration.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ActionID.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ItineraryPath.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ProtectedCommunicationZone.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/Traces.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/NumberOfOccupants.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/SequenceNumber.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/PositionOfPillars.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/RestrictedTypes.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EventHistory.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/EventPoint.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ProtectedCommunicationZonesRSU.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CenDsrcTollingZone.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ProtectedZoneRadius.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/ProtectedZoneID.c	
+	 ${CMAKE_CURRENT_BINARY_DIR}/CenDsrcTollingZoneID.c
 )
 
 set(asn1_support_SRCS
-	ANY.c
+	#ANY.c
 	asn_codecs_prim.c
 	asn_SEQUENCE_OF.c
 	asn_SET_OF.c
@@ -171,45 +179,45 @@ set(asn1_support_SRCS
 	ber_tlv_length.c
 	ber_tlv_tag.c
 	BIT_STRING.c
-	BMPString.c
+	#BMPString.c
 	BOOLEAN.c
 	constraints.c
 	constr_CHOICE.c
 	constr_SEQUENCE.c
 	constr_SEQUENCE_OF.c
-	constr_SET.c
+	#constr_SET.c
 	constr_SET_OF.c
 	constr_TYPE.c
 	der_encoder.c
-	ENUMERATED.c
-	GeneralizedTime.c
-	GeneralString.c
-	GraphicString.c
+	#ENUMERATED.c
+	#GeneralizedTime.c
+	#GeneralString.c
+	#GraphicString.c
 	IA5String.c
 	INTEGER.c
-	ISO646String.c
+	#ISO646String.c
 	NativeEnumerated.c
 	NativeInteger.c
-	NativeReal.c
-	NULL.c
-	NumericString.c
-	ObjectDescriptor.c
-	OBJECT_IDENTIFIER.c
+	#NativeReal.c
+	#NULL.c
+	#NumericString.c
+	#ObjectDescriptor.c
+	#OBJECT_IDENTIFIER.c
 	OCTET_STRING.c
 	per_decoder.c
 	per_encoder.c
 	per_opentype.c
 	per_support.c
-	PrintableString.c
-	REAL.c
-	RELATIVE-OID.c
-	T61String.c
-	TeletexString.c
-	UniversalString.c
-	UTCTime.c
+	#PrintableString.c
+	#REAL.c
+	#RELATIVE-OID.c
+	#T61String.c
+	#TeletexString.c
+	#UniversalString.c
+	#UTCTime.c
 	UTF8String.c
-	VideotexString.c
-	VisibleString.c
+	#VideotexString.c
+	#VisibleString.c
 	xer_decoder.c
 	xer_encoder.c
 	xer_support.c
@@ -219,5 +227,6 @@ set(asn1_support_SRCS
 
 add_library(asn SHARED ${asn1_SRCS} ${asn1_support_SRCS})
 
+target_include_directories(asn PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 install(TARGETS asn DESTINATION lib)
 

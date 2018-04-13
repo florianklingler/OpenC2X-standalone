@@ -1,0 +1,280 @@
+package 'openc2x_default'
+
+config 'cam'
+		#General configuration
+	option 'generateMsgs' 'true'
+		#in s
+	option 'expirationTime' '1'
+		#in s
+	option 'maxGpsAge' '10'
+		#in s
+	option 'maxObd2Age' '10' 
+		# in m
+	option 'thresholdRadiusForHeading' '0.30'
+		#Basic Container in CAM
+		#0 for Vehicle, 1 for RSU
+	option 'isRSU' 'false'
+	
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'
+	
+	
+
+config 'dcc'
+	option 'simulateChannelLoad' 'false'
+	option 'ignoreOwnMessages' 'true'
+		#in ms
+	option 'dccInfoInterval' '1000'
+
+	option 'bucketSize_AC_VI' '25'
+	option 'bucketSize_AC_VO' '25'
+	option 'bucketSize_AC_BE' '25'
+	option 'bucketSize_AC_BK' '25'
+
+	option 'queueSize_AC_VI' '25'
+	option 'queueSize_AC_VO' '25'
+	option 'queueSize_AC_BE' '25'
+	option 'queueSize_AC_BK' '25'
+
+		#default 0.04!
+	option 'NDL_minPacketInterval' '2.00'
+		#default 1.00!
+	option 'NDL_maxPacketInterval' '4.00'
+	option 'NDL_defPacketInterval' '0.50'
+
+	option 'NDL_maxTxPower' '33.00'
+	option 'NDL_minTxPower' '-10.00'
+	option 'NDL_defTxPower' '23.00'
+
+	option 'NDL_minDatarate' '3.00'
+	option 'NDL_maxDatarate' '12.00'
+	option 'NDL_defDatarate' '6.00'
+
+	option 'NDL_minCarrierSense' '-95.0'
+	option 'NDL_maxCarrierSense' '-65.0'
+	option 'NDL_defCarrierSense' '-85.0'
+
+	option 'NDL_minChannelLoad' '0.15'
+	option 'NDL_maxChannelLoad' '0.40'
+
+	option 'NDL_numActiveState' '1'
+
+	option 'NDL_asChanLoad_active1' '0.20'
+
+	option 'NDL_asDcc_active1_AC_VI' '0'
+	option 'NDL_asDcc_active1_AC_VO' '1'
+	option 'NDL_asDcc_active1_AC_BE' '1'
+	option 'NDL_asDcc_active1_AC_BK' '1'
+
+	option 'NDL_asTxPower_active1_AC_VI' 'ref'
+	option 'NDL_asTxPower_active1_AC_VO' '25.00'
+	option 'NDL_asTxPower_active1_AC_BE' '20.00'
+	option 'NDL_asTxPower_active1_AC_BK' '15.00'
+
+	option 'NDL_asPacketInterval_active1_AC_VI' 'ref'
+	option 'NDL_asPacketInterval_active1_AC_VO' 'ref'
+	option 'NDL_asPacketInterval_active1_AC_BE' 'ref'
+	option 'NDL_asPacketInterval_active1_AC_BK' 'ref'
+
+	option 'NDL_asDatarate_active1_AC_VI' 'ref'
+	option 'NDL_asDatarate_active1_AC_VO' 'ref'
+	option 'NDL_asDatarate_active1_AC_BE' 'ref'
+	option 'NDL_asDatarate_active1_AC_BK' 'ref'
+
+	option 'NDL_asCarrierSense_active1_AC_VI' 'ref'
+	option 'NDL_asCarrierSense_active1_AC_VO' 'ref'
+	option 'NDL_asCarrierSense_active1_AC_BE' 'ref'
+	option 'NDL_asCarrierSense_active1_AC_BK' 'ref'
+	
+	option 'NDL_timeUp' '1.00'
+	option 'NDL_timeDown' '5.00'
+	
+	option 'DCC_measure_interval_Tm' '1.00'
+	option 'DCC_collect_pkt_flush_stats' '1.00'
+	option 'NDL_minDccSampling' '1.00'
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'
+	
+
+config 'common'
+		#interface name to be used. get via console: "ip link show" 
+		#original: lo
+	option 'ethernetDevice' 'wlan0'
+		#station id assigned to the station. Must be unique for all stations
+	option 'stationId' '0'
+		#country where system is used
+	option 'countryCode' 'DE'
+		#power of wlan sender
+	option 'txPower' '100'
+	
+	option 'logBasePath' '/var/log/openc2x'
+	
+config 'denm'
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'
+	
+config 'ldm'
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'
+
+config 'httpServer'
+		#in ms
+	option 'timeout' '900'
+	
+	
+	option 'enable_statistics' 'false'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'true'
+
+config 'obd2'
+	option 'simulateData' 'true'
+	option 'device' '/dev/ttyUSB0'
+		#in ms
+	option 'frequency' '500'
+	
+	
+	
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'true'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'true'
+	
+	
+	
+	
+	
+	
+config 'gps'
+	option 'simulateData' 'true'
+		#0 for mathematical simuation, 1 for demo trails
+	option 'simulationMode' '0'
+	option 'dataFile' '/usr/share/openc2x/gpsdata/sample-data.csv'
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'

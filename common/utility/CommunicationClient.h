@@ -42,19 +42,18 @@ public:
 	 * @param expNo Experiment Number
 	 * @param portOut port used for requesting
 	 */
-	CommunicationClient(std::string ownerModule, std::string portOut, int expNo, std::string loggingConf, std::string statisticConf);
+	CommunicationClient(std::string portOut,  LoggingUtility& logger);
 	~CommunicationClient();
 	std::string sendRequest(std::string envelope, std::string request, int timeout);
 	void init();
 
 private:
-	std::string mOwnerModule;
 	std::string mPortOut;
 
 	zmq::context_t* mContext;
 	zmq::socket_t* mClient;
 
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 
 	std::mutex mMutex;
 };

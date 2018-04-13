@@ -6,14 +6,3 @@ ADD_LIBRARY(proto SHARED ${PROTO_HEADER} ${PROTO_SRC})
 
 install(TARGETS proto DESTINATION lib)
 
-ADD_CUSTOM_TARGET(
-    proto-config ALL COMMENT "Installing protobuf generated files"
-)
-
-ADD_CUSTOM_COMMAND(
-    TARGET proto-config
-    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/build/
-    COMMAND cp -a ${CMAKE_BINARY_DIR}/common/buffers/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/build/
-    COMMAND cp -a ${CMAKE_BINARY_DIR}/common/buffers/*.h ${CMAKE_CURRENT_SOURCE_DIR}/build/
-)
-

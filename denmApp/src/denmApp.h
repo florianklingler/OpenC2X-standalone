@@ -27,7 +27,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <common/utility/CommunicationSender.h>
-#include <common/buffers/build/trigger.pb.h>
+#include <common/utility/Constants.h>
+#include <common/buffers/trigger.pb.h>
 
 /*
  * This is a simple application that can trigger DENMs using a command-line interface.
@@ -36,7 +37,7 @@
  */
 class DenmApp {
 public:
-	DenmApp(std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	DenmApp();
 	~DenmApp();
 
 	/*
@@ -47,6 +48,7 @@ public:
 
 private:
 	CommunicationSender* mSenderToDenm;
+	LoggingUtility* mLogger;
 };
 
 #endif

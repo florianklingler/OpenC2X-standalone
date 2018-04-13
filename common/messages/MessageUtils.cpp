@@ -26,13 +26,11 @@
 #include <iterator>
 
 using namespace std;
+using boost::property_tree::ptree;
 
-MessageUtils::MessageUtils(string moduleName, int expNo, string loggingConf, string statisticConf) {
-	mLogger = new LoggingUtility(moduleName, expNo, loggingConf, statisticConf);
-}
 
-MessageUtils::~MessageUtils() {
-	delete mLogger;
+MessageUtils::MessageUtils(LoggingUtility& logger) : mLogger(logger) {
+	
 }
 
 int MessageUtils::writeOut(const void *buffer, size_t size, void *app_key) {
@@ -46,7 +44,7 @@ int MessageUtils::writeOut(const void *buffer, size_t size, void *app_key) {
 vector<uint8_t> MessageUtils::encodeMessage(asn_TYPE_descriptor_t *td, void *structPtr) {
 	vector<uint8_t> payload;
 	asn_enc_rval_t erv = uper_encode(td, const_cast<void*>(structPtr), &MessageUtils::writeOut, &payload);
-	mLogger->logInfo("Encoded bytes: " + to_string(erv.encoded));
+	mLogger.logInfo("Encoded bytes: " + to_string(erv.encoded));
 	if(erv.encoded == -1) {
 		throw runtime_error("Encoding failed");
 	}
@@ -57,6 +55,6 @@ int MessageUtils::decodeMessage(asn_TYPE_descriptor_t *td, void** t, string buff
 	asn_codec_ctx_t ctx{};
 	asn_dec_rval_t drv = uper_decode_complete(&ctx, td, t, buffer.data(), buffer.length());
 	//asn_dec_rval_t drv = uper_decode(&context, td, t, buffer.data(), buffer.length(), 0, 0);
-	mLogger->logInfo("Decoded bytes: " + to_string(drv.consumed) + " and returning code: " + to_string(drv.code));
+	mLogger.logInfo("Decoded bytes: " + to_string(drv.consumed) + " and returning code: " + to_string(drv.code));
 	return drv.code;// == RC_OK;
 }

@@ -3,5 +3,6 @@ set(gps_SRCS
 )
 
 add_executable (gpsService ${gps_SRCS})
-target_link_libraries (gpsService zmq protobuf boost_system boost_thread gps asn proto messages utility)
+target_link_libraries (gpsService pthread zmq protobuf boost_system boost_thread gps asn proto messages utility uci)
 
+install(TARGETS gpsService DESTINATION bin)

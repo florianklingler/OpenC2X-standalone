@@ -27,29 +27,32 @@
 #include "external/pbjson.hpp"
 #include "external/crow_all.h"
 #include <common/utility/CommunicationSender.h>
-#include <common/buffers/build/trigger.pb.h>
+#include <common/buffers/trigger.pb.h>
 
 using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-httpServer::httpServer(GlobalConfig globalConfig, string serverConfig, string loggingConf, string statisticConf) {
+httpServer::httpServer(GlobalConfig globalConfig) {
 	mGlobalConfig = globalConfig;
 	try {
-		mLocalConfig.loadConfigXML(serverConfig);
+		mLocalConfig.loadConfig();
 	}
 	catch (std::exception &e) {
 		std::cerr << "Error while loading local config.xml: " << e.what() << std::endl;
 	}
+	
+	ptree pt = load_config_tree();
 
-	std::string moduleName = "WebApplication";
-	mClientCam = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mClientDenm = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mClientGps = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mClientObd2 = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mClientCamInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mClientDccInfo = new CommunicationClient(moduleName, "6789", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mLogger = new LoggingUtility(moduleName, mGlobalConfig.mExpNo, loggingConf, statisticConf);
+
+	mLogger = new LoggingUtility(HTTP_SERVER_CONFIG_NAME, HTTP_SERVER_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
+
+	mClientCam = new CommunicationClient("6789", *mLogger);
+	mClientDenm = new CommunicationClient("6789", *mLogger);
+	mClientGps = new CommunicationClient("6789", *mLogger);
+	mClientObd2 = new CommunicationClient("6789", *mLogger);
+	mClientCamInfo = new CommunicationClient("6789", *mLogger);
+	mClientDccInfo = new CommunicationClient("6789", *mLogger);
 }
 
 httpServer::~httpServer() {
@@ -94,6 +97,16 @@ std::string httpServer::requestCam(std::string condition) {
 	}
 	mMutexCam.unlock();
 	return "";
+}
+
+
+std::string httpServer::logMessage(std::string message) {
+	time_t now;
+    time(&now);
+    char buf[sizeof "2011-10-08T07:07:09Z"];
+    strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
+	mLogger->logInfo(message);
+	return buf;
 }
 
 //requests all DENMs from LDM
@@ -287,22 +300,21 @@ std::string httpServer::myMac() {
 }
 
 int main(int argc, const char* argv[]){
-	if(argc != 5) {
-		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <serverConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
-		exit(1);
-	}
 	crow::SimpleApp app;
 	crow::logger::setLogLevel(crow::LogLevel::ERROR);	//ignore info logging in crow
 	GlobalConfig config;
 	try {
-		config.loadConfigXML(argv[1]);
+		config.loadConfig(HTTP_SERVER_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
 		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
 	}
 
+	ptree pt = load_config_tree();
+	LoggingUtility mLogger(HTTP_SERVER_CONFIG_NAME, HTTP_SERVER_MODULE_NAME, config.mLogBasePath, config.mExpName, config.mExpNo, pt);
+
 	//ldm requests
-	httpServer* server = new httpServer(config, argv[2], argv[3], argv[4]);
+	httpServer* server = new httpServer(config);
 
 	//CAM
 	CROW_ROUTE(app, "/request_cam")
@@ -443,7 +455,7 @@ int main(int argc, const char* argv[]){
 	});
 
 	//denm triggering
-	CommunicationSender* senderToDenm = new CommunicationSender("WebApplication", "1111", config.mExpNo, argv[3], argv[4]);
+	CommunicationSender* senderToDenm = new CommunicationSender("1111", mLogger);
 	CROW_ROUTE(app, "/trigger_denm")
 	.methods("POST"_method)
 	([senderToDenm](const crow::request& req){
@@ -476,6 +488,29 @@ int main(int argc, const char* argv[]){
 	([server](){
 		auto resp = crow::response{server->myMac()};
 		resp.add_header("Access-Control-Allow-Origin","*");
+		resp.add_header("Content-Type","application/json");
+		return resp;
+	});
+	
+	
+	//Text logging
+	CROW_ROUTE(app, "/log_message")
+	.methods("POST"_method)
+	([server](const crow::request& req){
+
+		auto request = crow::json::load(req.body);
+		if (!request)
+			return crow::response(400);
+		std::string message = "";
+		std::string reply = "";
+
+		if(request.has("message")) {
+			message = request["message"].s();
+		}
+		reply = server->logMessage(message);
+
+	    auto resp = crow::response{reply};
+	    resp.add_header("Access-Control-Allow-Origin","*");
 		resp.add_header("Content-Type","application/json");
 		return resp;
 	});

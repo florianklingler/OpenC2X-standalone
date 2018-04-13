@@ -3,4 +3,5 @@ set(cam_SRCS
 )
 
 add_executable (cam ${cam_SRCS})
-target_link_libraries (cam zmq protobuf boost_system boost_thread asn proto messages utility)
+target_link_libraries (cam pthread zmq protobuf boost_system boost_thread asn proto messages utility uci)
+install(TARGETS cam DESTINATION bin)

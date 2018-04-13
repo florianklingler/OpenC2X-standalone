@@ -32,13 +32,14 @@
 #include <common/config/config.h>
 #include <common/utility/CommunicationReceiver.h>
 #include <common/utility/CommunicationSender.h>
-#include <common/buffers/build/data.pb.h>
-#include <common/buffers/build/cam.pb.h>
-#include <common/buffers/build/gps.pb.h>
-#include <common/buffers/build/obd2.pb.h>
-#include <common/buffers/build/camInfo.pb.h>
-#include <common/buffers/build/CoopAwareness.pb.h>
-#include <common/buffers/build/ItsPduHeader.pb.h>
+#include <common/utility/Constants.h>
+#include <common/buffers/data.pb.h>
+#include <common/buffers/cam.pb.h>
+#include <common/buffers/gps.pb.h>
+#include <common/buffers/obd2.pb.h>
+#include <common/buffers/camInfo.pb.h>
+#include <common/buffers/CoopAwareness.pb.h>
+#include <common/buffers/ItsPduHeader.pb.h>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -57,16 +58,18 @@ struct CaServiceConfig {
 	double mThresholdRadiusForHeading;
 	bool mIsRSU;
 
-	void loadConfigXML(const std::string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
+	void loadConfig(ptree& pt) {
+		
+		
+		
 		mGenerateMsgs = pt.get("cam.generateMsgs", true);
 		mExpirationTime = pt.get("cam.expirationTime", 1);
 		mMaxGpsAge = pt.get("cam.maxGpsAge", 10);
 		mMaxObd2Age = pt.get("cam.maxObd2Age", 10);
 		mThresholdRadiusForHeading = pt.get("cam.thresholdRadiusForHeading", 0.3);
-		mIsRSU = pt.get("cam.isRSU", 0);
+		mIsRSU = pt.get("cam.isRSU", false);
+
+		
 	}
 };
 
@@ -87,7 +90,7 @@ struct CaServiceConfig {
  */
 class CaService {
 public:
-	CaService(CaServiceConfig &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	CaService(CaServiceConfig &config, ptree& configTree);
 	~CaService();
 
 	/** Sends a new CAM to LDM and DCC.	 */

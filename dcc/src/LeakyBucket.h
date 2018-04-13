@@ -45,7 +45,7 @@
  */
 template<typename T> class LeakyBucket {
 private:
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 public:
 	/**
 	 * Max. number of tokens
@@ -60,11 +60,10 @@ public:
 	typename std::list<std::pair<int64_t, T*> > queue;	//pair: validUntil, packet
 	size_t queueSize;
 
-	LeakyBucket(size_t bucketSize, size_t queueSize, int expNo, std::string loggingConf, std::string statisticConf) {
+	LeakyBucket(size_t bucketSize, size_t queueSize, LoggingUtility& logger) : mLogger(logger) {
 		this->maxBucketSize = bucketSize;
 		availableTokens = 0;
 		this->queueSize = queueSize;
-		mLogger = new LoggingUtility("Dcc", expNo, loggingConf, statisticConf);
 	}
 
 	~LeakyBucket() {
@@ -75,7 +74,6 @@ public:
 			delete msg;
 			queue.erase(it++);
 		}
-		delete mLogger;
 	}
 
 	/** Getter for number of available tokens.
@@ -199,7 +197,7 @@ public:
 			T* msg = p.second;
 
 			if(validUntil < t || eraseAll) {
-				mLogger->logInfo("flushQueue: message " + std::to_string(msg->id()) + " expired");
+				mLogger.logInfo("flushQueue: message " + std::to_string(msg->id()) + " expired");
 				delete msg;
 				queue.erase(it++);
 			} else {

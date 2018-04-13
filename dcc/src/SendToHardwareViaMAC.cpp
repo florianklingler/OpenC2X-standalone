@@ -24,16 +24,15 @@
 
 #include "SendToHardwareViaMAC.h"
 #include <ctype.h>
-#include <common/buffers/build/data.pb.h>
+#include <common/buffers/data.pb.h>
 
 using namespace std;
 
-SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDevice, int expNo, string loggingConf, string statisticConf) {
-	mLogger = new LoggingUtility(ownerModule, expNo, loggingConf, statisticConf);
+SendToHardwareViaMAC::SendToHardwareViaMAC(string ethernetDevice, LoggingUtility& logger): mLogger(logger) {
 
 	//has root?
 	if (getuid() != 0){
-		mLogger->logError("Root privileges are needed");
+		mLogger.logError("Root privileges are needed");
 		exit(1);
 	}
 
@@ -61,7 +60,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	   ++mac;
 	}
 	if (!(i == 12 && (s == 5 || s == 0))){
-		mLogger->logError("could not get a real sender Mac address. Using 12:23:34:45:56:67");
+		mLogger.logError("could not get a real sender Mac address. Using 12:23:34:45:56:67");
 		mOwnMac = "12:23:34:45:56:67";
 	}
 
@@ -75,39 +74,39 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	//create PACKET Sockets
 	if ((mSocket_VI = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
 	{
-		mLogger->logPError("Socket() failed.");
+		mLogger.logPError("Socket() failed.");
 		exit(1);
 	}
 	if ((mSocket_VO = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
 	{
-		mLogger->logPError("Socket() failed.");
+		mLogger.logPError("Socket() failed.");
 		exit(1);
 	}
 	if ((mSocket_BE = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
 	{
-		mLogger->logPError("Socket() failed.");
+		mLogger.logPError("Socket() failed.");
 		exit(1);
 	}
 	if ((mSocket_BK = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
 	{
-		mLogger->logPError("Socket() failed.");
+		mLogger.logPError("Socket() failed.");
 		exit(1);
 	}
 	//set prioritys
 	if (setsockopt(mSocket_VI,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_VI,sizeof(PRIORITY_VI)) == -1){
-		mLogger->logPError("Setsockop(priority) failed");
+		mLogger.logPError("Setsockop(priority) failed");
 		exit(1);
 	}
 	if (setsockopt(mSocket_VO,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_VO,sizeof(PRIORITY_VO)) == -1){
-		mLogger->logPError("Setsockop(priority) failed");
+		mLogger.logPError("Setsockop(priority) failed");
 		exit(1);
 	}
 	if (setsockopt(mSocket_BE,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_BE,sizeof(PRIORITY_BE)) == -1){
-		mLogger->logPError("Setsockop(priority) failed");
+		mLogger.logPError("Setsockop(priority) failed");
 		exit(1);
 	}
 	if (setsockopt(mSocket_BK,SOL_SOCKET ,SO_PRIORITY, &PRIORITY_BK,sizeof(PRIORITY_BK)) == -1){
-		mLogger->logPError("Setsockop(priority) failed");
+		mLogger.logPError("Setsockop(priority) failed");
 		exit(1);
 	}
 
@@ -115,7 +114,7 @@ SendToHardwareViaMAC::SendToHardwareViaMAC(string ownerModule,string ethernetDev
 	strncpy(mIfr.ifr_name, ethDevice.c_str(),sizeof(mIfr.ifr_name));
 
 	if (ioctl(mSocket_VI, SIOCGIFINDEX, &mIfr) != 0){
-		mLogger->logPError("ioctl (SIOCGIFINDEX) failed");
+		mLogger.logPError("ioctl (SIOCGIFINDEX) failed");
 		exit(1);
 	}
 
@@ -145,7 +144,6 @@ SendToHardwareViaMAC::~SendToHardwareViaMAC() {
 	close(mSocket_VI);
 	close(mSocket_BE);
 	close(mSocket_BK);
-	delete mLogger;
 }
 
 void SendToHardwareViaMAC::send(string* msg, int priority){
@@ -162,7 +160,7 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 	memcpy(payload,msg->c_str(),msg->size());
 
 	//send Packet
-	mLogger->logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
+	mLogger.logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
 
 	int send_to_socket = -1;
 	switch(priority){
@@ -185,10 +183,10 @@ void SendToHardwareViaMAC::send(string* msg, int priority){
 		if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
 						sizeof(struct sockaddr_ll))) == -1)
 		{
-				mLogger->logPError("Sendto() failed");
+				mLogger.logPError("Sendto() failed");
 		}
 	} else {
-		mLogger->logInfo("No packet priority/queue set");
+		mLogger.logInfo("No packet priority/queue set");
 	}
 }
 
@@ -207,7 +205,7 @@ void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority, int type) {
 			geoHdr = reinterpret_cast<uint8_t*>(&mGeoBtpHdrForCam);
 			break;
 		default:
-			mLogger->logError("Queued packet has invalid type: " + to_string(type));
+			mLogger.logError("Queued packet has invalid type: " + to_string(type));
 			break;
 	}
 	unsigned int packetsize = sizeof(struct ether_header) + geoHdrLen + msg->size();
@@ -226,7 +224,7 @@ void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority, int type) {
 	//dumpBuffer(reinterpret_cast<const uint8_t*>(msg->c_str()), msg->size());
 
 	//send Packet
-	mLogger->logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
+	mLogger.logInfo(string("HW: sending CAR Packet on Interface ")+mIfr.ifr_name);
 
 	int send_to_socket = -1;
 	switch(priority){
@@ -249,10 +247,10 @@ void SendToHardwareViaMAC::sendWithGeoNet(string* msg, int priority, int type) {
 		if ((sendto(send_to_socket,packet,packetsize,0,(struct sockaddr* )&mTo_sock_addr,
 						sizeof(struct sockaddr_ll))) == -1)
 		{
-				mLogger->logPError("Sendto() failed");
+				mLogger.logPError("Sendto() failed");
 		}
 	} else {
-		mLogger->logInfo("No packet priority/queue set");
+		mLogger.logInfo("No packet priority/queue set");
 	}
 }
 

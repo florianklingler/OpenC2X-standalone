@@ -53,11 +53,10 @@ using namespace std;
 int PktStatsCollector::mNl80211Id;
 boost::mutex PktStatsCollector::mutexStats;
 
-PktStatsCollector::PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io, int expNo, string loggingConf, string statisticConf) {
+PktStatsCollector::PktStatsCollector(string ifname, double probeInterval, boost::asio::io_service* io, LoggingUtility& logger): mLogger(logger) {
 	mProbeInterval = probeInterval;
 	mIfname = ifname;
 	mIoService = io;
-	mLogger = new LoggingUtility("PktStatsCollector", expNo, loggingConf, statisticConf);
 	mTimer = new boost::asio::deadline_timer(*mIoService, boost::posix_time::millisec(probeInterval * 1000));
 }
 
@@ -77,7 +76,7 @@ void PktStatsCollector::init() {
 	mWifi = (netinterface*) calloc(1, sizeof(netinterface));
 	mWifi->ifindex = if_nametoindex(mIfname.c_str());
 	if (mWifi->ifindex == 0) {
-		mLogger->logError("Error getting interface index for : " + mIfname );
+		mLogger.logError("Error getting interface index for : " + mIfname );
 		mWifi->ifindex = -1;
 		exit(1);
 	}
@@ -85,7 +84,7 @@ void PktStatsCollector::init() {
 	// initialize socket now
 	mSocket = nl_socket_alloc();
 	if (mSocket == NULL) {
-		mLogger->logError("Could not allocate netlink socket");
+		mLogger.logError("Could not allocate netlink socket");
 		exit(1);
 	}
 
@@ -95,20 +94,20 @@ void PktStatsCollector::init() {
 	ret = nl_socket_modify_cb(mSocket, NL_CB_VALID, NL_CB_CUSTOM,
 			PktStatsCollector::receivedNetlinkMsg, this);
 	if(ret != 0) {
-		mLogger->logError("Failed to modify the callback");
+		mLogger.logError("Failed to modify the callback");
 		exit(1);
 	}
 	// connect socket. Protocol: generic netlink
 	ret = genl_connect(mSocket);
 	if (ret != 0) {
-		mLogger->logError("Connection to netlink socket failed");
+		mLogger.logError("Connection to netlink socket failed");
 		exit(1);
 	}
 
 	// resolve mNl80211Id
 	mNl80211Id = genl_ctrl_resolve(mSocket, "nl80211");
 	if (mNl80211Id < 0) {
-		mLogger->logError("Could not get NL80211 id");
+		mLogger.logError("Could not get NL80211 id");
 		exit(1);
 	}
 	mTimer->async_wait(boost::bind(&PktStatsCollector::probe, this, boost::asio::placeholders::error));
@@ -133,14 +132,14 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), dev);
 
 	if (!tb[NL80211_ATTR_FLUSH_INFO]) {
-		cp->mLogger->logInfo("PktStatsCollector: survey data missing!");
+		cp->mLogger.logInfo("PktStatsCollector: survey data missing!");
 		return NL_SKIP;
 	}
 	static struct nla_policy survey_policy[NL80211_FLUSH_INFO_MAX + 1] = { };
 
 	if (nla_parse_nested(sinfo, NL80211_FLUSH_INFO_MAX,
 			tb[NL80211_ATTR_FLUSH_INFO], survey_policy)) {
-		cp->mLogger->logInfo("Failed to parse nested attributes");
+		cp->mLogger.logInfo("Failed to parse nested attributes");
 		return NL_SKIP;
 	}
 
@@ -208,7 +207,7 @@ int PktStatsCollector::receivedNetlinkMsg(nl_msg *msg, void *arg) {
 	cp->mWifi->stats.vo_flush_not_req = vo_flush_not_req;
 	cp->mWifi->stats.vo_flush_req = vo_flush_req;
 	mutexStats.unlock();
-//	cp->mLogger->logStats(to_string(cp->mWifi->stats.be_flush_req) + "\t" + to_string(cp->mWifi->stats.be_flush_not_req)
+//	cp->mLogger.logStats(to_string(cp->mWifi->stats.be_flush_req) + "\t" + to_string(cp->mWifi->stats.be_flush_not_req)
 //			+ "\t" + to_string(cp->mWifi->stats.bk_flush_req) + "\t" + to_string(cp->mWifi->stats.bk_flush_not_req)
 //			+ "\t" + to_string(cp->mWifi->stats.vi_flush_req) + "\t" + to_string(cp->mWifi->stats.vi_flush_not_req)
 //			+ "\t" + to_string(cp->mWifi->stats.vo_flush_req) + "\t" + to_string(cp->mWifi->stats.vo_flush_not_req)
@@ -243,7 +242,7 @@ int PktStatsCollector::send(uint8_t msgCmd, void *payload, unsigned int length,
 	// create message header
 	if (genlmsg_put(msg, 0, seq, protocolId, 0, flags, msgCmd,
 			protocolVersion) == NULL) {
-		mLogger->logError("Failed to create netlink header for the message");
+		mLogger.logError("Failed to create netlink header for the message");
 		return -1;
 	}
 
@@ -251,14 +250,14 @@ int PktStatsCollector::send(uint8_t msgCmd, void *payload, unsigned int length,
 	if (length > 0) {
 		ret = nla_put(msg, attrType, length, payload);
 		if (ret < 0) {
-			mLogger->logError("Error when adding attributes");
+			mLogger.logError("Error when adding attributes");
 			return ret;
 		}
 	}
 
-	ret = nl_send_auto(mSocket, msg);
+	ret = nl_send_auto_complete(mSocket, msg);
 	if (ret < 0) {
-		mLogger->logError("Error when sending the message");
+		mLogger.logError("Error when sending the message");
 	}
 	nlmsg_free(msg);
 

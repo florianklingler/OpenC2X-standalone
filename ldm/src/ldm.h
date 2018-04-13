@@ -31,15 +31,17 @@
 #include <boost/thread.hpp>
 #include <common/utility/CommunicationReceiver.h>
 #include <common/utility/CommunicationServer.h>
+#include <common/utility/Constants.h>
+
 #include <common/utility/LoggingUtility.h>
 #include <sqlite3.h>
-#include <common/buffers/build/cam.pb.h>
-#include <common/buffers/build/denm.pb.h>
-#include <common/buffers/build/gps.pb.h>
-#include <common/buffers/build/obd2.pb.h>
-#include <common/buffers/build/dccInfo.pb.h>
-#include <common/buffers/build/camInfo.pb.h>
-#include <common/buffers/build/ldmData.pb.h>
+#include <common/buffers/cam.pb.h>
+#include <common/buffers/denm.pb.h>
+#include <common/buffers/gps.pb.h>
+#include <common/buffers/obd2.pb.h>
+#include <common/buffers/dccInfo.pb.h>
+#include <common/buffers/camInfo.pb.h>
+#include <common/buffers/ldmData.pb.h>
 #include <google/protobuf/text_format.h>
 #include <string>
 #include <ctime>
@@ -63,7 +65,7 @@
  */
 class LDM {
 public:
-	LDM(std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	LDM();
 	~LDM();
 	void init();
 

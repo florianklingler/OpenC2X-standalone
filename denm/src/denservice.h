@@ -33,11 +33,12 @@
 #include <common/utility/CommunicationReceiver.h>
 #include <common/utility/CommunicationSender.h>
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/data.pb.h>
-#include <common/buffers/build/denm.pb.h>
-#include <common/buffers/build/gps.pb.h>
-#include <common/buffers/build/obd2.pb.h>
-#include <common/buffers/build/trigger.pb.h>
+#include <common/utility/Constants.h>
+#include <common/buffers/data.pb.h>
+#include <common/buffers/denm.pb.h>
+#include <common/buffers/gps.pb.h>
+#include <common/buffers/obd2.pb.h>
+#include <common/buffers/trigger.pb.h>
 #include <common/asn1/DENM.h>
 #include <common/messages/MessageUtils.h>
 #include <mutex>
@@ -49,7 +50,7 @@
  */
 class DenService {
 public:
-	DenService(std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	DenService();
 	~DenService();
 
 	/**

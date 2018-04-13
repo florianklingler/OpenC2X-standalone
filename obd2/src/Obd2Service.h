@@ -27,13 +27,12 @@
  * @addtogroup obd2
  * @{
  */
-
+#include <random>
 #include "SerialPort.h"
 #include <common/utility/CommunicationSender.h>
+#include <common/utility/Constants.h>
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/obd2.pb.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+#include <common/buffers/obd2.pb.h>
 #include <boost/asio.hpp>
 #include <string>
 #include <common/config/config.h>
@@ -57,14 +56,16 @@ struct Obd2Config {
 	 */
 	int mFrequency;
 
-	void loadConfigXML(const std::string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
-		mSimulateData = pt.get("obd2.SimulateData", true);
-		std::string device = pt.get("obd2.Device", "//dev//ttyUSB0");
+	void loadConfig() {
+		
+		ptree pt = load_config_tree();
+		
+		mSimulateData = pt.get("obd2.simulateData", true);
+		std::string device = pt.get("obd2.device", "//dev//ttyUSB0");
 		mDevice = strdup(device.c_str());
-		mFrequency = pt.get("obd2.Frequency", 100);
+		mFrequency = pt.get("obd2.frequency", 100);
+
+		
 	}
 };
 
@@ -73,7 +74,7 @@ struct Obd2Config {
  */
 class Obd2Service {
 public:
-	Obd2Service(Obd2Config &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	Obd2Service(Obd2Config &config);
 	~Obd2Service();
 	void init();
 

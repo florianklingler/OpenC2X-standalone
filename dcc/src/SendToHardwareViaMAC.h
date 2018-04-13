@@ -62,7 +62,7 @@ public:
 	 * @param expNo Experiment Number
 	 * @param ethernetDevice Device used for sending
 	 */
-	SendToHardwareViaMAC(std::string ownerModule,std::string ethernetDevice, int expNo, std::string loggingConf, std::string statisticConf);
+	SendToHardwareViaMAC(std::string ethernetDevice, LoggingUtility& logger);
 	virtual ~SendToHardwareViaMAC();
 
 	/**
@@ -95,7 +95,7 @@ public:
 
 	std::string mOwnMac;
 private:
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 
 	int mSocket_VI;
 	int mSocket_VO;

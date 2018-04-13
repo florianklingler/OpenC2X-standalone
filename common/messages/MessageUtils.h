@@ -27,6 +27,8 @@
 #include <common/asn1/asn_application.h>
 #include <string>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
+
 
 /**
  * Contains message utility functions (encoding/ decoding) used by other modules.
@@ -35,14 +37,13 @@
  */
 class MessageUtils {
 public:
-	MessageUtils(std::string moduleName, int expNo, std::string loggingConf, std::string statisticConf);
-	virtual ~MessageUtils();
+	MessageUtils(LoggingUtility& logger);
 
 	static int writeOut(const void *buffer, size_t size, void *app_key);
 	std::vector<uint8_t> encodeMessage(asn_TYPE_descriptor_t *td, void *structPtr);
 	int decodeMessage(asn_TYPE_descriptor_t* td, void** t, std::string buffer);
 
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 };
 
 #endif /* UTILS_H_ */

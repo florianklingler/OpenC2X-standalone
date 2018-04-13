@@ -39,34 +39,72 @@ using namespace std;
 
 INITIALIZE_EASYLOGGINGPP
 
-DCC::DCC(DccConfig &config, string globalConfig, string loggingConf, string statisticConf) : mStrand(mIoService) {
+string execProcess(string cmd_str){
+	const char* cmd = cmd_str.c_str();
+	    std::array<char, 128> buffer;
+    std::string result;
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    while (!feof(pipe.get())) {
+        if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+            result += buffer.data();
+    }
+    return result;
+}
+
+DCC::DCC(bool setUpWlan) : mStrand(mIoService) {
+
+	
+	DccConfig config;
+	ptree pt = load_config_tree();
+
 	try {
-		mGlobalConfig.loadConfigXML(globalConfig);
-	}
-	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl;
+		mGlobalConfig.loadConfig(DCC_CONFIG_NAME);
+		config.loadParameters(pt);
+	} catch (exception &e) {
+		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
 	}
 
-	string module = "Dcc";
 	mConfig = config;
 
-	mMsgUtils = new MessageUtils(module, mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mLogger = new LoggingUtility(DCC_CONFIG_NAME, DCC_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
+	channelProberLogger = new LoggingUtility(DCC_CONFIG_NAME, CHANNEL_PROBER_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
+	pktStatsCollectorLogger = new LoggingUtility(DCC_CONFIG_NAME, PKT_STATS_COLLECTOR_MODULE_NAME, mGlobalConfig.mLogBasePath, mGlobalConfig.mExpName, mGlobalConfig.mExpNo, pt);
 
-	mReceiverFromCa = new CommunicationReceiver(module, "6666", "CAM", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mReceiverFromDen = new CommunicationReceiver(module, "7777", "DENM", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mSenderToHw = new SendToHardwareViaMAC(module,mGlobalConfig.mEthernetDevice, mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mReceiverFromHw = new ReceiveFromHardwareViaMAC(module, mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mSenderToServices = new CommunicationSender(module, "5555", mGlobalConfig.mExpNo, loggingConf, statisticConf);
-	mSenderToLdm = new CommunicationSender(module, "1234", mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mMsgUtils = new MessageUtils(*mLogger);
+	if(setUpWlan){
+		//Setup wlan
+		mLogger->logInfo("Begin WLAN setup");	
+		
+		execProcess("iw reg set " + mGlobalConfig.mCountryCode);
+		execProcess("ip link set " + mGlobalConfig.mEthernetDevice + " down");
+		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set type ocb");
+		execProcess("ip link set " + mGlobalConfig.mEthernetDevice + " up");
+		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " ocb join 5900 10MHZ");
+		execProcess("ifconfig " + mGlobalConfig.mEthernetDevice + " " + mGlobalConfig.mOcbIP);
+		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set txpower fixed " + to_string(mGlobalConfig.mTxPower));
+		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set bitrates legacy-5 12");
+		
+		mLogger->logInfo("End WLAN setup");
+		
+		//End setup wlan
+	}
+	
 
-	mLogger = new LoggingUtility(module, mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mReceiverFromCa = new CommunicationReceiver("6666", "CAM", *mLogger);
+	mReceiverFromDen = new CommunicationReceiver("7777", "DENM", *mLogger);
+	mSenderToHw = new SendToHardwareViaMAC(mGlobalConfig.mEthernetDevice, *mLogger);
+	mReceiverFromHw = new ReceiveFromHardwareViaMAC(*mLogger);
+	mSenderToServices = new CommunicationSender("5555", *mLogger);
+	mSenderToLdm = new CommunicationSender("1234", *mLogger);
+
 
 	// Use real channel prober when we are not simulating channel load
 	if(!mConfig.simulateChannelLoad) {
-		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService, mGlobalConfig.mExpNo, loggingConf, statisticConf); // wlan0
+		mChannelProber = new ChannelProber(mGlobalConfig.mEthernetDevice, mConfig.DCC_measure_interval_Tm, &mIoService, *channelProberLogger); // wlan0
 	}
 
-	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService, mGlobalConfig.mExpNo, loggingConf, statisticConf);
+	mPktStatsCollector = new PktStatsCollector(mGlobalConfig.mEthernetDevice, mConfig.DCC_collect_pkt_flush_stats, &mIoService, *pktStatsCollectorLogger);
 	mPktStats = {};		//init stats to 0
 
 	mRandNumberGen = default_random_engine(0);
@@ -80,7 +118,7 @@ DCC::DCC(DccConfig &config, string globalConfig, string loggingConf, string stat
 	mCurrentStateId = STATE_UNDEF;
 	setCurrentState(STATE_RELAXED);
 
-	initLeakyBuckets(loggingConf, statisticConf);
+	initLeakyBuckets();
 
 	mTimerMeasureChannel = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_measure_interval_Tm*1000));	//1000
 	mTimerMeasurePktStats = new boost::asio::deadline_timer(mIoService, boost::posix_time::millisec(mConfig.DCC_collect_pkt_flush_stats*1000));	//1000
@@ -133,7 +171,6 @@ DCC::~DCC() {
 
 	delete mMsgUtils;
 
-	delete mLogger;
 }
 
 void DCC::init() {
@@ -174,11 +211,11 @@ void DCC::initStates(int numActiveStates) {
 }
 
 //initializes leaky buckets
-void DCC::initLeakyBuckets(string loggingConf, string statisticConf) {
-	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI, mGlobalConfig.mExpNo, loggingConf, statisticConf)));
-	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO, mGlobalConfig.mExpNo, loggingConf, statisticConf)));
-	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE, mGlobalConfig.mExpNo, loggingConf, statisticConf)));
-	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK, mGlobalConfig.mExpNo, loggingConf, statisticConf)));
+void DCC::initLeakyBuckets() {
+	mBucket.insert(make_pair(Channels::AC_VI, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VI, mConfig.queueSize_AC_VI, *mLogger)));
+	mBucket.insert(make_pair(Channels::AC_VO, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_VO, mConfig.queueSize_AC_VO, *mLogger)));
+	mBucket.insert(make_pair(Channels::AC_BE, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BE, mConfig.queueSize_AC_BE, *mLogger)));
+	mBucket.insert(make_pair(Channels::AC_BK, new LeakyBucket<dataPackage::DATA>(mConfig.bucketSize_AC_BK, mConfig.queueSize_AC_BK, *mLogger)));
 }
 
 
@@ -605,25 +642,21 @@ void onSigTermOk(int sig) {
 }
 
 int main(int argc, const char* argv[]) {
-	if(argc != 5) {
-		fprintf(stderr, "missing arguments: %s <globalConfig.xml> <dccConfig.xml> <logging.conf> <statistics.conf> \n", argv[0]);
-		exit(1);
-	}
 	signal(SIGINT, &onSigTermOk);
 	signal(SIGQUIT, &onSigTermOk);
 	signal(SIGABRT, &onSigTermOk);
 	signal(SIGKILL, &onSigTermOk);
 	signal(SIGTERM, &onSigTermOk);
-
-	DccConfig config;
-	try {
-		config.loadParameters(argv[2]);
-	} catch (exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
-		return EXIT_FAILURE;
+	bool setUpWlan = true;
+	if(argc > 1){
+		setUpWlan = false;
 	}
-	DCC dcc(config, argv[1], argv[3], argv[4]);
+
+	DCC dcc(setUpWlan);
 	dcc.init();
 
 	return EXIT_SUCCESS;
 }
+
+
+

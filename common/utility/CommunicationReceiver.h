@@ -43,19 +43,18 @@ public:
 	 * @param portIn port to listen on for broadcasts
 	 * @param envelope Type of messages to subscribe to, "" for subscribing to all messages
 	 */
-	CommunicationReceiver(std::string ownerModule, std::string portIn, std::string envelope, int expNo, std::string loggingConf, std::string statisticConf);
+	CommunicationReceiver(std::string portIn, std::string envelope, LoggingUtility& logger);
 	~CommunicationReceiver();
 	std::pair<std::string, std::string> receive();
 	std::string receiveFromHw();
 	std::string receiveData();
 
 private:
-	std::string mOwnerModule;
 
 	zmq::context_t* mContext;
 	zmq::socket_t* mSubscriber;
 
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 
 	std::string mEnvelope;
 };

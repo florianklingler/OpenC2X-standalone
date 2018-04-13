@@ -9,4 +9,6 @@ set(httpServer_SRCS
 )
 
 add_executable (httpServer ${httpServer_SRCS} ${pbjson_SRCS})
-target_link_libraries (httpServer zmq protobuf boost_system boost_thread pthread asn proto messages utility)
+target_link_libraries (httpServer zmq protobuf boost_system boost_thread pthread asn proto messages utility uci)
+
+install(TARGETS httpServer DESTINATION bin)

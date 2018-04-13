@@ -32,6 +32,11 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <common/utility/LoggingUtility.h>
+#if defined(__has_include)
+#if __has_include("netlink/netlink.h")
+#include <netlink/netlink.h>
+#endif
+#endif
 #include <netlink/netlink-kernel.h>
 #include <netlink/socket.h>
 #include <netlink/genl/genl.h>
@@ -111,7 +116,7 @@ public:
 	 * @param io boost io service
 	 * @param expNo experiment number
 	 */
-	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, int expNo, std::string loggingConf, std::string statisticConf);
+	PktStatsCollector(std::string ifname, double probeInterval, boost::asio::io_service* io, LoggingUtility& logger);
 	virtual ~PktStatsCollector();
 
 	/**
@@ -175,7 +180,7 @@ public:
 	netinterface *mWifi;
 	std::string mIfname;
 	double mProbeInterval;
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 
 private:
 	static boost::mutex mutexStats;

@@ -30,7 +30,7 @@
 
 #include <common/utility/Constants.h>
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/data.pb.h>
+#include <common/buffers/data.pb.h>
 #include <string>
 #include <unistd.h> // Std. Fct.  getuid() and read()
 #include <netinet/in.h> // Socket Fct. (incl. <sys/socket.h>)
@@ -55,7 +55,7 @@ public:
 	 * @param ownerModule Module Name
 	 * @param expNo Experiment Number
 	 */
-	ReceiveFromHardwareViaMAC(std::string ownerModule, int expNo, std::string loggingConf, std::string statisticConf);
+	ReceiveFromHardwareViaMAC(LoggingUtility& logger);
 	virtual ~ReceiveFromHardwareViaMAC();
 	void init();
 
@@ -74,7 +74,7 @@ public:
 	std::pair<ReceivedPacketInfo, std::string> receiveWithGeoNetHeader();
 
 private:
-	LoggingUtility* mLogger;
+	LoggingUtility& mLogger;
 
 	int mSocket;
     char mPacket[ETHERMTU];

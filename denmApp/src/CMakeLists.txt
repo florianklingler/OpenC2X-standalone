@@ -3,5 +3,5 @@ set(denm_app_SRCS
 )
 
 add_executable (denmApp ${denm_app_SRCS})
-target_link_libraries (denmApp zmq protobuf boost_system boost_thread asn proto messages utility)
-
+target_link_libraries(denmApp zmq protobuf boost_system boost_thread asn proto messages utility uci)
+install(TARGETS denmApp DESTINATION bin)

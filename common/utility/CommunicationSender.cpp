@@ -24,14 +24,10 @@
 
 using namespace std;
 
-CommunicationSender::CommunicationSender(string ownerModule, string portOut, int expNo, string loggingConf, string statisticConf) {
-	mOwnerModule = ownerModule;
-
+CommunicationSender::CommunicationSender( string portOut, LoggingUtility& logger) : mLogger(logger) {
 	mContext = new zmq::context_t(1);
 	mPublisher = new zmq::socket_t(*mContext, ZMQ_PUB);
 	mPublisher->bind(("tcp://*:" + portOut).c_str());
-
-	mLogger = new LoggingUtility(mOwnerModule, expNo, loggingConf, statisticConf);
 }
 
 CommunicationSender::~CommunicationSender() {
@@ -39,20 +35,19 @@ CommunicationSender::~CommunicationSender() {
 	mPublisher->close();
 	delete mContext;
 	delete mPublisher;
-	delete mLogger;
 }
 
 void CommunicationSender::send(string envelope, string message) {
 	s_sendmore(*mPublisher, envelope);
 	s_send(*mPublisher, message);
 
-	mLogger->logDebug(envelope + " sent");
+	mLogger.logDebug(envelope + " sent");
 }
 
 void CommunicationSender::sendToHw(string message) {
 	s_send(*mPublisher, message);
 
-	mLogger->logDebug("sent to HW");
+	mLogger.logDebug("sent to HW");
 }
 
 void CommunicationSender::sendData(string envelope, string message) {

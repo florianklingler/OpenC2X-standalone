@@ -28,10 +28,13 @@
  * @addtogroup gps
  * @{
  */
+#include <random>
 #include <gps.h>
 #include <common/utility/CommunicationSender.h>
+#include <common/utility/Constants.h>
+
 #include <common/utility/LoggingUtility.h>
-#include <common/buffers/build/gps.pb.h>
+#include <common/buffers/gps.pb.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/asio.hpp>
@@ -58,13 +61,11 @@ struct GpsConfig {
 	int mMode;
 
 
-	void loadConfigXML(const std::string &filename) {
-		boost::property_tree::ptree pt;
-		read_xml(filename, pt);
-
-		mSimulateData = pt.get("gps.SimulateData", true);
-		mGpsDataFile = pt.get("gps.DataFile", "");
-		mMode = pt.get("gps.SimulationMode", 0);
+	void loadConfig() {
+		ptree pt = load_config_tree();
+		mSimulateData = pt.get("gps.simulateData", true);
+		mGpsDataFile = pt.get("gps.dataFile", "");
+		mMode = pt.get("gps.simulationMode", 0);
 	}
 };
 
@@ -75,7 +76,7 @@ typedef struct std::pair<double, double> position;
  */
 class GpsService {
 public:
-	GpsService(GpsConfig &config, std::string globalConfig, std::string loggingConf, std::string statisticConf);
+	GpsService(GpsConfig &config);
 	~GpsService();
 
 	/** Connects to GPSd.

@@ -43,7 +43,7 @@ int SerialPort::connect(char *device) {
 	 * When possible, the file is opened in nonblocking mode
 	 *
 	 */
-	mFileDescriptor = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_FSYNC );
+	mFileDescriptor = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_SYNC );
 
 	// clear terminalAttributes data
 	memset(&terminalAttributes, 0, sizeof(struct termios));
