@@ -20,32 +20,17 @@ before_install:
 - sudo dpkg -i ubox-1.0-Linux.deb
 - wget https://github.com/fynnh/uci/releases/download/untagged-441737d84af1837cd4d7/uci-1.0-Linux.deb
 - sudo dpkg -i uci-1.0-Linux.deb
-
 script:
-- export DATE=$(date +'%Y%m%d%H%M%S')
-- cmake . -DMINOR="${DATE}"
+- cmake .
 - make -j1
 - make package
-
-before_deploy:
-- git tag "${DATE}" || true
 
 deploy:
   - provider: releases
     api_key:
-      secure: MiezF0J72QZmu/S0EJEFLi4bus5O5ktzpzVZGW++btBA92NfukUo8uFiR7Dq7L8Qg4omrM2auq8SMsyyys8p+QXAI+iezgzR6UKnbD1tayNsgR+n/OL00cY24YGdAnyhyNkCk/vimit+bEqFqg/H9UrXpPh2yZBHtNucSWeB4kAb5RlQIw8ghPDYZXfEs73ONWVcUOBGFK7sT3Ij4pbqTvqOBZ6vkXevIYQpk/KQKkEt3kHe3ghqHC1LuMQ/Lw8UodYOvf+nE4RFtEi4mbD63c9QXM9n8boqq/M7iUU5MaiiUhPAcuGWp81FSW+8ZHhVFDYgOS9VrcGcycfSA8Fdew8DljwnedEKZzvsHQohPtu3Frc6BK/1KynT9aokCGbnK9DYDrtW6wJHl3vKSIWpkK6KlUKUYapkwywhcFo6klCp8/E9sRmSqanCrKAhObHXulzpR3of4lfhhsA6xck53rELcmxwpxYIPLxu2P/WOWca92h30riPpnO4voXRXZ7wtfVZIgPzYv2WvlWGb3APGvVzlr9+142q+UjkWkCmwOz7Qdug9Q4+735DUULyd7VpsOGBieAonk0+cIRndbRbbw+JCUcMKDJxmD/kfEjoANcRTX2Z8WkAmoHh+ysUepgFCbPncatyAtw8hV+m1ddgI8aUgL8ms3WHa+OjcH1oT0A=
+      secure: ajuDi+GD4FkIbbIZ+nGG9zUZ37GuwC0CB0wr59ws/b8otgo46puIavGLlNji5EGZitaYHoQeGciFruhDBnG3npW/QWbVVLA9nCXDJvok9vUDcVySd4JzXrm3uDIURNa1Jv/ftmPUNYYapkMvMLoitS+kVPK0M0UXRMYGaRnxgPLH/SQVDWXq23vGXAxch66yNjvkfchXp1vZqoel7QJ6GLaQPitbhW+d6cMdqhbBnx1N4n8yzAq3wzwjtnvBrfq/+G0yWrp922nTLfy8V8Qqlk+pfs67MY5w6pPwluy1/z6CIzJYyBE01w/iz8t4xI/OHLcu83NRqiPDMk1uA4MWA7lqq97TVA0LbhAW6KQMEUPjr1Pk5Rirm9dI4e5Z1nesdEq4v2tVDGZb7xVdVAgpGirgmtfKVx8FvPmta63sWrRgk+2LxCF7kri8y2jiB3je+D4F2ILhcXI4BnWtQmKUGV+8gIfIGyzBGRv1dStkE10t0xm3iQoBq3Zy5bIW6Owe8isdh3wOBiNOARH7T8soNm9Gvk+amm/lF/HsGmkJGsZrpdUFOwCtN8kUnlwp1Ealr3yahnU2p0zBgkOUCy+hJVE6i9joqqaXmVHj37F3SgD4tVg8G2NEb2dAh/oia++i+Dhj1yrIIefd+/xOqwtUr8Cqscb1XPIwpTjPxQIix80=
     file_glob: true
     file: openc2x-*-Linux.deb
     skip_cleanup: true
     on:
-      branch: master
-  - provider: packagecloud
-    repository: "openc2x"
-    token:
-      secure: FtQZvP5rJfkukVRjlNwfOWSI7aqdStLO9vuuAJCNsepMCuPpjPdksKMzx1ZVZshcXAR1iRw0vhWAymrr8AfhK3aLp6+lYuuEZHh/JA2CISpTGMisgPFYNZIuVVCNJKHMu4os8QxXGfMOteM33GAWgWT4AocAVl19xf21qyjBhvjMkxAEk+QLTclF8t3gnsPeB4O3AwIfppGSSbXEbuiafVQJ2L1R39+pRu0Wnn8zdpFSjCHSgorrIz2jLu/VALLPVRo0j3kfIGSFZGE+r5qQuYG7y+VIhU+Ryqcm6OPMEOyLjgxc9lJjq+4ygoNGNaRv6aGaWKed18KLRBUFM/ncvHNf/5jQzjm6tDYqnFMDZuepSqtqEh9SeAJs68QRGbSSVODfWpaa40TIonujfX1RmNtOimVfe1P2GNpTlp+FY01haO3TppRP3bW/UckuQIvP1R4nyuIoDDa6p6HhwjZXe63pNLsVL66QFGkQ2gvp1+7bZjN7XF9w9cJn4EG3VhcnW1x29EcojUSLbtVbw+CkaY03SO4QjqSqqLyh2iSkfjv4+eDI23JEO3h4JUqnGmMMXvL2Tw5SF01dlZIiUdjksOy9uHriKG+t6HkV9b8pVFgvMfd6l7R9I/8JXNVztgwhXxaFBcJC/jlaO4cgTxzKbSnVKe5r7wXv3iMOJ7eH2/w=
-    username: "fynnh"
-    dist: "ubuntu/trusty" # like 'ubuntu/precise', or 'centos/5', if pushing deb or rpms   
-    skip_cleanup: true
-    on:
-      branch: master
-    package_glob: "openc2x*.deb"
+      tags: true
