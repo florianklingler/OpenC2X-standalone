@@ -55,10 +55,8 @@ config 'dcc'
 	option 'queueSize_AC_BE' '25'
 	option 'queueSize_AC_BK' '25'
 
-		#default 0.04!
-	option 'NDL_minPacketInterval' '2.00'
-		#default 1.00!
-	option 'NDL_maxPacketInterval' '4.00'
+	option 'NDL_minPacketInterval' '0.04'
+	option 'NDL_maxPacketInterval' '1.00'
 	option 'NDL_defPacketInterval' '0.50'
 
 	option 'NDL_maxTxPower' '33.00'
@@ -144,6 +142,8 @@ config 'common'
 	option 'countryCode' 'DE'
 		#power of wlan sender
 	option 'txPower' '100'
+		#frequency of wlan sender
+	option 'frequency' '5900'
 	
 	option 'logBasePath' '/var/log/openc2x'
 	

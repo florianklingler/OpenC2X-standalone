@@ -164,6 +164,8 @@ struct GlobalConfig {
 	std::string mCountryCode;
 	/** power of wlan sender */
 	int mTxPower;
+	/** frequency of wlan sender */
+	int mFrequency;
 	
 	uint32_t mStationID;
 	
@@ -244,7 +246,7 @@ struct GlobalConfig {
 		mCountryCode = pt.get("common.countryCode", "DE");
 		mTxPower = pt.get("common.txPower", 100);
 		mStationID = pt.get("common.stationId", 0);
-
+		mFrequency = pt.get("common.frequency", 5900);
 		
 		
 		//get MAC Address

@@ -80,7 +80,7 @@ DCC::DCC(bool setUpWlan) : mStrand(mIoService) {
 		execProcess("ip link set " + mGlobalConfig.mEthernetDevice + " down");
 		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set type ocb");
 		execProcess("ip link set " + mGlobalConfig.mEthernetDevice + " up");
-		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " ocb join 5900 10MHZ");
+		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " ocb join " + to_string(mGlobalConfig.mFrequency) + " 10MHZ");
 		execProcess("ifconfig " + mGlobalConfig.mEthernetDevice + " " + mGlobalConfig.mOcbIP);
 		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set txpower fixed " + to_string(mGlobalConfig.mTxPower));
 		execProcess("iw dev " + mGlobalConfig.mEthernetDevice + " set bitrates legacy-5 12");
