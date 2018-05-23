@@ -1,0 +1,26 @@
+config 'gps' 'default'
+	option 'simulateData' 'true'
+		#0 for mathematical simuation, 1 for demo trails
+	option 'simulationMode' '0'
+	option 'dataFile' '/usr/share/openc2x/gpsdata/sample-data.csv'
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'

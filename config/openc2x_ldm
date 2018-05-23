@@ -1,0 +1,21 @@
+config 'ldm' 'default'
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'

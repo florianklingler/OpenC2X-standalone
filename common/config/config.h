@@ -64,15 +64,12 @@ void lookup_config (ptree * pt, std::string config_name, std::string config_type
 	struct uci_element* e;
 
 	std::string package_name;
-	if(config_type.empty()){
-		package_name = "openc2x_default";
+	if(config_type == "global" || config_type.empty()){
+		package_name = "openc2x";
 	}else{
-		if(config_type == "global"){
-			package_name = "openc2x";
-		}else{
-			package_name = "openc2x_" + config_type;
-		}
+		package_name = "openc2x_" + config_type;
 	}
+
 	uci = uci_alloc_context();
 	
 	if (uci == NULL){
@@ -118,17 +115,17 @@ ptree load_config_tree(){
 
 	std::cout << "Start lookup" << std::endl;
 	if(config_name.empty()){
-		lookup_config(&pt, "", "");
-	}else{
-		lookup_config(&pt, config_name, "common");
-		lookup_config(&pt, config_name, "cam");
-		lookup_config(&pt, config_name, "dcc");
-		lookup_config(&pt, config_name, "denm");
-		lookup_config(&pt, config_name, "httpServer");
-		lookup_config(&pt, config_name, "obd2");
-		lookup_config(&pt, config_name, "gps");
-		lookup_config(&pt, config_name, "ldm");
+		config_name = "default";
 	}
+	lookup_config(&pt, config_name, "common");
+	lookup_config(&pt, config_name, "cam");
+	lookup_config(&pt, config_name, "dcc");
+	lookup_config(&pt, config_name, "denm");
+	lookup_config(&pt, config_name, "httpServer");
+	lookup_config(&pt, config_name, "obd2");
+	lookup_config(&pt, config_name, "gps");
+	lookup_config(&pt, config_name, "ldm");
+	
 	std::cout << "End lookup" << std::endl;
 
 	//lookup_global(pt);

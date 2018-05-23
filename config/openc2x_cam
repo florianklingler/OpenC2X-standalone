@@ -1,0 +1,36 @@
+config 'cam' 'default'
+		#General configuration
+	option 'generateMsgs' 'true'
+		#in s
+	option 'expirationTime' '1'
+		#in s
+	option 'maxGpsAge' '10'
+		#in s
+	option 'maxObd2Age' '10' 
+		# in m
+	option 'thresholdRadiusForHeading' '0.30'
+		#Basic Container in CAM
+		#0 for Vehicle, 1 for RSU
+	option 'isRSU' 'false'
+	
+	
+	option 'enable_statistics' 'true'
+	option 'statistics_to_file' 'true'
+	option 'statistics_to_standard_output' 'false'
+	
+	
+	option 'enable_logging' 'true'
+	option 'logging_to_file' 'true'
+	option 'logging_to_standard_output' 'true'
+	
+	option 'enable_logging_error' 'true'
+	option 'logging_error_to_file' 'true'
+	option 'logging_error_to_standard_output' 'true'
+	
+	option 'enable_logging_info' 'true'
+	option 'logging_info_to_file' 'true'
+	option 'logging_info_to_standard_output' 'true'
+	
+	option 'enable_logging_debug' 'true'
+	option 'logging_debug_to_file' 'true'
+	option 'logging_debug_to_standard_output' 'false'

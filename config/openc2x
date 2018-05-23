@@ -1,2 +1,2 @@
 config 'global'
-	option 'config_name' ''
+	option 'config_name' 'default'

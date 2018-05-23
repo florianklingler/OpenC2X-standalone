@@ -1,0 +1,14 @@
+config 'common' 'default'
+		#interface name to be used. get via console: "ip link show" 
+		#original: lo
+	option 'ethernetDevice' 'wlan0'
+		#station id assigned to the station. Must be unique for all stations
+	option 'stationId' '0'
+		#country where system is used
+	option 'countryCode' 'DE'
+		#power of wlan sender
+	option 'txPower' '100'
+		#frequency of wlan sender
+	option 'frequency' '5900'
+	
+	option 'logBasePath' '/var/log/openc2x'
