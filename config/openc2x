@@ -1,2 +1,7 @@
 config 'global'
 	option 'config_name' 'default'
+
+config openc2x 'default'
+	option description 'Default configuration'
+	option datetime '01.01.2018 00:00'
+	option modifiable 'false'
