@@ -1,3 +1,20 @@
+##############################################################################################
+#
+# Travis CI configuration file
+# 
+# Set the required secrets in the build settings of the project:
+#   - BINTRAY_USER
+#   - BINTRAY_API_KEY
+#   - GITHUB_API_KEY
+#
+##############################################################################################
+
+env:
+  global:
+  - PACKAGE_NAME=openc2x
+  - BINTRAY_REPO_NAME=debian
+  - BINTRAY_LICENSE=ISC
+
 sudo: required
 dist: trusty
 language: cpp
@@ -16,21 +33,37 @@ addons:
     - libzmq3-dev
     - libgps-dev
 before_install:
-- wget https://github.com/fynnh/libubox/releases/download/untagged-2f3d0fb32fe4d665624f/ubox-1.0-Linux.deb
-- sudo dpkg -i ubox-1.0-Linux.deb
-- wget https://github.com/fynnh/uci/releases/download/untagged-441737d84af1837cd4d7/uci-1.0-Linux.deb
-- sudo dpkg -i uci-1.0-Linux.deb
+  - echo "deb https://dl.bintray.com/$BINTRAY_USER/debian trusty main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update
+  - sudo apt-get install uci --allow-unauthenticated
 script:
 - cmake .
 - make -j1
 - make package
 
+
+
+before_deploy:
+  - export BUILD_VERSION=$(ls | grep openc2x | head -1 | cut -d'-' -f2)
+  # Set the packages name and details in the descriptor file
+  - sed -i "s/__NAME__/$PACKAGE_NAME/g" bintray-descriptor.json
+  - sed -i "s/__REPO_NAME__/$BINTRAY_REPO_NAME/g" bintray-descriptor.json
+  - sed -i "s/__SUBJECT__/$BINTRAY_USER/g" bintray-descriptor.json
+  - sed -i "s/__LICENSE__/$BINTRAY_LICENSE/g" bintray-descriptor.json
+  - sed -i "s/__VERSION__/$BUILD_VERSION/g" bintray-descriptor.json
+
 deploy:
   - provider: releases
-    api_key:
-      secure: ajuDi+GD4FkIbbIZ+nGG9zUZ37GuwC0CB0wr59ws/b8otgo46puIavGLlNji5EGZitaYHoQeGciFruhDBnG3npW/QWbVVLA9nCXDJvok9vUDcVySd4JzXrm3uDIURNa1Jv/ftmPUNYYapkMvMLoitS+kVPK0M0UXRMYGaRnxgPLH/SQVDWXq23vGXAxch66yNjvkfchXp1vZqoel7QJ6GLaQPitbhW+d6cMdqhbBnx1N4n8yzAq3wzwjtnvBrfq/+G0yWrp922nTLfy8V8Qqlk+pfs67MY5w6pPwluy1/z6CIzJYyBE01w/iz8t4xI/OHLcu83NRqiPDMk1uA4MWA7lqq97TVA0LbhAW6KQMEUPjr1Pk5Rirm9dI4e5Z1nesdEq4v2tVDGZb7xVdVAgpGirgmtfKVx8FvPmta63sWrRgk+2LxCF7kri8y2jiB3je+D4F2ILhcXI4BnWtQmKUGV+8gIfIGyzBGRv1dStkE10t0xm3iQoBq3Zy5bIW6Owe8isdh3wOBiNOARH7T8soNm9Gvk+amm/lF/HsGmkJGsZrpdUFOwCtN8kUnlwp1Ealr3yahnU2p0zBgkOUCy+hJVE6i9joqqaXmVHj37F3SgD4tVg8G2NEb2dAh/oia++i+Dhj1yrIIefd+/xOqwtUr8Cqscb1XPIwpTjPxQIix80=
+    api_key: $GITHUB_API_KEY   
     file_glob: true
     file: openc2x-*-Linux.deb
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: bintray
+    file: bintray-descriptor.json
+    user: $BINTRAY_USER
+    key: $BINTRAY_API_KEY
     skip_cleanup: true
     on:
       tags: true
