@@ -24,27 +24,14 @@ path_to_openc2x
     └── kernel-patches
 
 
-----------------------------------------------------------------------------------------------------
-1)                                      Set up the environment
-----------------------------------------------------------------------------------------------------
-Open a terminal and run the command:
-
-    $ sudo apt-get install libzmq3-dev libboost-all-dev protobuf-compiler libprotobuf-dev \
-libgps-dev gpsd gpsd-clients libnl-3-200 libnl-3-dev libnl-genl-3-200 libnl-genl-3-dev sqlite3 \
-libsqlite3-dev tmux asn1c build-essential cmake doxygen
-
-    $ wget https://github.com/fynnh/uci/releases/download/20180413135149/uci-1.20180413135149-Linux.deb
-    $ sudo dpkg -i uci-1.20180413135149-Linux.deb
-    $ wget https://github.com/fynnh/libubox/releases/download/20180413135712/ubox-1.20180413135712-Linux.deb
-    $ sudo dpkg -i ubox-1.20180413135712-Linux.deb
-
 
 ----------------------------------------------------------------------------------------------------
-2)                                         Installation
+1)                                         Installation
 ----------------------------------------------------------------------------------------------------
 
-    $ wget https://github.com/fynnh/OpenC2X-test/releases/download/20180413144514/openc2x-1.20180413144514-Linux.deb
-    $ sudo dpkg -i openc2x-1.20180413144514-Linux.deb
+    $ echo "deb https://dl.bintray.com/fynnh/debian trusty main" | sudo tee -a /etc/apt/sources.list
+    $ sudo apt-get update
+    $ sudo apt-get install openc2x
 
 ----------------------------------------------------------------------------------------------------
 3)                                      Configurations
