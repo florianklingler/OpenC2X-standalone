@@ -33,9 +33,9 @@ def bump_openwrt(path, commit_hash):
 		content = f.readlines()
 		f.close()
 	for line in content:
-		if 'src-git openc2x' == line[0:15]:
+		if 'src-git openc2x ' == line[0:16]:
 			print("hi")
-			newText = newText + 'src-git openc2x https://github.com/fynnh/OpenC2X-feed-test.git^'+ commit_hash + '\n'
+			newText = newText + 'src-git openc2x https://github.com/florianklingler/OpenC2X-feed.git^'+ commit_hash + '\n'
 		else:
 			newText = newText + line
 	with open(path, "w") as f:
