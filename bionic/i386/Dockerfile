@@ -14,4 +14,5 @@ RUN echo "deb [trusted=yes] http://dl.bintray.com/fynnh/debian bionic main" | te
   asn1c \
   libzmq3-dev \
   libgps-dev \
+  libsqlite3-dev \
   uci
