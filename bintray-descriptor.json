@@ -16,12 +16,12 @@
 
 	"files": [
 		{
-			"includePattern": "./(.[^/]*(\\.deb)$)",
+			"includePattern": "./(.*__ARCHITECTURE__.deb)",
 			"uploadPattern": "pool/main/__NAME__/$1",
 			"matrixParams": {
-				"deb_distribution": "trusty",
+				"deb_distribution": "__DIST__",
 				"deb_component": "main",
-				"deb_architecture": "amd64"
+				"deb_architecture": "__ARCHITECTURE__"
 			}
 		}
 	],

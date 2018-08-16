@@ -14,56 +14,48 @@ env:
   - PACKAGE_NAME=openc2x
   - BINTRAY_REPO_NAME=debian
   - BINTRAY_LICENSE=ISC
-
+  matrix:
+  - ARCHITECTURE=trusty/amd64
+  - ARCHITECTURE=trusty/i386
+  
 sudo: required
-dist: trusty
-language: cpp
-compiler: gcc
-addons:
-  apt:
-    packages:
-    - cmake
-    - libboost-all-dev
-    - protobuf-compiler
-    - libprotobuf-dev
-    - libnl-3-dev
-    - libnl-genl-3-dev
-    - libnl-route-3-dev
-    - asn1c
-    - libzmq3-dev
-    - libgps-dev
+services:
+  - docker
+    
 before_install:
-  - echo "deb https://dl.bintray.com/$BINTRAY_USER/debian trusty main" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update
-  - sudo apt-get install uci --allow-unauthenticated
+  - docker build -t $ARCHITECTURE $ARCHITECTURE
+
 script:
-- cmake .
-- make -j1
-- make package
-
-
+  - export NUMBER=${TRAVIS_BUILD_NUMBER}
+  - export BUILD_VERSION=1.$NUMBER
+  - export ARCH=$(basename $ARCHITECTURE)
+  - export DIST=$(dirname $ARCHITECTURE)
+  - docker run -v $PWD:/tmp $ARCHITECTURE /bin/sh -c "cd /tmp; cmake .; make -j1; make package"
+  - cp ${PACKAGE_NAME}-${BUILD_VERSION}-Linux.deb ${PACKAGE_NAME}-${BUILD_VERSION}-${DIST}_${ARCH}.deb 
 
 before_deploy:
-  - export BUILD_VERSION=$(ls | grep openc2x | head -1 | cut -d'-' -f2)
   # Set the packages name and details in the descriptor file
   - sed -i "s/__NAME__/$PACKAGE_NAME/g" bintray-descriptor.json
   - sed -i "s/__REPO_NAME__/$BINTRAY_REPO_NAME/g" bintray-descriptor.json
   - sed -i "s/__SUBJECT__/$BINTRAY_USER/g" bintray-descriptor.json
   - sed -i "s/__LICENSE__/$BINTRAY_LICENSE/g" bintray-descriptor.json
   - sed -i "s/__VERSION__/$BUILD_VERSION/g" bintray-descriptor.json
+  - sed -i "s/__ARCHITECTURE__/$ARCH/g" bintray-descriptor.json
+  - sed -i "s/__DIST__/$DIST/g" bintray-descriptor.json
+  - git tag "${BUILD_VERSION}" || true
 
 deploy:
   - provider: releases
-    api_key: $GITHUB_API_KEY   
+    api_key: $GITHUB_API_KEY
     file_glob: true
-    file: openc2x-*-Linux.deb
+    file: ${PACKAGE_NAME}-*-${DIST}_${ARCH}.deb 
     skip_cleanup: true
     on:
-      tags: true
+      branch: master
   - provider: bintray
     file: bintray-descriptor.json
     user: $BINTRAY_USER
     key: $BINTRAY_API_KEY
     skip_cleanup: true
     on:
-      tags: true
+      branch: master
