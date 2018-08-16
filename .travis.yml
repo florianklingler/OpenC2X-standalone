@@ -17,7 +17,9 @@ env:
   matrix:
   - ARCHITECTURE=bionic/amd64
   - ARCHITECTURE=bionic/i386
-  
+  - ARCHITECTURE=xenial/amd64
+  - ARCHITECTURE=xenial/i386
+    
 sudo: required
 services:
   - docker
