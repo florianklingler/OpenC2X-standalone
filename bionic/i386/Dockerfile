@@ -1,6 +1,6 @@
-FROM i386/ubuntu:14.04
+FROM i386/ubuntu:18.04
 
-RUN echo "deb http://dl.bintray.com/fynnh/debian trusty main" | tee -a /etc/apt/sources.list && \
+RUN echo "deb [trusted=yes] http://dl.bintray.com/fynnh/debian bionic main" | tee -a /etc/apt/sources.list && \
   apt-get update && \
   apt-get install -y --allow-unauthenticated \
   build-essential \

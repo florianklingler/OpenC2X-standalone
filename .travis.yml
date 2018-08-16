@@ -15,8 +15,8 @@ env:
   - BINTRAY_REPO_NAME=debian
   - BINTRAY_LICENSE=ISC
   matrix:
-  - ARCHITECTURE=trusty/amd64
-  - ARCHITECTURE=trusty/i386
+  - ARCHITECTURE=bionic/amd64
+  - ARCHITECTURE=bionic/i386
   
 sudo: required
 services:
