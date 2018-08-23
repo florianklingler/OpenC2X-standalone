@@ -65,6 +65,6 @@ SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSIO
 SET(CPACK_PACKAGE_CONTACT "CCS Labs <info@ccs-labs.org>")
 SET(CPACK_PACKAGE_SECTION "devel")
 set(CPACK_SET_DESTDIR ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "uci, libzmq3, gpsd, libboost-thread-dev, tmux")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "uci, libzmq5, gpsd, libboost-thread-dev, tmux")
 INCLUDE(CPack)
 
