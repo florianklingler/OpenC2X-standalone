@@ -38,7 +38,7 @@
 #include <common/config/config.h>
 
 /** Struct that holds the configuration for Obd2Service.
- * The configuration is defined in <a href="../../obd2/config/config.xml">obd2/config/config.xml</a>.
+ * The configuration is defined in /etc/config/openc2x_obd2.
  */
 struct Obd2Config {
 	/** True iff OBD2 should be simulated, false for using real data.

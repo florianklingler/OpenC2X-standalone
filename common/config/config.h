@@ -143,7 +143,7 @@ ptree load_config_tree(){
 
 /**
  * Struct that hold the global configuration.
- * The configuration is defined in <a href="../../common/config/config.xml">common/config/config.xml</a>
+ * The configuration is defined in /etc/config/openc2x_common</a>
  * @ingroup common
  */
 struct GlobalConfig {
@@ -290,7 +290,7 @@ struct GlobalConfig {
 		}
 		if (!(i == 12 && (s == 5 || s == 0))){
 			mMac = "invalid MAC";
-			std::cerr << "Invalid MAC. Check common/config/config.xml" << std::endl;
+			std::cerr << "Invalid MAC. Check /etc/config/openc2x_common" << std::endl;
 			exit(1);
 		}
 		if(mStationID == 0){

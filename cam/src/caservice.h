@@ -48,7 +48,7 @@
 #include <common/messages/MessageUtils.h>
 
 /** Struct that hold the configuration for CaService.
- * The configuration is defined in <a href="../../cam/config/config.xml">cam/config/config.xml</a>
+ * The configuration is defined in /etc/config/openc2x_cam</a>
  */
 struct CaServiceConfig {
 	bool mGenerateMsgs;

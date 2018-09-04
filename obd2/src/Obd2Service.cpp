@@ -41,7 +41,7 @@ Obd2Service::Obd2Service(Obd2Config &config) {
 		mGlobalConfig.loadConfig(OBD2_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl;
+		cerr << "Error while loading /etc/config/openc2x_common: " << e.what() << endl;
 	}
 	mConfig = config;
 	ptree pt = load_config_tree();
@@ -160,7 +160,7 @@ int main(int argc, const char* argv[]) {
 		config.loadConfig();
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		cerr << "Error while loading  /etc/config/openc2x_obd2: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
 	Obd2Service obd2(config);

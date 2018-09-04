@@ -46,7 +46,7 @@
 #include <iostream>
 
 /** Struct that hold the configuration for httpServer.
- * The configuration is defined in <a href="../../httpServer/config/config.xml">httpServer/config/config.xml</a>
+ * The configuration is defined in /etc/config/openc2x_httpServer
  */
 struct httpServerConfig {
 	int mTimeout;

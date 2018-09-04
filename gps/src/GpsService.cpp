@@ -48,7 +48,7 @@ GpsService::GpsService(GpsConfig &config) {
 		mGlobalConfig.loadConfig(GPS_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl;
+		cerr << "Error while loading /etc/config/openc2x_common: " << e.what() << endl;
 	}
 	mConfig = config;
 	mLastTime = NAN;
@@ -317,7 +317,7 @@ int main(int argc, const char* argv[]) {
 		config.loadConfig();
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		cerr << "Error while loading /etc/config/openc2x_gps: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
 	GpsService gps(config);

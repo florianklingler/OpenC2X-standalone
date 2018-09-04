@@ -62,7 +62,7 @@ DCC::DCC(bool setUpWlan) : mStrand(mIoService) {
 		mGlobalConfig.loadConfig(DCC_CONFIG_NAME);
 		config.loadParameters(pt);
 	} catch (exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		cerr << "Error while loading /etc/config/openc2x_common or openc2x_dcc: " << e.what() << endl << flush;
 	}
 
 	mConfig = config;

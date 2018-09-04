@@ -39,7 +39,7 @@ httpServer::httpServer(GlobalConfig globalConfig) {
 		mLocalConfig.loadConfig();
 	}
 	catch (std::exception &e) {
-		std::cerr << "Error while loading local config.xml: " << e.what() << std::endl;
+		std::cerr << "Error while loading local /etc/config/openc2x_httpServer: " << e.what() << std::endl;
 	}
 	
 	ptree pt = load_config_tree();
@@ -307,7 +307,7 @@ int main(int argc, const char* argv[]){
 		config.loadConfig(HTTP_SERVER_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
-		std::cerr << "Error while loading global config.xml: " << e.what() << std::endl;
+		std::cerr << "Error while loading /etc/config/openc2x_common: " << e.what() << std::endl;
 	}
 
 	ptree pt = load_config_tree();

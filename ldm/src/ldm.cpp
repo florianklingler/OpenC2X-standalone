@@ -40,7 +40,7 @@ LDM::LDM() {
 		config.loadConfig(LDM_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl;
+		cerr << "Error while loading /etc/config/openc2x_common: " << e.what() << endl;
 	}
 	ptree pt = load_config_tree();
 

@@ -44,7 +44,7 @@ CaService::CaService(CaServiceConfig &config, ptree& configTree) {
 		mGlobalConfig.loadConfig(CAM_CONFIG_NAME);
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl;
+		cerr << "Error while loading /etc/config/openc2x_common: " << e.what() << endl;
 	}
 
 	mConfig = config;
@@ -581,7 +581,7 @@ int main(int argc, const char* argv[]) {
 		caConfig.loadConfig(configTree);
 	}
 	catch (std::exception &e) {
-		cerr << "Error while loading config.xml: " << e.what() << endl << flush;
+		cerr << "Error while loading /etc/config/openc2x_cam: " << e.what() << endl << flush;
 		return EXIT_FAILURE;
 	}
 	CaService cam(caConfig, configTree);

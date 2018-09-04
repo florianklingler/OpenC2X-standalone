@@ -42,7 +42,7 @@
 #include <fstream>
 
 /** Struct that hold the configuration for GpsService.
- * The configuration is defined in <a href="../../gps/config/config.xml">gps/config/config.xml</a>
+ * The configuration is defined in /etc/config/openc2x_gps
  */
 struct GpsConfig {
 	/**
