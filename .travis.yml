@@ -28,13 +28,14 @@ before_install:
   - docker build -t $ARCHITECTURE $ARCHITECTURE
 
 script:
-  - export NUMBER=${TRAVIS_BUILD_NUMBER}
-  - export BUILD_VERSION=1.$NUMBER
   - export ARCH=$(basename $ARCHITECTURE)
   - export DIST=$(dirname $ARCHITECTURE)
   - docker run -v $PWD:/tmp $ARCHITECTURE /bin/sh -c "cd /tmp; cmake .; make -j1; make package"
   #- cp ${PACKAGE_NAME}-${BUILD_VERSION}-Linux.deb ${PACKAGE_NAME}-${BUILD_VERSION}-${DIST}_${ARCH}.deb 
-  - 'for f in *.deb; do cp "$f" "${f: 0:-10}-${DIST}_${ARCH}.deb"; done'
+  - for f in *.deb; do export DEB_NAME=${f}; done
+  - export BUILD_VERSION=${DEB_NAME#*-}
+  - export BUILD_VERSION=${BUILD_VERSION%-*}
+  - cp "${DEB_NAME}" "${DEB_NAME: 0:-10}-${DIST}_${ARCH}.deb
 before_deploy:
   # Set the packages name and details in the descriptor file
   - sed -i "s/__NAME__/$PACKAGE_NAME/g" bintray-descriptor.json
