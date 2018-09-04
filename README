@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------------------
 For latest updates on OpenC2X, visit http://www.ccs-labs.org/software/openc2x/
 
-On Ubuntu 14.04, follow the below mentioned steps to get OpenC2X up and running.
+On Ubuntu 16.04, follow the below mentioned steps to get OpenC2X up and running.
 For other OS users, we recommend you to setup a virtual box with Ubuntu 16.04.
 
 OpenC2X source is organized in the tree structure like this:
